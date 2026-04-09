@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using UnityEngine;
+using Path = System.IO.Path;
 
 public enum UmaFileType
 {
@@ -69,4 +71,8 @@ public class UmaDatabaseEntry
     public string Prerequisites;
     public long Key;
 
+    public string QueryPath()
+    {
+        return Path.Combine(UmaDatabaseController.persistentPath.Replace("\\", "/"), $"dat/{Url.Substring(0, 2)}/{Url}");
+    }
 }

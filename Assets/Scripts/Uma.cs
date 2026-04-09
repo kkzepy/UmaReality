@@ -3,93 +3,126 @@ using System.Linq;
 
 public class UmaCharacterBuilder
 {
-    public GameObject Character { get; private set; }
+    private GameObject CharacterRoot;
 
-    public void BuildCharacter(int characterId, string animBundlePath)
+    public GameObject BuildCharacter(int characterId, int costumeId, int headId)
     {
-        // 1️⃣ Load asset paths dari database
-        var paths = UmaDatabaseController.QueryCharacterPaths(characterId);
-        var bodyBundle = UmaAssetManager.LoadBundle(paths.BodyBundlePath);
-        var headBundle = UmaAssetManager.LoadBundle(paths.HeadBundlePath);
+        CharacterRoot = new GameObject($"UmaCharacter_{characterId}");
 
-        GameObject bodyObj = bodyBundle.LoadAsset<GameObject>("pfb_bdy");
-        GameObject headObj = headBundle.LoadAsset<GameObject>("pfb_head");
+        // 1. Load semua part
+        GameObject body = LoadPart(UmaAssetManager.QueryBodyPath(characterId, costumeId), "pfb_bdy");
+        GameObject head = LoadPart(UmaAssetManager.QueryHeadPath(characterId, headId), "pfb_head");
+        GameObject tail = LoadPart(UmaAssetManager.QueryTailPath(characterId), "pfb_tail");
 
-        Texture2D[] textures = UmaAssetManager.LoadTextures(paths.TextureDirectories);
+        // 2. Attach ke root
+        body.transform.SetParent(CharacterRoot.transform, false);
+        head.transform.SetParent(CharacterRoot.transform, false);
+        tail.transform.SetParent(CharacterRoot.transform, false);
 
-        // 2️⃣ Assemble character model
-        Character = new GameObject("UmaCharacter");
+        // 3. Gabungkan skeleton
+        BindSkeleton(body, head);
+        BindSkeleton(body, tail);
 
-        GameObject body = Object.Instantiate(bodyObj, Character.transform);
-        GameObject head = Object.Instantiate(headObj, Character.transform);
+        // 4. Apply texture
+        ApplyTextures(characterId, body);
+        ApplyTextures(characterId, head);
+        ApplyTextures(characterId, tail);
 
-        ApplyTextures(body, textures);
-        ApplyTextures(head, textures);
+        // 5. Setup animasi
+        SetupAnimator(CharacterRoot);
 
-        // unify bone hierarchy
-        SkinnedMeshRenderer smrBody = body.GetComponent<SkinnedMeshRenderer>();
-        SkinnedMeshRenderer smrHead = head.GetComponent<SkinnedMeshRenderer>();
-
-        Transform[] bones = Character.GetComponentsInChildren<Transform>()
-                                     .Where(t => t.name.StartsWith("bone"))
-                                     .ToArray();
-
-        smrBody.bones = bones;
-        smrHead.bones = bones;
-
-        // 3️⃣ Setup animation
-        SetupAnimation(animBundlePath);
-
-        // 4️⃣ Initialize facial morphs
-        InitFacialMorphs();
-
-        // 5️⃣ Initialize physics
-        InitializePhysics();
+        return CharacterRoot;
     }
 
-    private void ApplyTextures(GameObject obj, Texture2D[] textures)
+    // =========================
+    // LOAD PART
+    // =========================
+    private GameObject LoadPart(string logicalPath, string assetName)
     {
-        var smr = obj.GetComponent<SkinnedMeshRenderer>();
-        foreach (Material mat in smr.materials)
+        string realPath = UmaAssetManager.ResolvePath(logicalPath);
+
+        AssetBundle bundle = AssetBundle.LoadFromFile(realPath);
+        GameObject prefab = bundle.LoadAsset<GameObject>(assetName);
+
+        return GameObject.Instantiate(prefab);
+    }
+
+    // =========================
+    // SKELETON BINDING
+    // =========================
+    private void BindSkeleton(GameObject body, GameObject part)
+    {
+        var bodyBones = body.GetComponentsInChildren<Transform>();
+
+        var smrParts = part.GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (var smr in smrParts)
         {
-            mat.mainTexture = FindTexture(textures, mat.name);
+            Transform[] newBones = new Transform[smr.bones.Length];
+
+            for (int i = 0; i < smr.bones.Length; i++)
+            {
+                string boneName = smr.bones[i].name;
+
+                Transform match = bodyBones.FirstOrDefault(b => b.name == boneName);
+                if (match != null)
+                    newBones[i] = match;
+            }
+
+            smr.bones = newBones;
         }
     }
 
-    private Texture2D FindTexture(Texture2D[] textures, string matName)
+    // =========================
+    // TEXTURE APPLY
+    // =========================
+    private void ApplyTextures(int characterId, GameObject part)
     {
-        return textures.FirstOrDefault(t => t.name.Contains(matName)) ?? Texture2D.whiteTexture;
+        string[] texturePaths = UmaAssetManager.QueryTexturePath(characterId);
+
+        Texture2D[] textures = texturePaths
+            .Select(p => LoadTexture(p))
+            .Where(t => t != null)
+            .ToArray();
+
+        var renderers = part.GetComponentsInChildren<SkinnedMeshRenderer>();
+
+        foreach (var smr in renderers)
+        {
+            foreach (var mat in smr.materials)
+            {
+                Texture2D tex = FindTexture(textures, mat.name);
+                if (tex != null)
+                {
+                    mat.mainTexture = tex;
+                }
+            }
+        }
     }
 
-    private void SetupAnimation(string animBundlePath)
+    private Texture2D LoadTexture(string logicalPath)
     {
-        var animBundle = UmaAssetManager.LoadBundle(animBundlePath);
-        var clips = animBundle.LoadAllAssets<AnimationClip>();
+        string realPath = UmaAssetManager.ResolvePath(logicalPath);
 
-        Animator animator = Character.AddComponent<Animator>();
-        var controller = new AnimatorOverrideController(DefaultController);
+        AssetBundle bundle = AssetBundle.LoadFromFile(realPath);
+        return bundle.LoadAsset<Texture2D>("_MainTex");
+    }
 
-        foreach (var clip in clips)
-        {
-            controller[clip.name] = clip;
-        }
+    private Texture2D FindTexture(Texture2D[] textures, string materialName)
+    {
+        return textures.FirstOrDefault(t => t.name.Contains(materialName));
+    }
+
+    // =========================
+    // ANIMATION SETUP
+    // =========================
+    private void SetupAnimator(GameObject character)
+    {
+        Animator animator = character.AddComponent<Animator>();
+
+        // Minimal setup (placeholder controller)
+        RuntimeAnimatorController controller =
+            Resources.Load<RuntimeAnimatorController>("DefaultUmaController");
 
         animator.runtimeAnimatorController = controller;
-    }
-
-    private void InitFacialMorphs()
-    {
-        var faceController = Character.AddComponent<FaceDrivenKeyTarget>();
-        var faceTargets = Character.GetComponentsInChildren<SkinnedMeshRenderer>()
-                                   .SelectMany(r => r.sharedMesh.blendShapeNames)
-                                   .ToArray();
-
-        faceController.Initialize(faceTargets);
-    }
-
-    private void InitializePhysics()
-    {
-        var springData = Character.AddComponent<CySpringDataContainer>();
-        springData.SetupDefault();
     }
 }

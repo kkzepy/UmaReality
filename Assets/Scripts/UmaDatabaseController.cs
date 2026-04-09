@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Unity.VisualScripting;
+using UnityEditor.PackageManager;
 using Debug = UnityEngine.Debug;
 
 
 public class UmaDatabaseController
 {
-
+    public static string persistentPath = "E:\\Uma\\Persistent\\";
     public static string masterDbPath = "E:\\Uma\\Persistent\\master\\master.mdb";
     public static string metaDbPath = "E:\\Uma\\Persistent\\meta";
     public static string DBKey = "6D5B65336336632554712D73505363386D34377B356370233734532973433633";
@@ -20,6 +21,7 @@ public class UmaDatabaseController
     public static List<DataRow> MobCharaData;
     public static List<DataRow> FaceTypeData;
     public static List<DataRow> DressData;
+    public static List<DataRow> CharaNameData;
 
     public static Dictionary<string, UmaDatabaseEntry> MetaData;
 
@@ -45,6 +47,8 @@ public class UmaDatabaseController
             MobCharaData = ReadMaster(mdbConn, "SELECT * FROM mob_data M,(SELECT D.'index' charaid,D.'text' charaname FROM text_data D WHERE id like 59) T WHERE M.mob_id like T.charaid");
             //FaceTypeData = ReadMaster(mdbConn, "SELECT * FROM face_type");
             DressData = ReadMaster(mdbConn, "SELECT * FROM dress_data C,(SELECT D.'index' dressid,D.'text' dressname FROM text_data D WHERE id like 14) T WHERE C.id like T.dressid");
+            CharaNameData = ReadMaster(mdbConn, "SELECT * FROM text_data WHERE id = 372");
+
             MetaData = ReadMetaFromEncryptedDb(metaDbPath, GenFinalKey(Utility.HexStringToBytes(DBKey)), 3);
         }
         catch (Exception e)
