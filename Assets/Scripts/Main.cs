@@ -1,11 +1,12 @@
 using JetBrains.Annotations;
 using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 using Debug = UnityEngine.Debug;
 
 public class Main : MonoBehaviour
@@ -19,46 +20,36 @@ public class Main : MonoBehaviour
         UmaDatabaseController.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
         UmaDatabaseController.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
+        
         UmaDatabaseController.CreateConnection();
         UmaDatabaseController.Initialize();
 
-        var entry = UmaDatabaseController.MetaData;
+        //Test();
 
-        var res = UmaAssetManager.QueryBodyPath(1001, 0);
+        //UmaCharacterAssembler assembler = new UmaCharacterAssembler();
 
-        
-
-
-        
-        int count = 0;
-        string log = "";
-
-        foreach (var item in entry)
-        {
-            var key = item.Key;
-            var value = item.Value;
-            if (!value.Name.Contains("1001"))
-            {
-                continue;
-            }
-
-            log += value.Name + " : " + value.QueryPath()+"\n";
-            Debug.Log(log);
-            count++;
-        }
-        Debug.Log($"Total: {count}");
-        File.WriteAllText("log.txt", log);
-
-        Debug.Log(res);
-        Debug.Log($"Exists?: {UmaDatabaseController.MetaData.ContainsKey(res)}");
-        
-        
+        //GameObject uma = assembler.AssembleCharacter(1001, 0, 0, 1);
+        //uma.transform.position = Vector3.zero;
+        //uma.transform.rotation = Quaternion.identity;
     }
 
 
     // Update is called once per frame
-    void Update()
+    void Test()
     {
-        
+        var entry = UmaDatabaseController.MetaData;
+
+        string log = "";
+
+        foreach (var item in entry)
+        {
+            if (item.Key.StartsWith("3d/chara/tail/"))
+            {
+                //Debug.Log("TRUEE");
+                log += item.Key + Environment.NewLine;
+            }
+            
+        }
+        File.WriteAllText("log.txt", log);
     }
 }

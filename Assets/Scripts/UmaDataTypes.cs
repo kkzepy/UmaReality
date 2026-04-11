@@ -76,3 +76,25 @@ public class UmaDatabaseEntry
         return Path.Combine(UmaDatabaseController.persistentPath.Replace("\\", "/"), $"dat/{Url.Substring(0, 2)}/{Url}");
     }
 }
+
+public class CharacterData
+{
+    public string BasePrefab;
+    public string BodyMesh;
+    public string HeadMesh;
+    public string HairMesh;
+    public string TailMesh;
+
+    public string[] Accessories;
+
+    public string AnimatorController;
+
+    public MaterialData Material;
+}
+
+public class MaterialData
+{
+    public string Albedo;
+    public string Normal;
+    public string Mask;
+}
