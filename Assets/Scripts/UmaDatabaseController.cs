@@ -14,6 +14,7 @@ public class UmaDatabaseController
     public static string metaDbPath = "E:\\Uma\\Persistent\\meta";
     public static string DBKey = "6D5B65336336632554712D73505363386D34377B356370233734532973433633";
     public static string DBBaseKey = "F170CEA4DFCEA3E1A5D8C70BD1000000";
+    public static string ABKey = "532B4631E4A7B9473E7CFB";
 
     public static SqliteConnection mdbConn;
 
@@ -202,11 +203,4 @@ public class UmaDatabaseController
         return key;
     }
 
-    public static void WriteToJSON(Dictionary<string, UmaDatabaseEntry> dict, string path)
-    {
-        //var options = new JsonSerializerOptions { WriteIndented = true };
-        //string jsonString = JsonSerializer.Serialize(dict, options);
-
-        //File.WriteAllText(path, jsonString);
-    }
 }

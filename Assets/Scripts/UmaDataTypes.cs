@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using Path = System.IO.Path;
 
@@ -70,6 +72,40 @@ public class UmaDatabaseEntry
     public string Checksum;
     public string Prerequisites;
     public long Key;
+    private byte[] fKey;
+    public bool IsEncrypted => Key != 0;
+
+    public byte[] FKey
+    {
+        get
+        {
+            if (fKey == null && IsEncrypted)
+            {
+                var baseKeys = Utility.HexStringToBytes(UmaDatabaseController.ABKey);
+                int baseLen = baseKeys.Length;
+
+                var keys = new byte[baseLen * 8];
+
+                byte[] keyBytes = BitConverter.GetBytes(Key);
+                if (!BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(keyBytes);
+                }
+                for (int i = 0; i < baseLen; ++i)
+                {
+                    byte b = baseKeys[i];
+                    int baseOffset = i << 3; // i * 8
+                    for (int j = 0; j < 8; ++j)
+                    {
+                        keys[baseOffset + j] = (byte)(b ^ keyBytes[j]);
+                    }
+                }
+
+                fKey = keys;
+            }
+            return fKey;
+        }
+    }
 
     public string QueryPath()
     {

@@ -1,0 +1,135 @@
+ID: 1001, Name: Special Week
+ID: 1002, Name: Silence Suzuka
+ID: 1003, Name: Tokai Teio
+ID: 1004, Name: Maruzensky
+ID: 1005, Name: Fuji Kiseki
+ID: 1006, Name: Oguri Cap
+ID: 1007, Name: Gold Ship
+ID: 1008, Name: Vodka
+ID: 1009, Name: Daiwa Scarlet
+ID: 1010, Name: Taiki Shuttle
+ID: 1011, Name: Grass Wonder
+ID: 1012, Name: Hishi Amazon
+ID: 1013, Name: Mejiro McQueen
+ID: 1014, Name: El Condor Pasa
+ID: 1015, Name: T.M. Opera O
+ID: 1016, Name: Narita Brian
+ID: 1017, Name: Symboli Rudolf
+ID: 1018, Name: Air Groove
+ID: 1019, Name: Agnes Digital
+ID: 1020, Name: Seiun Sky
+ID: 1021, Name: Tamamo Cross
+ID: 1022, Name: Fine Motion
+ID: 1023, Name: Biwa Hayahide
+ID: 1024, Name: Mayano Top Gun
+ID: 1025, Name: Manhattan Cafe
+ID: 1026, Name: Mihono Bourbon
+ID: 1027, Name: Mejiro Ryan
+ID: 1028, Name: Hishi Akebono
+ID: 1029, Name: Yukino Bijin
+ID: 1030, Name: Rice Shower
+ID: 1031, Name: Ines Fujin
+ID: 1032, Name: Agnes Tachyon
+ID: 1033, Name: Admire Vega
+ID: 1034, Name: Inari One
+ID: 1035, Name: Winning Ticket
+ID: 1036, Name: Air Shakur
+ID: 1037, Name: Eishin Flash
+ID: 1038, Name: Curren Chan
+ID: 1039, Name: Kawakami Princess
+ID: 1040, Name: Gold City
+ID: 1041, Name: Sakura Bakushin O
+ID: 1042, Name: Seeking the Pearl
+ID: 1043, Name: Shinko Windy
+ID: 1044, Name: Sweep Tosho
+ID: 1045, Name: Super Creek
+ID: 1046, Name: Smart Falcon
+ID: 1047, Name: Zenno Rob Roy
+ID: 1048, Name: Tosen Jordan
+ID: 1049, Name: Nakayama Festa
+ID: 1050, Name: Narita Taishin
+ID: 1051, Name: Nishino Flower
+ID: 1052, Name: Haru Urara
+ID: 1053, Name: Bamboo Memory
+ID: 1054, Name: Biko Pegasus
+ID: 1055, Name: Marvelous Sunday
+ID: 1056, Name: Matikanefukukitaru
+ID: 1057, Name: Mr. C.B.
+ID: 1058, Name: Meisho Doto
+ID: 1059, Name: Mejiro Dober
+ID: 1060, Name: Nice Nature
+ID: 1061, Name: King Halo
+ID: 1062, Name: Matikanetannhauser
+ID: 1063, Name: Ikuno Dictus
+ID: 1064, Name: Mejiro Palmer
+ID: 1065, Name: Daitaku Helios
+ID: 1066, Name: Twin Turbo
+ID: 1067, Name: Satono Diamond
+ID: 1068, Name: Kitasan Black
+ID: 1069, Name: Sakura Chiyono O
+ID: 1070, Name: Sirius Symboli
+ID: 1071, Name: Mejiro Ardan
+ID: 1072, Name: Yaeno Muteki
+ID: 1073, Name: Tsurumaru Tsuyoshi
+ID: 1074, Name: Mejiro Bright
+ID: 1075, Name: Daring Tact
+ID: 1076, Name: Sakura Laurel
+ID: 1077, Name: Narita Top Road
+ID: 1078, Name: Yamanin Zephyr
+ID: 1079, Name: Furioso
+ID: 1080, Name: Transcend
+ID: 1081, Name: Espoir City
+ID: 1082, Name: North Flight
+ID: 1083, Name: Symboli Kris S
+ID: 1084, Name: Tanino Gimlet
+ID: 1085, Name: Daiichi Ruby
+ID: 1086, Name: Mejiro Ramonu
+ID: 1087, Name: Aston Machan
+ID: 1088, Name: Satono Crown
+ID: 1089, Name: Cheval Grand
+ID: 1090, Name: Verxina
+ID: 1091, Name: Vivlos
+ID: 1092, Name: Dantsu Flame
+ID: 1093, Name: K.S.Miracle
+ID: 1094, Name: Jungle Pocket
+ID: 1095, Name: Believe
+ID: 1096, Name: No Reason
+ID: 1097, Name: Still in Love
+ID: 1098, Name: Copano Rickey
+ID: 1099, Name: Hokko Tarumae
+ID: 1100, Name: Wonder Acute
+ID: 1102, Name: Sounds of Earth
+ID: 1103, Name: Royce and Royce
+ID: 1104, Name: Katsuragi Ace
+ID: 1105, Name: Neo Universe
+ID: 1106, Name: Hishi Miracle
+ID: 1107, Name: Tap Dance City
+ID: 1108, Name: Duramente
+ID: 1109, Name: Rhein Kraft
+ID: 1110, Name: Cesario
+ID: 1111, Name: Air Messiah
+ID: 1112, Name: Daring Heart
+ID: 1113, Name: Fusaichi Pandora
+ID: 1114, Name: Buena Vista
+ID: 1115, Name: Orfevre
+ID: 1116, Name: Gentildonna
+ID: 1117, Name: Win Variation
+ID: 1118, Name: Admire Groove
+ID: 1119, Name: Dream Journey
+ID: 1120, Name: Calstone Light O
+ID: 1121, Name: Durandal
+ID: 1124, Name: Bubble Gum Fellow
+ID: 1126, Name: Sakura Chitose O
+ID: 1127, Name: Fenomeno
+ID: 1128, Name: Blast Onepiece
+ID: 1129, Name: Almond Eye
+ID: 1130, Name: Lucky Lilac
+ID: 1131, Name: Gran Alegria
+ID: 1132, Name: Loves Only You
+ID: 1133, Name: Chrono Genesis
+ID: 1134, Name: Curren Bouquetd'or
+ID: 1135, Name: Stay Gold
+ID: 9046, Name: Saint Lite
+ID: 9047, Name: Speed Symboli
+ID: 9048, Name: Haiseiko
+ID: 9049, Name: Tucker Bryne

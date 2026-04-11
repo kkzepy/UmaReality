@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 public class UmaAssetManager
@@ -118,107 +119,31 @@ public class UmaAssetManager
     {
         return UmaDatabaseController.MetaData[logicalPath].QueryPath();
     }
+
+
 }
 
-public static class AssetBundleDecryptor
+public class UmaAssetBundleStream : FileStream
 {
-    public static byte[] DecryptFileToBytes(string inputFilePath, byte[] Keys)
+    private const int headerSize = 256;
+    private readonly byte[] baseKeys = Utility.HexStringToBytes(UmaDatabaseController.ABKey);
+    private readonly byte[] keys;
+
+    public UmaAssetBundleStream(string filename, byte[] keys) : base(filename, FileMode.Open, FileAccess.Read)
     {
-        if (string.IsNullOrEmpty(inputFilePath))
-            throw new ArgumentNullException(nameof(inputFilePath));
-        if (!File.Exists(inputFilePath))
-            throw new FileNotFoundException("Input file not found", inputFilePath);
-        if (Keys == null)
-            throw new ArgumentException("Keys must not be null or empty", nameof(Keys));
+        this.keys = keys;
+    }
 
-        byte[] data = File.ReadAllBytes(inputFilePath);
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        long StartPosition = Position;
+        int res = base.Read(buffer, offset, count);
 
-        if (data.Length <= 256)
-            return data;
-
-        for (int i = 256; i < data.Length; ++i)
+        for (long i = (StartPosition < headerSize ? headerSize - StartPosition : 0); i < count; i++)
         {
-            data[i] ^= Keys[i % Keys.Length];
+            buffer[i] ^= keys[(StartPosition + i) % (baseKeys.Length * 8)];
         }
 
-        return data;
-    }
-}
-
-public class UmaAssetLoader
-{
-    private Dictionary<string, AssetBundle> bundleCache = new Dictionary<string, AssetBundle>();
-
-    // =========================
-    // Load Bundle
-    // =========================
-    public AssetBundle LoadBundle(string Path)
-    {
-        if (bundleCache.ContainsKey(Path))
-            return bundleCache[Path];
-
-        AssetBundle bundle = AssetBundle.LoadFromFile(Path);
-
-        if (bundle == null)
-        {
-            Debug.LogError($"Failed to load bundle: {Path}");
-            return null;
-        }
-
-        bundleCache[Path] = bundle;
-        return bundle;
-    }
-
-    // =========================
-    // Load Prefab (Auto Detect)
-    // =========================
-    public GameObject LoadPrefab(string Path)
-    {
-        AssetBundle bundle = LoadBundle(Path);
-        if (bundle == null) return null;
-
-        // Cara aman: ambil semua lalu cari GameObject
-        UnityEngine.Object[] assets = bundle.LoadAllAssets();
-
-        foreach (var obj in assets)
-        {
-            if (obj is GameObject go)
-                return go;
-        }
-
-        Debug.LogWarning($"No GameObject found in bundle: {Path}");
-        return null;
-    }
-
-    // =========================
-    // Load Specific Asset
-    // =========================
-    public T LoadAsset<T>(string Path, string AssetName) where T : UnityEngine.Object
-    {
-        AssetBundle bundle = LoadBundle(Path);
-        if (bundle == null) return null;
-
-        return bundle.LoadAsset<T>(AssetName);
-    }
-
-    // =========================
-    // Unload
-    // =========================
-    public void Unload(string Path, bool UnloadAllLoadedObjects = false)
-    {
-        if (!bundleCache.ContainsKey(Path)) return;
-
-        bundleCache[Path].Unload(UnloadAllLoadedObjects);
-        bundleCache.Remove(Path);
-    }
-
-    public void UnloadAll()
-    {
-        foreach (var bundle in bundleCache.Values)
-        {
-            bundle.Unload(false);
-        }
-
-        bundleCache.Clear();
+        return res;
     }
 }
