@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -9,7 +10,7 @@ using Unity.VisualScripting;
 using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
-public class UmaAssetManager
+public class UmaAssetManager : MonoBehaviour
 {
     public static string BodyPath = "3d/chara/body/";
     public static string MiniBodyPath = "3d/chara/mini/body/";
@@ -120,7 +121,17 @@ public class UmaAssetManager
         return UmaDatabaseController.MetaData[logicalPath].QueryPath();
     }
 
-
+    public static Texture2D LoadTexture2DAsset(string logicalPath)
+    {
+        string path = ResolvePath(logicalPath);
+        using (var stream = new UmaAssetBundleStream(path, UmaDatabaseController.MetaData[logicalPath].FKey))
+        {
+            var bundle = AssetBundle.LoadFromStream(stream);
+            var obj = bundle.LoadAllAssets<Texture2D>().FirstOrDefault();
+            bundle.Unload(false); // penting!
+            return obj;
+        }
+    }
 }
 
 public class UmaAssetBundleStream : FileStream

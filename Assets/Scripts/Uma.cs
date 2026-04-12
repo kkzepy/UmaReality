@@ -141,20 +141,6 @@ public class UmaAssembler : MonoBehaviour
 
     public static void ApplyBodyTexture(GameObject body, int characterId, int costumeId)
     {
-        /*
-        string _costumeId = costumeId.ToString();
-        string _skin = skin.ToString();
-
-        if (_costumeId.Length < 4)
-        {
-            _costumeId = new string('0', 4 - _costumeId.Length) + _costumeId;
-        }
-
-        if (_skin.Length == 1)
-        {
-            _skin = "0" + _skin;
-        }
-        */
 
         string _costumeId = costumeId.ToString();
 
@@ -172,49 +158,64 @@ public class UmaAssembler : MonoBehaviour
             var optionMaskMap = default(Texture2D);
 
             var mainTexLogicalPath = $"3d/chara/body/bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_diff_wet";
-            var mainTexPath = UmaAssetManager.ResolvePath(mainTexLogicalPath);
-            using (var stream = new UmaAssetBundleStream(mainTexPath, UmaDatabaseController.MetaData[mainTexLogicalPath].FKey))
-            {
-                var bundle = AssetBundle.LoadFromStream(stream);
-                mainTex = bundle.LoadAllAssets<Texture2D>().FirstOrDefault();
-                bundle.Unload(false); // penting!
-                //return Instantiate(tail);
-            }
-
             var toonMapLogicalPath = $"3d/chara/body/bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_shad_c_wet";
-            var toonMapPath = UmaAssetManager.ResolvePath(toonMapLogicalPath);
-            using (var stream = new UmaAssetBundleStream(toonMapPath, UmaDatabaseController.MetaData[toonMapLogicalPath].FKey))
-            {
-                var bundle = AssetBundle.LoadFromStream(stream);
-                toonMap = bundle.LoadAllAssets<Texture2D>().FirstOrDefault();
-                bundle.Unload(false); // penting!
-                //return Instantiate(tail);
-            }
-
             var tripleMaskMapLogicalPath = $"3d/chara/body/bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_base_wet";
-            var tripleMaskMapPath = UmaAssetManager.ResolvePath(tripleMaskMapLogicalPath);
-            using (var stream = new UmaAssetBundleStream(tripleMaskMapPath, UmaDatabaseController.MetaData[tripleMaskMapLogicalPath].FKey))
-            {
-                var bundle = AssetBundle.LoadFromStream(stream);
-                tripleMaskMap = bundle.LoadAllAssets<Texture2D>().FirstOrDefault();
-                bundle.Unload(false); // penting!
-                //return Instantiate(tail);
-            }
-
             var optionMaskMapLogicalPath = $"3d/chara/body/bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_ctrl_wet";
-            var optionMaskMapPath = UmaAssetManager.ResolvePath(optionMaskMapLogicalPath);
-            using (var stream = new UmaAssetBundleStream(optionMaskMapPath, UmaDatabaseController.MetaData[optionMaskMapLogicalPath].FKey))
-            {
-                var bundle = AssetBundle.LoadFromStream(stream);
-                optionMaskMap = bundle.LoadAllAssets<Texture2D>().FirstOrDefault();
-                bundle.Unload(false); // penting!
-                //return Instantiate(tail);
-            }
+
+            mainTex = UmaAssetManager.LoadTexture2DAsset(mainTexLogicalPath);
+            toonMap = UmaAssetManager.LoadTexture2DAsset(toonMapLogicalPath);
+            tripleMaskMap = UmaAssetManager.LoadTexture2DAsset(tripleMaskMapLogicalPath);
+            optionMaskMap = UmaAssetManager.LoadTexture2DAsset(optionMaskMapLogicalPath);
 
             r.material.SetTexture("_MainTex", mainTex);
             r.material.SetTexture("_ToonMap", toonMap);
             r.material.SetTexture("_TripleMaskMap", tripleMaskMap);
             r.material.SetTexture("_OptionMaskMap", optionMaskMap);
+        }
+    }
+
+    public static void ApplyHeadTexture(GameObject head, int characterId, int costumeId)
+    {
+        /*
+        string _costumeId = costumeId.ToString();
+
+        if (_costumeId.Length == 1)
+        {
+            _costumeId = "0" + _costumeId;
+        }
+
+        foreach (Renderer r in head.GetComponentsInChildren<Renderer>())
+        {
+            //var mainTex = default(Texture2D);
+
+            var diff_wet = UmaAssetManager.HeadPath + $"chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_diff_wet";
+            var dirt = UmaAssetManager.HeadPath + $"chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_dirt";
+            var shad_c_wet = UmaAssetManager.HeadPath + $"chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_shad_c_wet";
+
+            Debug.Log(r.name);
+
+            r.material.SetTexture("_MainTex", UmaAssetManager.LoadTexture2DAsset(diff_wet));
+            r.material.SetTexture("_ToonMap", UmaAssetManager.LoadTexture2DAsset(diff_wet));
+        }
+        */
+
+        var renderer = head.GetComponentInChildren<SkinnedMeshRenderer>();
+
+        if (renderer == null)
+        {
+            Debug.LogError("Renderer not found!");
+            return;
+        }
+
+        foreach (var mat in renderer.materials)
+        {
+            if (mat == null)
+            {
+                Debug.LogWarning("Material is NULL");
+                continue;
+            }
+
+            Debug.Log(mat.name);
         }
     }
 
