@@ -132,6 +132,18 @@ public class UmaAssetManager : MonoBehaviour
             return obj;
         }
     }
+
+    public static AnimationClip LoadAnim(string logicalPath)
+    {
+        string path = ResolvePath(logicalPath);
+        using (var stream = new UmaAssetBundleStream(path, UmaDatabaseController.MetaData[logicalPath].FKey))
+        {
+            var bundle = AssetBundle.LoadFromStream(stream);
+            var obj = bundle.LoadAllAssets<AnimationClip>().FirstOrDefault();
+            bundle.Unload(false); // penting!
+            return obj;
+        }
+    }
 }
 
 public class UmaAssetBundleStream : FileStream

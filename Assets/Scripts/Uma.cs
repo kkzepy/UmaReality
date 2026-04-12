@@ -220,3 +220,27 @@ public class UmaAssembler : MonoBehaviour
     }
 
 }
+
+public class UmaCharacter : MonoBehaviour
+{
+    //public Animation UmaAnimation = null;
+    public AnimatorOverrideController OverrideController = null;
+    private void Start()
+    {
+        gameObject.AddComponent<Animation>();
+    }
+
+    public void PlayAnimatiion(string animationLogicalPath)
+    {
+        AnimationClip clip = UmaAssetManager.LoadAnim(animationLogicalPath);
+        if (clip == null)
+        {
+            Debug.LogError($"Animation {animationLogicalPath} not found!");
+            return;
+        }
+        
+        var UmaAnimation = GetComponent<Animation>();
+        UmaAnimation.AddClip(clip, clip.name);
+        UmaAnimation.Play(clip.name);
+    }
+}

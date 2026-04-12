@@ -18,9 +18,9 @@ public class Main : MonoBehaviour
     //public GameObject obj;
     void Start()
     {
-        UmaDatabaseController.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        UmaDatabaseController.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        UmaDatabaseController.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        //UmaDatabaseController.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        //UmaDatabaseController.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        //UmaDatabaseController.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         UmaDatabaseController.CreateConnection();
         UmaDatabaseController.Initialize();
@@ -33,23 +33,7 @@ public class Main : MonoBehaviour
         //uma.transform.position = Vector3.zero;
         //uma.transform.rotation = Quaternion.identity;
 
-        var texLogical = "3d/chara/head/chr1001_00/textures/tex_chr1001_00_face_diff_wet";
-
-        using (var stream = new UmaAssetBundleStream(UmaAssetManager.ResolvePath(texLogical), UmaDatabaseController.MetaData[texLogical].FKey))
-        {
-            var bundle = AssetBundle.LoadFromStream(stream);
-            UnityEngine.Object[] asset = bundle.LoadAllAssets();//<GameObject>().FirstOrDefault();
-            Debug.Log($"--- Contents of: {bundle.name} ({asset.Length} items) ---");
-            foreach (UnityEngine.Object obj in asset)
-            {
-                // Logs the name and the System.Type of the object
-                Debug.Log($"Name: {obj.name} | Type: {obj.GetType()}");
-            }
-
-            bundle.Unload(false); // penting!
-            //return Instantiate(head);
-        }
-
+        
         var llBodyInstance = UmaAssembler.CreateBody(1130, 0);
         var llHeadInstance = UmaAssembler.CreateHead(1130, 0);
 
@@ -57,6 +41,11 @@ public class Main : MonoBehaviour
         UmaAssembler.ApplyHeadTexture(llHeadInstance, 1130, 0);
 
         GameObject lucky_lilac = UmaAssembler.Assemble(llBodyInstance, llHeadInstance, UmaAssembler.CreateTail(1), "LuckyLilac");
+        lucky_lilac.AddComponent<UmaCharacter>();
+        var controller = lucky_lilac.GetComponent<UmaCharacter>();
+        controller.AddComponent<Animation>();
+        controller.PlayAnimatiion("3d/motion/raceresult/camera/chara/chr1105_00/anm_res_crd110502_001_cam");
+
 
         /*
         GameObject sgbodyInstance = UmaAssembler.CreateBody(1135, 0);
@@ -67,7 +56,7 @@ public class Main : MonoBehaviour
 
         stay_gold.transform.position = new Vector3(2, 0, 0);
         */
-        
+
 
     }
 
@@ -80,13 +69,13 @@ public class Main : MonoBehaviour
 
         foreach (var item in entry)
         {
-            if (item.Key.Contains("face") || item.Key.Contains("cheek") || item.Key.Contains("mouth") || item.Key.Contains("eye") || item.Key.Contains("mayu")) 
+            if (item.Key.Contains("motion")) 
             {
                 log += item.Key + "\n";
             }
 
         }
-        File.WriteAllText("head_tex.txt", log);
+        File.WriteAllText("anim.txt", log);
     }
 
     private void Update()
