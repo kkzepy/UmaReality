@@ -1,0 +1,25 @@
+neck : Neck (UnityEngine.GameObject)
+head : Head (UnityEngine.GameObject)
+head_height : Head_height (UnityEngine.GameObject)
+eye_locator_l : Eye_locator_L (UnityEngine.GameObject)
+eye_locator_r : Eye_locator_R (UnityEngine.GameObject)
+eye_l : Eye_L (UnityEngine.GameObject)
+eye_r : Eye_R (UnityEngine.GameObject)
+cheekmesh0 : M_Cheek (UnityEngine.GameObject)
+cheek0 : null
+cheek1 : tex_chr1057_00_cheek1 (UnityEngine.Texture2D)
+cheek2 : null
+eye_base_info_l : Eye_base_info_L (UnityEngine.GameObject)
+eye_base_info_r : Eye_base_info_R (UnityEngine.GameObject)
+eye_big_info_l : Eye_big_info_L (UnityEngine.GameObject)
+eye_big_info_r : Eye_big_info_R (UnityEngine.GameObject)
+eye_small_info_l : Eye_small_info_L (UnityEngine.GameObject)
+eye_small_info_r : Eye_small_info_R (UnityEngine.GameObject)
+eye_kira_info : Eye_kira_info (UnityEngine.GameObject)
+facial_target : null
+ear_target : null
+tearmesh_l : M_Tear_L (UnityEngine.GameObject)
+tearmesh_r : M_Tear_R (UnityEngine.GameObject)
+linemesh00 : M_Line00 (UnityEngine.GameObject)
+ikcol : null
+face_override : null

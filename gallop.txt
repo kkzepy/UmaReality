@@ -1,0 +1,10 @@
+//shader
+3d/chara/body/bdy1003_02/extensions/ast_bdy1003_02_shader_effect_data
+3d/chara/body/bdy1016_02/extensions/ast_bdy1016_02_shader_effect_data
+3d/chara/body/bdy1019_40/extensions/ast_bdy1019_40_shader_effect_data
+3d/chara/body/bdy1050_02/extensions/ast_bdy1050_02_shader_effect_data
+3d/chara/head/chr1016_02/extensions/ast_chr1016_02_shader_effect_data
+3d/chara/head/chr9041_00/extensions/ast_chr9041_00_shader_effect_data
+3d/chara/toonprop/toon_prop1002_00/extensions/ast_toon_prop1002_00_shader_effect_data
+3d/chara/toonprop/toon_prop1002_01/extensions/ast_toon_prop1002_01_shader_effect_data
+shader

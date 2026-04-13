@@ -1,15 +1,7 @@
-﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.VisualScripting;
-using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 public class UmaAssetManager : MonoBehaviour
 {
     public static string BodyPath = "3d/chara/body/";
@@ -20,6 +12,8 @@ public class UmaAssetManager : MonoBehaviour
     public static string CharaPath = "3d/chara/";
     public static string EffectPath = "3d/effect/";
     public static string CostumePath = "outgame/dress/";
+
+    public static Shader HairShader, FaceShader, EyeShader, CheekShader, EyebrowShader, AlphaShader, BodyAlphaShader, BodyBehindAlphaShader;
 
     static List<string> genericCostumeIds = null;
 

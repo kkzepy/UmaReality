@@ -1,14 +1,9 @@
-using JetBrains.Annotations;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
-using Debug = UnityEngine.Debug;
+//using Gallop;
 
 public class Main : MonoBehaviour
 {
@@ -18,13 +13,14 @@ public class Main : MonoBehaviour
     //public GameObject obj;
     void Start()
     {
-        //UmaDatabaseController.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        //UmaDatabaseController.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        //UmaDatabaseController.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        UmaDatabaseController.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        UmaDatabaseController.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        UmaDatabaseController.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         UmaDatabaseController.CreateConnection();
         UmaDatabaseController.Initialize();
 
+        Shader();
         //Test();
 
         //UmaCharacterAssembler assembler = new UmaCharacterAssembler();
@@ -34,17 +30,39 @@ public class Main : MonoBehaviour
         //uma.transform.rotation = Quaternion.identity;
 
         
-        var llBodyInstance = UmaAssembler.CreateBody(1130, 0);
-        var llHeadInstance = UmaAssembler.CreateHead(1130, 0);
+        var bodyLogicalPath = UmaAssetManager.QueryBodyPath(1100, 0);
+        var bodyPath = UmaAssetManager.ResolvePath(bodyLogicalPath);
 
-        UmaAssembler.ApplyBodyTexture(llBodyInstance, 1130, 0);
-        UmaAssembler.ApplyHeadTexture(llHeadInstance, 1130, 0);
+        using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabaseController.MetaData[bodyLogicalPath].FKey))
+        {
+            var bundle = AssetBundle.LoadFromStream(stream);
 
-        GameObject lucky_lilac = UmaAssembler.Assemble(llBodyInstance, llHeadInstance, UmaAssembler.CreateTail(1), "LuckyLilac");
-        lucky_lilac.AddComponent<UmaCharacter>();
-        var controller = lucky_lilac.GetComponent<UmaCharacter>();
-        controller.AddComponent<Animation>();
-        controller.PlayAnimatiion("3d/motion/raceresult/camera/chara/chr1105_00/anm_res_crd110502_001_cam");
+            var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+
+            Instantiate(body);
+
+            //body.AddComponent<Gallop.AssetHolder>();
+
+            bundle.Unload(false); // penting!
+            //return Instantiate(body);
+        }
+
+        
+        /*
+        var id = 1099+1;
+        var costumeId = 0;
+        var tailId = 1;
+
+        var bodyInstance = UmaAssembler.CreateBody(id, costumeId);
+        var headInstance = UmaAssembler.CreateHead(id, costumeId);
+        var tailInstance = UmaAssembler.CreateTail(tailId);
+
+        UmaAssembler.ApplyBodyTexture(bodyInstance, id, costumeId);
+        UmaAssembler.ApplyHeadTexture(headInstance, id, costumeId);
+        UmaAssembler.ApplyTailTexture(tailInstance, id);
+
+        var uma = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
+        uma.AddComponent<UmaCharacter>();
 
 
         /*
@@ -61,21 +79,69 @@ public class Main : MonoBehaviour
     }
 
 
-    void Test()
+    void Shader()
     {
         var entry = UmaDatabaseController.MetaData;
 
+        /*
         string log = "";
 
         foreach (var item in entry)
         {
-            if (item.Key.Contains("motion")) 
+            if (item.Key.Contains("shader")) 
             {
                 log += item.Key + "\n";
             }
 
         }
-        File.WriteAllText("anim.txt", log);
+        File.WriteAllText("gallop.txt", log);
+        */
+
+        string shaderLogicalPath = "shader";
+        string shaderPath = UmaAssetManager.ResolvePath(shaderLogicalPath);
+
+        using (var stream = new UmaAssetBundleStream(shaderPath, UmaDatabaseController.MetaData[shaderLogicalPath].FKey))
+        {
+            var bundle = AssetBundle.LoadFromStream(stream);
+
+            //var obj = bundle.LoadAllAssets();//.FirstOrDefault();
+            //body.AddComponent<Gallop.AssetHolder>();
+
+            Debug.Log(bundle.name);
+            //foreach (var i in obj)
+
+            UmaAssetManager.EyeShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertooneyet.shader");
+            UmaAssetManager.FaceShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertoonfacetser.shader");
+            UmaAssetManager.HairShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertoonhairtser.shader");
+            UmaAssetManager.AlphaShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/characteralphanolinetoonhairtser.shader");
+            UmaAssetManager.CheekShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactermultiplycheek.shader");
+            UmaAssetManager.EyebrowShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertoonmayu.shader");
+            UmaAssetManager.BodyAlphaShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/characteralphanolinetoontser.shader");
+            UmaAssetManager.BodyBehindAlphaShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/characteralphanolinetoonbehindtser.shader");
+
+            bundle.Unload(false); // penting!
+            //return Instantiate(body);
+        }
+
+    }
+    
+    void Test()
+    {
+        var entry = UmaDatabaseController.MetaData;
+
+        
+        string log = "";
+
+        foreach (var item in entry)
+        {
+            if (item.Key.StartsWith(UmaAssetManager.BodyPath) && item.Key.EndsWith("area")) 
+            {
+                log += item.Key + "\n";
+            }
+
+        }
+        File.WriteAllText("bdy_texture.txt", log);
+     
     }
 
     private void Update()

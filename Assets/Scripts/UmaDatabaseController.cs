@@ -59,6 +59,16 @@ public class UmaDatabaseController
         }
     }
 
+    public static DataRow ReadMobHairColor(string colorid)
+    {
+        var results = ReadMaster(mdbConn, $"SELECT * FROM mob_hair_color_set WHERE id LIKE {colorid}");
+        foreach (var data in results)
+        {
+            return data;
+        }
+        return null;
+    }
+
     public static List<DataRow> ReadMaster(SqliteConnection conn, string sql)
     {
         List<DataRow> dr = new List<DataRow>();
