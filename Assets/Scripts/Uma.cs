@@ -13,9 +13,15 @@ public class UmaAssembler : MonoBehaviour
         var bodyLogicalPath = UmaAssetManager.QueryBodyPath(charaId, costumeId);
         var bodyPath = UmaAssetManager.ResolvePath(bodyLogicalPath);
 
+        UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+
         using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabaseController.MetaData[bodyLogicalPath].FKey))
         {
-            var bundle = AssetBundle.LoadFromStream(stream);
+            MemoryStream ms = new MemoryStream();
+            stream.CopyTo(ms);
+            ms.Position = 0;
+
+            var bundle = AssetBundle.LoadFromStream(ms);
 
             var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault(); 
             //body.AddComponent<Gallop.AssetHolder>();
@@ -29,6 +35,9 @@ public class UmaAssembler : MonoBehaviour
     {
         var headLogicalPath = UmaAssetManager.QueryHeadPath(charaId, headId);
         var headPath = UmaAssetManager.ResolvePath(headLogicalPath);
+
+        UmaAssetManager.LoadPrerequistes(headLogicalPath);
+
         using (var stream = new UmaAssetBundleStream(headPath, UmaDatabaseController.MetaData[headLogicalPath].FKey))
         {
             var bundle = AssetBundle.LoadFromStream(stream);
@@ -42,6 +51,9 @@ public class UmaAssembler : MonoBehaviour
     {
         var tailLogicalPath = UmaAssetManager.QueryTailPath(tailId);
         var tailPath = UmaAssetManager.ResolvePath(tailLogicalPath);
+
+        UmaAssetManager.LoadPrerequistes(tailLogicalPath);
+
         using (var stream = new UmaAssetBundleStream(tailPath, UmaDatabaseController.MetaData[tailLogicalPath].FKey))
         {
             var bundle = AssetBundle.LoadFromStream(stream);
@@ -155,7 +167,8 @@ public class UmaAssembler : MonoBehaviour
             var tripleMaskMap = default(Texture2D);
             var optionMaskMap = default(Texture2D);
 
-            var mainTexLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_diff";
+            //var mainTexLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_diff_wet";
+            var mainTexLogicalPath = "3d/chara/body/bdy0001_00/textures/offline/tex_bdy0001_00_00_1_2_00_diff";
             var toonMapLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_shad_c_wet";
             var tripleMaskMapLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_base_wet";
             var optionMaskMapLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_ctrl_wet";
@@ -338,6 +351,26 @@ public class UmaAssembler : MonoBehaviour
         }
     }
 
+    public static void ApplyFallbackShader(GameObject obj)
+    {
+        Shader fallback = Shader.Find("Standard");
+
+        if (fallback == null)
+        {
+            Debug.LogError("Shader Standard tidak ditemukan!");
+            return;
+        }
+
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+
+        foreach (Renderer rend in renderers)
+        {
+            foreach (Material mat in rend.materials)
+            {
+                mat.shader = fallback;
+            }
+        }
+    }
 }
 
 public class UmaCharacter : MonoBehaviour

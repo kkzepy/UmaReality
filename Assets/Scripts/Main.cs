@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Unity.VisualScripting;
@@ -13,9 +14,9 @@ public class Main : MonoBehaviour
     //public GameObject obj;
     void Start()
     {
-        UmaDatabaseController.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        UmaDatabaseController.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        UmaDatabaseController.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        //UmaDatabaseController.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        //UmaDatabaseController.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        //UmaDatabaseController.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         UmaDatabaseController.CreateConnection();
         UmaDatabaseController.Initialize();
@@ -30,36 +31,28 @@ public class Main : MonoBehaviour
         //uma.transform.rotation = Quaternion.identity;
 
         
-        var bodyLogicalPath = UmaAssetManager.QueryBodyPath(1100, 0);
-        var bodyPath = UmaAssetManager.ResolvePath(bodyLogicalPath);
-
-        using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabaseController.MetaData[bodyLogicalPath].FKey))
-        {
-            var bundle = AssetBundle.LoadFromStream(stream);
-
-            var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
-
-            Instantiate(body);
-
-            //body.AddComponent<Gallop.AssetHolder>();
-
-            bundle.Unload(false); // penting!
-            //return Instantiate(body);
-        }
 
         
-        /*
+        //var bodyLogicalPath = UmaAssetManager.QueryBodyPath(1100, 0);
+        //var bodyPath = UmaAssetManager.ResolvePath(bodyLogicalPath);
+
+        //UmaAssetManager.LoadPrerequistes(bodyLogicalPath, true);
+
         var id = 1099+1;
         var costumeId = 0;
         var tailId = 1;
 
         var bodyInstance = UmaAssembler.CreateBody(id, costumeId);
+        UmaAssembler.ApplyFallbackShader(bodyInstance);
         var headInstance = UmaAssembler.CreateHead(id, costumeId);
+        UmaAssembler.ApplyFallbackShader(headInstance);
         var tailInstance = UmaAssembler.CreateTail(tailId);
+        UmaAssembler.ApplyFallbackShader(tailInstance);
 
-        UmaAssembler.ApplyBodyTexture(bodyInstance, id, costumeId);
-        UmaAssembler.ApplyHeadTexture(headInstance, id, costumeId);
-        UmaAssembler.ApplyTailTexture(tailInstance, id);
+
+        //UmaAssembler.ApplyBodyTexture(bodyInstance, id, costumeId);
+        //UmaAssembler.ApplyHeadTexture(headInstance, id, costumeId);
+        //UmaAssembler.ApplyTailTexture(tailInstance, id);
 
         var uma = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
         uma.AddComponent<UmaCharacter>();
@@ -134,17 +127,24 @@ public class Main : MonoBehaviour
 
         foreach (var item in entry)
         {
-            if (item.Key.StartsWith(UmaAssetManager.BodyPath) && item.Key.EndsWith("area")) 
+            /*
+            if (item.Key.StartsWith(UmaAssetManager.BodyPath) && item.Key.Contains("pfb")) 
             {
-                log += item.Key + "\n";
+                log += item.Key + " : " + item.Value.Prerequisites + "\n";
+            }
+            */
+
+            if (item.Key.Contains("1100")) 
+            {
+                log += item.Key + " : " + item.Value.Prerequisites + "\n";
             }
 
         }
-        File.WriteAllText("bdy_texture.txt", log);
+        File.WriteAllText("textures.txt", log);
      
     }
 
-    private void Update()
+    void Update()
     {
         //stay_gold.transform.Rotate(Vector3.up, 20 * Time.deltaTime);
     }

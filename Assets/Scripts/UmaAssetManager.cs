@@ -16,6 +16,7 @@ public class UmaAssetManager : MonoBehaviour
     public static Shader HairShader, FaceShader, EyeShader, CheekShader, EyebrowShader, AlphaShader, BodyAlphaShader, BodyBehindAlphaShader;
 
     static List<string> genericCostumeIds = null;
+    public static List<AssetBundle> loadedBundles = new List<AssetBundle>();
 
     public static List<string> QueryAvailableCostumeId(int characterId)
     {
@@ -112,7 +113,7 @@ public class UmaAssetManager : MonoBehaviour
 
     public static string ResolvePath(string logicalPath)
     {
-        return UmaDatabaseController.MetaData[logicalPath].QueryPath();
+        return UmaDatabaseController.MetaData[logicalPath]?.QueryPath();
     }
 
     public static Texture2D LoadTexture2DAsset(string logicalPath)
@@ -136,6 +137,28 @@ public class UmaAssetManager : MonoBehaviour
             var obj = bundle.LoadAllAssets<AnimationClip>().FirstOrDefault();
             bundle.Unload(false); // penting!
             return obj;
+        }
+    }
+
+    public static void LoadPrerequistes(string logicalPath, bool recursive = true)
+    {
+        var prerequisities = UmaDatabaseController.MetaData[logicalPath].Prerequisites.Split(';');
+
+        foreach (var prereq in prerequisities)
+        {
+            if (prereq == "") { continue; }
+            if (recursive)
+            {
+                LoadPrerequistes(prereq);
+            }
+            string path = ResolvePath(prereq);
+            using (var stream = new UmaAssetBundleStream(path, UmaDatabaseController.MetaData[prereq].FKey))
+            {
+                var bundle = AssetBundle.LoadFromStream(stream);
+                loadedBundles.Add(bundle);
+                //bundle.Unload(false); // penting!
+            }
+            Debug.Log($"Loaded prerequsite {prereq} for {logicalPath}");
         }
     }
 }
