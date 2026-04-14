@@ -20,6 +20,28 @@ public class UmaAssetManager : MonoBehaviour
     public static List<AssetBundle> loadedBundles = new List<AssetBundle>();
     public static Dictionary<string, MemoryStream> loadedAssets = new Dictionary<string, MemoryStream>();
 
+    public static void LoadShaders()
+    {
+        string shaderLogicalPath = "shader";
+        string shaderPath = UmaAssetManager.ResolvePath(shaderLogicalPath);
+
+        using (var stream = new UmaAssetBundleStream(shaderPath, UmaDatabaseController.MetaData[shaderLogicalPath].FKey))
+        {
+            var bundle = AssetBundle.LoadFromStream(stream);
+
+            EyeShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertooneyet.shader");
+            FaceShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertoonfacetser.shader");
+            HairShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertoonhairtser.shader");
+            AlphaShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/characteralphanolinetoonhairtser.shader");
+            CheekShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactermultiplycheek.shader");
+            EyebrowShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/charactertoonmayu.shader");
+            BodyAlphaShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/characteralphanolinetoontser.shader");
+            BodyBehindAlphaShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/characteralphanolinetoonbehindtser.shader");
+
+            bundle.Unload(false);
+        }
+    }
+
     public static List<string> QueryAvailableCostumeId(int characterId)
     {
         List<string> result = new List<string>();
@@ -66,18 +88,6 @@ public class UmaAssetManager : MonoBehaviour
 
     public static string QueryBodyPath(int characterId, int costumeId)
     {
-        /*
-        DataRow character = UmaDatabaseController.CharaData.FirstOrDefault(row => row.Field<long>("id") == characterId);
-
-        if (character == null)
-        {
-            throw new Exception();
-        }
-
-        long height = character.Field<long>("height");
-        long shape = character.Field<long>("shape");
-        long bust = character.Field<long>("bust");
-        */
 
         string _costumeId = costumeId.ToString();
 
@@ -146,7 +156,11 @@ public class UmaAssetManager : MonoBehaviour
     {
         var prerequisities = UmaDatabaseController.MetaData[logicalPath].Prerequisites.Split(';');
 
-        if (prerequisities.Count() == 0) { return; }
+        if (prerequisities.Count() == 0)
+        {
+            Debug.Log("No prerequisites to preload for " + logicalPath);
+            return;
+        }
 
         foreach (var prereq in prerequisities)
         {
@@ -159,8 +173,6 @@ public class UmaAssetManager : MonoBehaviour
             stream.CopyTo(ms);
 
             loadedAssets[prereq] = ms;
-
-            Debug.Log($"Preloaded prerequsite {prereq} for {logicalPath}");
         }
     }
 
@@ -168,7 +180,10 @@ public class UmaAssetManager : MonoBehaviour
     {
         var prerequisities = UmaDatabaseController.MetaData[logicalPath].Prerequisites.Split(';');
 
-        if (prerequisities.Count() == 0) { return; }
+        if (prerequisities.Count() == 0) { 
+            Debug.Log("No prerequisites to load for " + logicalPath);
+            return;
+        }
 
         foreach (var prereq in prerequisities)
         {
@@ -181,8 +196,6 @@ public class UmaAssetManager : MonoBehaviour
             {
                 AssetBundle.LoadFromStream(stream);
                 loadedAssets.Remove(prereq);
-
-                Debug.Log($"Loaded prerequsite {prereq} for {logicalPath}");
             }
         }
     }

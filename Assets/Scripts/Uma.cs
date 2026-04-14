@@ -12,22 +12,19 @@ public class UmaAssembler : MonoBehaviour
         var bodyLogicalPath = UmaAssetManager.QueryBodyPath(charaId, costumeId);
         var bodyPath = UmaAssetManager.ResolvePath(bodyLogicalPath);
 
-        //UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
-
         using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabaseController.MetaData[bodyLogicalPath].FKey))
         {
             var bundle = AssetBundle.LoadFromStream(stream);
-
             var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
             body = Instantiate(body);
 
-
-
+            // Set shader
             foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
             {
                 foreach (Material m in r.sharedMaterials)
                 {
+                    if (m == null) continue;
                     //BodyAlapha's shader need to change manually.
                     if (m.name.Contains("bdy") && m.name.Contains("Alpha"))
                     {
@@ -36,7 +33,6 @@ public class UmaAssembler : MonoBehaviour
                 }
             }
 
-            //bundle.Unload(false); // penting!
             return body;
         }
     }
@@ -51,6 +47,7 @@ public class UmaAssembler : MonoBehaviour
             var bundle = AssetBundle.LoadFromStream(stream);
             var head = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
+            // Disable cheek temporarily, used for blush purpose
             var _cheekTransform = head.transform.Find("M_Cheek");
             if (_cheekTransform)
             {
@@ -89,11 +86,10 @@ public class UmaAssembler : MonoBehaviour
                             break;
                         case "Gallop/3D/Chara/ToonMayu":
                             m.shader = UmaAssetManager.EyebrowShader;
-                            m.renderQueue += 1; //fix eyebrows disappearing sometimes
+                            m.renderQueue += 1;
                             break;
                         default:
                             Debug.Log(m.shader.name);
-                            // m.shader = Shader.Find("Nars/UmaMusume/Body");
                             break;
                     }
 
@@ -101,7 +97,7 @@ public class UmaAssembler : MonoBehaviour
                 }
             }
 
-            bundle.Unload(false); // penting!
+            bundle.Unload(false);
             return Instantiate(head);
         }
     }
@@ -117,7 +113,7 @@ public class UmaAssembler : MonoBehaviour
         {
             var bundle = AssetBundle.LoadFromStream(stream);
             var tail = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
-            bundle.Unload(false); // penting!
+            bundle.Unload(false);
             return Instantiate(tail);
         }
     }
@@ -157,19 +153,19 @@ public class UmaAssembler : MonoBehaviour
         var bodyBones = bodySkinnedMeshRenderer.bones.ToDictionary(bone => bone.name, bone => bone.transform);
         List<Transform> emptyBones = new List<Transform>();
         emptyBones.Add(body.transform.Find("Position/Hip/Tail_Ctrl"));
+
         while (body.transform.childCount > 0)
         {
             body.transform.GetChild(0).SetParent(rootObject.transform);
         }
         body.SetActive(false); //for debugging
 
-
-
         var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
         foreach (SkinnedMeshRenderer headskin in headskins)
         {
             MergeBone(headskin, bodyBones, ref emptyBones);
         }
+
         var eyes = new GameObject("Eyes");
         eyes.transform.SetParent(rootObject.transform);
         while (head.transform.childCount > 0)
@@ -178,9 +174,6 @@ public class UmaAssembler : MonoBehaviour
             child.SetParent(child.name.Contains("info") ? eyes.transform : rootObject.transform);
         }
         head.SetActive(false); //for debugging
-
-
-
 
         if (tail)
         {
@@ -196,13 +189,8 @@ public class UmaAssembler : MonoBehaviour
 
         emptyBones.ForEach(a => { if (a) Destroy(a.gameObject); });
 
-        /*
-        //MergeAvatar
-        UmaAnimator = rootObject.AddComponent<Animator>();
-        UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(rootObject, rootObject.name);
-        OverrideController = Instantiate(UmaViewerBuilder.Instance.OverrideController);
-        UmaAnimator.runtimeAnimatorController = OverrideController;
-        */
+        var animator = rootObject.AddComponent<Animator>();
+        animator.avatar = AvatarBuilder.BuildGenericAvatar(rootObject, rootObject.name);
 
         return rootObject;
 
@@ -410,28 +398,6 @@ public class UmaAssembler : MonoBehaviour
         }
     }
 
-    /*
-    public static void ApplyFallbackShader(GameObject obj)
-    {
-        Shader fallback = Shader.Find("Standard");
-
-        if (fallback == null)
-        {
-            Debug.LogError("Shader Standard tidak ditemukan!");
-            return;
-        }
-
-        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
-
-        foreach (Renderer rend in renderers)
-        {
-            foreach (Material mat in rend.materials)
-            {
-                mat.shader = fallback;
-            }
-        }
-    }
-    */
     public static void ApplyFallbackShader(GameObject obj)
     {
         Shader fallback = Shader.Find("Standard");
@@ -463,96 +429,40 @@ public class UmaAssembler : MonoBehaviour
             }
         }
     }
-    static Shader ResolveShader(Material mat)
-    {
-        string name = mat.name.ToLower();
-
-        if (name.Contains("hair")) return UmaAssetManager.HairShader;
-        if (name.Contains("face")) return UmaAssetManager.FaceShader;
-        if (name.Contains("eye")) return UmaAssetManager.EyeShader;
-        if (name.Contains("cheek")) return UmaAssetManager.CheekShader;
-        if (name.Contains("eyebrow")) return UmaAssetManager.EyebrowShader;
-
-        return UmaAssetManager.BodyAlphaShader; // fallback
-    }
-    public static void ApplyOriginalShader(GameObject obj)
-    {
-        foreach (var r in obj.GetComponentsInChildren<Renderer>())
-        {
-            foreach (var m in r.materials)
-            {
-                if (m == null) continue;
-
-                /*
-                // simpan texture lama
-                Texture diffuse = null;
-
-                if (mat.HasProperty("_DiffuseMap"))
-                    diffuse = mat.GetTexture("_DiffuseMap");
-
-                else if (mat.HasProperty("_MainTex"))
-                    diffuse = mat.GetTexture("_MainTex");
-
-                // assign shader asli
-                var shader = ResolveShader(mat);
-                if (shader != null)
-                    mat.shader = shader;
-
-                // restore texture ke property yang benar
-                if (diffuse != null)
-                {
-                    if (mat.HasProperty("_MainTex"))
-                        mat.SetTexture("_MainTex", diffuse);
-
-                    if (mat.HasProperty("_DiffuseMap"))
-                        mat.SetTexture("_DiffuseMap", diffuse);
-
-                    if (mat.HasProperty("_TripleMaskMap"))
-                    {
-                        var mask = mat.GetTexture("_TripleMaskMap");
-                        mat.SetTexture("_TripleMaskMap", mask);
-                    }
-
-                    if (mat.HasProperty("_OptionMaskMap"))
-                    {
-                        var opt = mat.GetTexture("_OptionMaskMap");
-                        mat.SetTexture("_OptionMaskMap", opt);
-                    }
-                }
-                */
-
-                if (m.name.Contains("bdy") && m.name.Contains("Alpha"))
-                {
-                    m.shader = UmaAssetManager.BodyAlphaShader;
-                }
-
-                
-
-            }
-        }
-    }
 }
 
 public class UmaCharacter : MonoBehaviour
 {
     //public Animation UmaAnimation = null;
-    public AnimatorOverrideController OverrideController = null;
+    public Animator UmaAnimator = null;
     private void Start()
     {
-        gameObject.AddComponent<Animation>();
+        UmaAnimator = GetComponent<Animator>();
     }
 
-    public void PlayAnimatiion(string animationLogicalPath)
+    public void PlayAnimation(AnimationClip newClip)
     {
-        AnimationClip clip = UmaAssetManager.LoadAnim(animationLogicalPath);
-        if (clip == null)
+        // Ambil controller yang sekarang sedang dipakai
+        RuntimeAnimatorController currentController = UmaAnimator.runtimeAnimatorController;
+
+        // Cek apakah controller saat ini sudah merupakan Override Controller
+        AnimatorOverrideController overrideController = currentController as AnimatorOverrideController;
+
+        if (overrideController == null)
         {
-            Debug.LogError($"Animation {animationLogicalPath} not found!");
-            return;
+            // Jika belum, buat baru berdasarkan controller yang ada
+            overrideController = new AnimatorOverrideController(currentController);
+            UmaAnimator.runtimeAnimatorController = overrideController;
         }
-        
-        var UmaAnimation = GetComponent<Animation>();
-        UmaAnimation.AddClip(clip, clip.name);
-        UmaAnimation.Play(clip.name);
+
+        // Pastikan base controller-nya tidak null sebelum digunakan
+        if (overrideController.runtimeAnimatorController != null)
+        {
+            overrideController["default"] = newClip;
+        }
+        else
+        {
+            Debug.LogError("Master Controller tidak ditemukan di Override Controller!");
+        }
     }
 }
