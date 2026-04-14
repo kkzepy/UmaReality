@@ -132,6 +132,7 @@ GameObject:
   m_Component:
   - component: {fileID: 229637690}
   - component: {fileID: 229637689}
+  - component: {fileID: 229637691}
   m_Layer: 0
   m_Name: _ScriptManager
   m_TagString: Untagged
@@ -151,6 +152,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbf09258dbc225d4eb8b4fde6e56d0ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  headInstance: {fileID: 0}
+  shader: {fileID: 0}
 --- !u!4 &229637690
 Transform:
   m_ObjectHideFlags: 0
@@ -166,6 +169,60 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &229637691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229637688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 416572bde6585384f9f64d7555caf3d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _Global_MaxDensity: 1
+  _Global_MaxHeight: 10
+  _GlobalOutlineOffset: 1
+  _GlobalOutlineWidth: 1
+  _GlobalCameraFov: 0.1
+  _CylinderBlend: 0
+  _GlobalToonColor: {r: 1, g: 1, b: 1, a: 0}
+  _Global_FogColor: {r: 0, g: 0, b: 0, a: 0}
+  _GlobalDirtRimSpecularColor: {r: 0, g: 0, b: 0, a: 0}
+  _GlobalDirtToonColor: {r: 0, g: 0, b: 0, a: 0}
+  _GlobalRimColor: {r: 1, g: 1, b: 1, a: 0}
+  _GlobalDirtColor: {r: 0, g: 0, b: 0, a: 0}
+  _Global_LightmapColor: {r: 1, g: 1, b: 1, a: 1}
+  _Global_LightmapDensityAddColor: {r: 0, g: 0, b: 0, a: 0}
+  _Global_LightmapModulateColor: {r: 1, g: 1, b: 1, a: 1}
+  _RimColor2: {r: 0, g: 0, b: 0, a: 0}
+  _MainParam_0: {x: 0, y: 0, z: 0, w: 0}
+  _MainParam_1: {x: 0, y: 0, z: 0, w: 0}
+  _HighParam1_0: {x: 0, y: 0, z: 0, w: 1}
+  _HighParam1_1: {x: 0, y: 0, z: 0, w: 1}
+  _HighParam1_2: {x: 0, y: 0, z: 0, w: 0}
+  _HighParam2_0: {x: 0, y: 0, z: 0, w: 1}
+  _HighParam2_1: {x: 0, y: 0, z: 0, w: 1}
+  _ColorArray_0: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_1: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_2: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_3: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_4: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_5: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_6: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_7: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_8: {r: 0, g: 0, b: 0, a: 0}
+  _ColorArray_9: {r: 0, g: 0, b: 0, a: 0}
+  _DirtRate_0: 0
+  _DirtRate_1: 0
+  _DirtRate_2: 0
+  _Global_FogMinDistance: {x: 0, y: 0, z: 0, w: 0}
+  _Global_FogLength: {x: 0, y: 0, z: 0, w: 0}
+  _RimHorizonOffset: 0
+  _UVEmissivePower: 0
+  _AmbientColor: {r: 0, g: 0, b: 0, a: 0}
+  scrollPosition: {x: 0, y: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

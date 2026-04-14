@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using UnityEngine;
-using Gallop;
-using System.IO;
-using UnityEngine.Video;
 
 public class UmaAssembler : MonoBehaviour
 {
@@ -13,21 +12,32 @@ public class UmaAssembler : MonoBehaviour
         var bodyLogicalPath = UmaAssetManager.QueryBodyPath(charaId, costumeId);
         var bodyPath = UmaAssetManager.ResolvePath(bodyLogicalPath);
 
-        UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+        //UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
 
         using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabaseController.MetaData[bodyLogicalPath].FKey))
         {
-            MemoryStream ms = new MemoryStream();
-            stream.CopyTo(ms);
-            ms.Position = 0;
+            var bundle = AssetBundle.LoadFromStream(stream);
 
-            var bundle = AssetBundle.LoadFromStream(ms);
+            var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
-            var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault(); 
-            //body.AddComponent<Gallop.AssetHolder>();
+            body = Instantiate(body);
 
-            bundle.Unload(false); // penting!
-            return Instantiate(body);
+
+
+            foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
+            {
+                foreach (Material m in r.sharedMaterials)
+                {
+                    //BodyAlapha's shader need to change manually.
+                    if (m.name.Contains("bdy") && m.name.Contains("Alpha"))
+                    {
+                        m.shader = UmaAssetManager.BodyAlphaShader;
+                    }
+                }
+            }
+
+            //bundle.Unload(false); // penting!
+            return body;
         }
     }
 
@@ -36,12 +46,61 @@ public class UmaAssembler : MonoBehaviour
         var headLogicalPath = UmaAssetManager.QueryHeadPath(charaId, headId);
         var headPath = UmaAssetManager.ResolvePath(headLogicalPath);
 
-        UmaAssetManager.LoadPrerequistes(headLogicalPath);
-
         using (var stream = new UmaAssetBundleStream(headPath, UmaDatabaseController.MetaData[headLogicalPath].FKey))
         {
             var bundle = AssetBundle.LoadFromStream(stream);
             var head = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+
+            var _cheekTransform = head.transform.Find("M_Cheek");
+            if (_cheekTransform)
+            {
+                _cheekTransform.gameObject.SetActive(false);
+            }
+
+            foreach (Renderer r in head.GetComponentsInChildren<Renderer>())
+            {
+
+
+                foreach (Material m in r.sharedMaterials)
+                {
+                    if (r.name.Contains("Hair") && r.name.Contains("Alpha"))
+                    {
+                        m.shader = UmaAssetManager.AlphaShader;
+                    }
+
+                    switch (m.shader.name)
+                    {
+                        case "Gallop/3D/Chara/MultiplyCheek":
+                            m.shader = UmaAssetManager.CheekShader; ;
+                            break;
+                        case "Gallop/3D/Chara/ToonFace/TSER":
+                            m.shader = UmaAssetManager.FaceShader;
+                            m.SetFloat("_CylinderBlend", 0.25f);
+                            m.SetColor("_RimColor", new Color(0, 0, 0, 0));
+                            break;
+                        case "Gallop/3D/Chara/ToonEye/T":
+                            m.shader = UmaAssetManager.EyeShader;
+                            m.SetFloat("_CylinderBlend", 0.25f);
+                            break;
+                        case "Gallop/3D/Chara/ToonHair/TSER":
+                            m.shader = UmaAssetManager.HairShader;
+                            m.SetColor("_Color", Color.white);
+                            m.SetFloat("_CylinderBlend", 0.25f);
+                            break;
+                        case "Gallop/3D/Chara/ToonMayu":
+                            m.shader = UmaAssetManager.EyebrowShader;
+                            m.renderQueue += 1; //fix eyebrows disappearing sometimes
+                            break;
+                        default:
+                            Debug.Log(m.shader.name);
+                            // m.shader = Shader.Find("Nars/UmaMusume/Body");
+                            break;
+                    }
+
+                    m.SetFloat("_StencilMask", charaId);
+                }
+            }
+
             bundle.Unload(false); // penting!
             return Instantiate(head);
         }
@@ -52,7 +111,7 @@ public class UmaAssembler : MonoBehaviour
         var tailLogicalPath = UmaAssetManager.QueryTailPath(tailId);
         var tailPath = UmaAssetManager.ResolvePath(tailLogicalPath);
 
-        UmaAssetManager.LoadPrerequistes(tailLogicalPath);
+        //UmaAssetManager.LoadPrerequistes(tailLogicalPath);
 
         using (var stream = new UmaAssetBundleStream(tailPath, UmaDatabaseController.MetaData[tailLogicalPath].FKey))
         {
@@ -351,6 +410,7 @@ public class UmaAssembler : MonoBehaviour
         }
     }
 
+    /*
     public static void ApplyFallbackShader(GameObject obj)
     {
         Shader fallback = Shader.Find("Standard");
@@ -368,6 +428,106 @@ public class UmaAssembler : MonoBehaviour
             foreach (Material mat in rend.materials)
             {
                 mat.shader = fallback;
+            }
+        }
+    }
+    */
+    public static void ApplyFallbackShader(GameObject obj)
+    {
+        Shader fallback = Shader.Find("Standard");
+
+        foreach (var r in obj.GetComponentsInChildren<Renderer>())
+        {
+            foreach (var mat in r.materials)
+            {
+                if (mat == null) continue;
+
+                // simpan texture lama
+                Texture mainTex = null;
+
+                if (mat.HasProperty("_MainTex"))
+                    mainTex = mat.GetTexture("_MainTex");
+
+                else if (mat.HasProperty("_BaseMap"))
+                    mainTex = mat.GetTexture("_BaseMap");
+
+                else if (mat.HasProperty("_DiffuseMap")) // kemungkinan dari Gallop
+                    mainTex = mat.GetTexture("_DiffuseMap");
+
+                // ganti shader
+                mat.shader = fallback;
+
+                // apply ulang texture
+                if (mainTex != null)
+                    mat.SetTexture("_MainTex", mainTex);
+            }
+        }
+    }
+    static Shader ResolveShader(Material mat)
+    {
+        string name = mat.name.ToLower();
+
+        if (name.Contains("hair")) return UmaAssetManager.HairShader;
+        if (name.Contains("face")) return UmaAssetManager.FaceShader;
+        if (name.Contains("eye")) return UmaAssetManager.EyeShader;
+        if (name.Contains("cheek")) return UmaAssetManager.CheekShader;
+        if (name.Contains("eyebrow")) return UmaAssetManager.EyebrowShader;
+
+        return UmaAssetManager.BodyAlphaShader; // fallback
+    }
+    public static void ApplyOriginalShader(GameObject obj)
+    {
+        foreach (var r in obj.GetComponentsInChildren<Renderer>())
+        {
+            foreach (var m in r.materials)
+            {
+                if (m == null) continue;
+
+                /*
+                // simpan texture lama
+                Texture diffuse = null;
+
+                if (mat.HasProperty("_DiffuseMap"))
+                    diffuse = mat.GetTexture("_DiffuseMap");
+
+                else if (mat.HasProperty("_MainTex"))
+                    diffuse = mat.GetTexture("_MainTex");
+
+                // assign shader asli
+                var shader = ResolveShader(mat);
+                if (shader != null)
+                    mat.shader = shader;
+
+                // restore texture ke property yang benar
+                if (diffuse != null)
+                {
+                    if (mat.HasProperty("_MainTex"))
+                        mat.SetTexture("_MainTex", diffuse);
+
+                    if (mat.HasProperty("_DiffuseMap"))
+                        mat.SetTexture("_DiffuseMap", diffuse);
+
+                    if (mat.HasProperty("_TripleMaskMap"))
+                    {
+                        var mask = mat.GetTexture("_TripleMaskMap");
+                        mat.SetTexture("_TripleMaskMap", mask);
+                    }
+
+                    if (mat.HasProperty("_OptionMaskMap"))
+                    {
+                        var opt = mat.GetTexture("_OptionMaskMap");
+                        mat.SetTexture("_OptionMaskMap", opt);
+                    }
+                }
+                */
+
+                if (m.name.Contains("bdy") && m.name.Contains("Alpha"))
+                {
+                    m.shader = UmaAssetManager.BodyAlphaShader;
+                }
+
+                
+
             }
         }
     }

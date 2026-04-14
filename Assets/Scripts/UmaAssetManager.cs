@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Plastic.Newtonsoft.Json.Serialization;
 using UnityEngine;
 public class UmaAssetManager : MonoBehaviour
 {
@@ -13,10 +14,11 @@ public class UmaAssetManager : MonoBehaviour
     public static string EffectPath = "3d/effect/";
     public static string CostumePath = "outgame/dress/";
 
-    public static Shader HairShader, FaceShader, EyeShader, CheekShader, EyebrowShader, AlphaShader, BodyAlphaShader, BodyBehindAlphaShader;
+    public static Shader HairShader, FaceShader, EyeShader, CheekShader, EyebrowShader, AlphaShader, BodyAlphaShader, BodyBehindAlphaShader = null;
 
     static List<string> genericCostumeIds = null;
     public static List<AssetBundle> loadedBundles = new List<AssetBundle>();
+    public static Dictionary<string, MemoryStream> loadedAssets = new Dictionary<string, MemoryStream>();
 
     public static List<string> QueryAvailableCostumeId(int characterId)
     {
@@ -140,25 +142,48 @@ public class UmaAssetManager : MonoBehaviour
         }
     }
 
+    public static void PreLoadPrerequistes(string logicalPath, bool recursive = true)
+    {
+        var prerequisities = UmaDatabaseController.MetaData[logicalPath].Prerequisites.Split(';');
+
+        if (prerequisities.Count() == 0) { return; }
+
+        foreach (var prereq in prerequisities)
+        {
+            if (recursive && !string.IsNullOrEmpty(UmaDatabaseController.MetaData[prereq].Prerequisites))
+            {
+                PreLoadPrerequistes(prereq);
+            }
+            var stream = new UmaAssetBundleStream(ResolvePath(prereq), UmaDatabaseController.MetaData[prereq].FKey);
+            var ms = new MemoryStream();
+            stream.CopyTo(ms);
+
+            loadedAssets[prereq] = ms;
+
+            Debug.Log($"Preloaded prerequsite {prereq} for {logicalPath}");
+        }
+    }
+
     public static void LoadPrerequistes(string logicalPath, bool recursive = true)
     {
         var prerequisities = UmaDatabaseController.MetaData[logicalPath].Prerequisites.Split(';');
 
+        if (prerequisities.Count() == 0) { return; }
+
         foreach (var prereq in prerequisities)
         {
-            if (prereq == "") { continue; }
-            if (recursive)
+            if (recursive && !string.IsNullOrEmpty(UmaDatabaseController.MetaData[prereq].Prerequisites))
             {
                 LoadPrerequistes(prereq);
             }
-            string path = ResolvePath(prereq);
-            using (var stream = new UmaAssetBundleStream(path, UmaDatabaseController.MetaData[prereq].FKey))
+            
+            if (loadedAssets.TryGetValue(prereq, out var stream))
             {
-                var bundle = AssetBundle.LoadFromStream(stream);
-                loadedBundles.Add(bundle);
-                //bundle.Unload(false); // penting!
+                AssetBundle.LoadFromStream(stream);
+                loadedAssets.Remove(prereq);
+
+                Debug.Log($"Loaded prerequsite {prereq} for {logicalPath}");
             }
-            Debug.Log($"Loaded prerequsite {prereq} for {logicalPath}");
         }
     }
 }
