@@ -1,3 +1,4 @@
+using System.Data;
 using System.IO;
 using UnityEngine;
 //using Gallop;
@@ -12,15 +13,18 @@ public class Main : MonoBehaviour
     
     void Awake()
     {
-        UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         UmaDatabase.CreateConnection();
         UmaDatabase.Initialize();
         UmaAssetManager.LoadShaders();
 
         Debug.Log(UmaDatabase.CharaData.Count);
+        Debug.Log(UmaAssetManager.QueryAvailableCostumeId(1025));
+
+        //Test();
     }
 
 
@@ -50,7 +54,8 @@ public class Main : MonoBehaviour
         UmaAssembler.ApplyTailTexture(tailInstance, id, chara.TailModelId);
 
         uma = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
-        uma.AddComponent<AnimationLoader>();
+        uma.AddComponent<UmaCharacter>();
+        //uma.AddComponent<AnimationLoader>();
 
         clip = UmaAssetManager.LoadAnim("3d/motion/event/body/chara/chr1001_00/anm_eve_chr1001_00_pdk01_s");
     }
@@ -71,24 +76,24 @@ public class Main : MonoBehaviour
             }
             */
 
-            if (item.Key.StartsWith("3d/motion/event/body")) 
+            if (item.Key.StartsWith(UmaDatabase.HeadPath)) 
             {
                 log += item.Key + "\n";
             }
 
         }
-        File.WriteAllText("anim.txt", log);
+        File.WriteAllText("head.txt", log);
      
     }
 
-    void FixedUpdate()
+    void Update()
     {
         
         if (Input.GetKeyDown(KeyCode.P))
         {
-            var controller = uma.GetComponent<AnimationLoader>();
-            controller.ApplyAnimationFromBundle(clip, "motion_s");
-            Debug.Log($"Playing animation: {clip.name}");
+            var controller = uma.GetComponent<UmaCharacter>();
+            controller.ToggleBlush();
+            controller.UpBodyReset();
         }
     }
 }

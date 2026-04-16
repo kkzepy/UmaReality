@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Gallop;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using Unity.VisualScripting.TextureAssets;
 using UnityEditor.Build.Content;
 using UnityEngine;
+using static UnityEditor.ObjectChangeEventStream;
 
 public class UmaAssembler : MonoBehaviour
 {
@@ -246,7 +248,7 @@ public class UmaAssembler : MonoBehaviour
             body.transform.GetChild(0).SetParent(rootObject.transform);
         }
         //body.SetActive(false); //for debugging
-        Destroy(body);
+        //Destroy(body);
 
         var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
         foreach (SkinnedMeshRenderer headskin in headskins)
@@ -523,76 +525,70 @@ public class UmaAssembler : MonoBehaviour
 
 public class UmaCharacter : MonoBehaviour
 {
-    //public Animation UmaAnimation = null;
-    //public RuntimeAnimatorController baseController;
+    AssetHolder assetHolder;
 
-    Animator animator;
-    //AnimatorOverrideController overrideController;
+    GameObject upBodyBone;
+    Vector3 upBodyPosition;
+    Quaternion upBodyRotation;
+
+    Animator UmaAnimator;
+    AnimatorOverrideController UmaControllerOverride;
 
     private void Start()
     {
-        //baseController = Resources.Load<RuntimeAnimatorController>("Controller");
-        animator = gameObject.GetComponent<Animator>();
+        /*
+        assetHolder = GetComponent<AssetHolder>();
 
-        // Create the override instance BASED on the asset template
-        //if (baseController != null)
-        //{
-        //    overrideController = new AnimatorOverrideController(baseController);
-        //    animator.runtimeAnimatorController = overrideController;
-        //}
+        upBodyBone = transform.Find("M_Body").GetComponent<AssetHolder>()._assetTable["upbody_ctrl"] as GameObject;
+        upBodyPosition = upBodyBone.transform.localPosition;
+        upBodyRotation = upBodyBone.transform.localRotation;
+        */
+
+        UmaAnimator = GetComponent<Animator>();
+        UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(gameObject, gameObject.name);
+
+        UmaControllerOverride = new AnimatorOverrideController(UmaAnimator.runtimeAnimatorController);
     }
 
-    public void ApplyAnimation(AnimationClip newClip)
+    public void SetAssetHolder(AssetHolder assetHolder)
     {
-        // Buat Override Controller berdasarkan runtime animator controller yang ada
-        AnimatorOverrideController overrideController = new AnimatorOverrideController(animator.runtimeAnimatorController);
+        this.assetHolder = assetHolder;
 
-        // Ambil list clip yang ada di controller asal
-        var overrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(overrideController.overridesCount);
-        overrideController.GetOverrides(overrides);
+        upBodyBone = assetHolder._assetTable["upbody_ctrl"] as GameObject;
+        upBodyPosition = upBodyBone.transform.localPosition;
+        upBodyRotation = upBodyBone.transform.localRotation;
+    }
 
-        // Ganti clip lama (misal bernama "DefaultClip") dengan yang baru dari Asset Bundle
-        for (int i = 0; i < overrides.Count; ++i)
+    public void UpBodyReset()
+    {
+        if (upBodyBone)
         {
-            overrides[i] = new KeyValuePair<AnimationClip, AnimationClip>(overrides[i].Key, newClip);
+            upBodyBone.transform.localPosition = upBodyPosition;
+            upBodyBone.transform.localRotation = upBodyRotation;
+            Debug.Log("UpBody reset to default position and rotation.");
         }
+        else
+        {
+            Debug.LogWarning("UpBody bone not found!");
+        }
+    }
 
-        // Terapkan kembali ke animator
-        overrideController.ApplyOverrides(overrides);
-        animator.runtimeAnimatorController = overrideController;
+    public void SetBlush(bool active)
+    {
+        var cheek = transform.Find("M_Cheek");
+        if (cheek)
+        {
+            cheek.gameObject.SetActive(active);
+        }
+    }
 
-        // Putar animasinya
-        animator.Play(newClip.name);
+    public void ToggleBlush()
+    {
+        var cheek = transform.Find("M_Cheek");
+        if (cheek)
+        {
+            cheek.gameObject.SetActive(!cheek.gameObject.activeSelf);
+        }
     }
 }
 
-public class AnimationLoader : MonoBehaviour
-{
-    public Animator targetAnimator;
-
-    public void ApplyAnimationFromBundle(AnimationClip bundleClip, string targetStateName)
-    {
-        // 1. Ambil controller template yang sedang terpasang di Animator
-        RuntimeAnimatorController baseController = Resources.Load<RuntimeAnimatorController>("Controller");//targetAnimator.runtimeAnimatorController;
-
-        if (baseController == null)
-        {
-            Debug.LogError("Animator tidak memiliki controller dasar!");
-            return;
-        }
-
-        // 2. Buat Override Controller berdasarkan template tersebut
-        // Ini akan mencegah error "no AnimatorController to override"
-        AnimatorOverrideController overrideController = new AnimatorOverrideController(baseController);
-
-        // 3. Tentukan clip mana yang ingin diganti. 
-        // Dalam kasus gambar kamu, targetStateName bisa berupa "motion_1", "motion_2", dst.
-        overrideController[targetStateName] = bundleClip;
-
-        // 4. Pasang override controller ke animator
-        targetAnimator.runtimeAnimatorController = overrideController;
-
-        // 5. Mainkan animasinya
-        targetAnimator.Play(targetStateName, 0, 0f);
-    }
-}

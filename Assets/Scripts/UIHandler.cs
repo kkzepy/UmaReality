@@ -1,12 +1,15 @@
 using UnityEngine;
 using TMPro;
 using System;
+using Gallop;
 
 public class UIHandler : MonoBehaviour
 {
     public TMP_InputField charaId;
     public TMP_InputField costumeIdField;
+    public TMP_InputField headIdField;
     int costumeId = 0;
+    int headId = 0;
 
     public void OnButtonClick()
     {
@@ -18,7 +21,15 @@ public class UIHandler : MonoBehaviour
         {
             costumeId = 0;
         }
-        Debug.Log($"{costumeIdField.text} : {costumeId}");
+
+        if (!string.IsNullOrEmpty(headIdField.text))
+        {
+            headId = Convert.ToInt32(headIdField.text);
+        }
+        else
+        {
+            headId = 0;
+        }
 
         CharaIdFieldOnEndEdit();
     }
@@ -37,27 +48,28 @@ public class UIHandler : MonoBehaviour
 
             //costumeId = 0;
 
-            //var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
-            var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, 0);
+            var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
+            var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, headId);
             var tailLogicalPath = UmaDatabase.QueryTailPath(chara.TailModelId);
 
-            //UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
+            UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
             UmaAssetManager.PreLoadPrerequistes(headLogicalPath);
             UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
 
-            //UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+            UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
             UmaAssetManager.LoadPrerequistes(headLogicalPath);
             UmaAssetManager.LoadPrerequistes(tailLogicalPath);
 
 
-            var bodyInstance = UmaAssembler.CreateGenericBody(2, 0, 0, 0, 0, 0);//UmaAssembler.CreateBody(chara.Id, costumeId);
-            var headInstance = UmaAssembler.CreateHead(chara.Id, 0);
+            var bodyInstance = UmaAssembler.CreateBody(chara.Id, costumeId);
+            var headInstance = UmaAssembler.CreateHead(chara.Id, headId);
             var tailInstance = UmaAssembler.CreateTail(chara.TailModelId);
 
             UmaAssembler.ApplyTailTexture(tailInstance, chara.Id, chara.TailModelId);
 
             Main.uma = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
-            Main.uma.AddComponent<UmaCharacter>();
+            Main.uma.AddComponent<UmaCharacter>().SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
+            //Main.uma.AddComponent<AnimationLoader>();
 
             Debug.Log($"Loaded char: {chara.Id}");
 
