@@ -3,18 +3,85 @@ using System.Data;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using Unity.VisualScripting.TextureAssets;
+using UnityEditor.Build.Content;
 using UnityEngine;
 
 public class UmaAssembler : MonoBehaviour
 {
     public static GameObject CreateBody(int charaId, int costumeId)
     {
-        var bodyLogicalPath = UmaAssetManager.QueryBodyPath(charaId, costumeId);
-        var bodyPath = UmaAssetManager.ResolvePath(bodyLogicalPath);
+        var bodyLogicalPath = UmaDatabase.QueryBodyPath(charaId, costumeId);
+        var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
 
-        using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabaseController.MetaData[bodyLogicalPath].FKey))
+        using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey))
         {
-            var bundle = AssetBundle.LoadFromStream(stream);
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+            if (UmaAssetManager.loadedAssets.ContainsKey(bodyLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
+            }
+            else
+            {
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
+            }
+
+            var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+
+            body = Instantiate(body);
+
+            // Set shader
+            foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
+            {
+                foreach (Material m in r.sharedMaterials)
+                {
+                    if (m == null) continue;
+                    //BodyAlapha's shader need to change manually.
+                    if (m.name.Contains("bdy") && m.name.Contains("Alpha"))
+                    {
+                        m.shader = UmaAssetManager.BodyAlphaShader;
+                    }
+                }
+            }
+
+            return body;
+        }
+    }
+
+    public static GameObject CreateGenericBody(int costumeId, int bodyTypeSub, int bodySetting, int height, int shape, int bust, bool loadPrerequisites = true)
+    {
+        string _costumeId = costumeId.ToString();
+
+        if (_costumeId.Length < 4)
+        {
+            _costumeId = new string('0', 4 - _costumeId.Length) + _costumeId;
+        }
+
+        var bodyLogicalPath = UmaDatabase.BodyPath + $"bdy{_costumeId}_00/pfb_bdy{_costumeId}_0{bodyTypeSub}_0{bodySetting}_{height}_{shape}_{bust}";
+        var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
+
+        if (loadPrerequisites)
+        {
+            UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
+            UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+        }
+
+        using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey))
+        {
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+            if (UmaAssetManager.loadedAssets.ContainsKey(bodyLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
+            }
+            else
+            {
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
+            }
+
             var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
             body = Instantiate(body);
@@ -39,12 +106,23 @@ public class UmaAssembler : MonoBehaviour
 
     public static GameObject CreateHead(int charaId, int headId)
     {
-        var headLogicalPath = UmaAssetManager.QueryHeadPath(charaId, headId);
-        var headPath = UmaAssetManager.ResolvePath(headLogicalPath);
+        var headLogicalPath = UmaDatabase.QueryHeadPath(charaId, headId);
+        var headPath = UmaDatabase.ResolvePath(headLogicalPath);
 
-        using (var stream = new UmaAssetBundleStream(headPath, UmaDatabaseController.MetaData[headLogicalPath].FKey))
+        using (var stream = new UmaAssetBundleStream(headPath, UmaDatabase.MetaData[headLogicalPath].FKey))
         {
-            var bundle = AssetBundle.LoadFromStream(stream);
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+            if (UmaAssetManager.loadedAssets.ContainsKey(headLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[headLogicalPath];
+            }
+            else
+            {
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[headLogicalPath] = bundle;
+            }
+
             var head = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
             // Disable cheek temporarily, used for blush purpose
@@ -57,9 +135,10 @@ public class UmaAssembler : MonoBehaviour
             foreach (Renderer r in head.GetComponentsInChildren<Renderer>())
             {
 
-
                 foreach (Material m in r.sharedMaterials)
                 {
+                    if (m == null) continue;
+
                     if (r.name.Contains("Hair") && r.name.Contains("Alpha"))
                     {
                         m.shader = UmaAssetManager.AlphaShader;
@@ -97,23 +176,31 @@ public class UmaAssembler : MonoBehaviour
                 }
             }
 
-            bundle.Unload(false);
             return Instantiate(head);
         }
     }
 
     public static GameObject CreateTail(int tailId)
     {
-        var tailLogicalPath = UmaAssetManager.QueryTailPath(tailId);
-        var tailPath = UmaAssetManager.ResolvePath(tailLogicalPath);
+        var tailLogicalPath = UmaDatabase.QueryTailPath(tailId);
+        var tailPath = UmaDatabase.ResolvePath(tailLogicalPath);
 
-        //UmaAssetManager.LoadPrerequistes(tailLogicalPath);
-
-        using (var stream = new UmaAssetBundleStream(tailPath, UmaDatabaseController.MetaData[tailLogicalPath].FKey))
+        using (var stream = new UmaAssetBundleStream(tailPath, UmaDatabase.MetaData[tailLogicalPath].FKey))
         {
-            var bundle = AssetBundle.LoadFromStream(stream);
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+            if (UmaAssetManager.loadedAssets.ContainsKey(tailLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[tailLogicalPath];
+            }
+            else
+            {
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[tailLogicalPath] = bundle;
+            }
+
             var tail = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
-            bundle.Unload(false);
+
             return Instantiate(tail);
         }
     }
@@ -158,7 +245,8 @@ public class UmaAssembler : MonoBehaviour
         {
             body.transform.GetChild(0).SetParent(rootObject.transform);
         }
-        body.SetActive(false); //for debugging
+        //body.SetActive(false); //for debugging
+        Destroy(body);
 
         var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
         foreach (SkinnedMeshRenderer headskin in headskins)
@@ -173,7 +261,8 @@ public class UmaAssembler : MonoBehaviour
             var child = head.transform.GetChild(0);
             child.SetParent(child.name.Contains("info") ? eyes.transform : rootObject.transform);
         }
-        head.SetActive(false); //for debugging
+        //head.SetActive(false); //for debugging
+        Destroy(head);
 
         if (tail)
         {
@@ -184,7 +273,8 @@ public class UmaAssembler : MonoBehaviour
                 var child = tail.transform.GetChild(0);
                 child.SetParent(rootObject.transform);
             }
-            tail.SetActive(false); //for debugging
+            //tail.SetActive(false); //for debugging
+            Destroy(tail);
         }
 
         emptyBones.ForEach(a => { if (a) Destroy(a.gameObject); });
@@ -216,9 +306,9 @@ public class UmaAssembler : MonoBehaviour
 
             //var mainTexLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_diff_wet";
             var mainTexLogicalPath = "3d/chara/body/bdy0001_00/textures/offline/tex_bdy0001_00_00_1_2_00_diff";
-            var toonMapLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_shad_c_wet";
-            var tripleMaskMapLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_base_wet";
-            var optionMaskMapLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_ctrl_wet";
+            var toonMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_shad_c_wet";
+            var tripleMaskMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_base_wet";
+            var optionMaskMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_ctrl_wet";
 
             mainTex = UmaAssetManager.LoadTexture2DAsset(mainTexLogicalPath);
             toonMap = UmaAssetManager.LoadTexture2DAsset(toonMapLogicalPath);
@@ -250,10 +340,10 @@ public class UmaAssembler : MonoBehaviour
             var tripleMaskMap = default(Texture2D);
             var optionMaskMap = default(Texture2D);
 
-            var mainTexLogicalPath = $"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_diff";
-            var toonMapLogicalPath = $"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_shad_c";
-            var tripleMaskMapLogicalPath = $"{UmaAssetManager.TailPath}tail0001_00/textures/tex_tail0001_00_0000_base";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_base_wet";
-            var optionMaskMapLogicalPath = $"{UmaAssetManager.TailPath}tail0001_00/textures/tex_tail0001_00_0000_ctrl";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_ctrl_wet";
+            var mainTexLogicalPath = $"{UmaDatabase.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_diff";
+            var toonMapLogicalPath = $"{UmaDatabase.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_shad_c";
+            var tripleMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_base";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_base_wet";
+            var optionMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_ctrl";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_ctrl_wet";
 
             mainTex = UmaAssetManager.LoadTexture2DAsset(mainTexLogicalPath);
             toonMap = UmaAssetManager.LoadTexture2DAsset(toonMapLogicalPath);
@@ -287,10 +377,10 @@ public class UmaAssembler : MonoBehaviour
         var hairToonMap = default(Texture2D);
         var eyeMaterial = default(Texture2D);
 
-        var faceMainTexLogicalPath = $"{UmaAssetManager.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_diff_wet";
-        var faceToonMapLogicalPath = $"{UmaAssetManager.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_shad_c_wet";
-        var hairMainTexLogicalPath = $"{UmaAssetManager.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_hair_diff_wet";
-        var hairToonMapLogicalPath = $"{UmaAssetManager.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_hair_shad_c_wet";
+        var faceMainTexLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_diff_wet";
+        var faceToonMapLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_shad_c_wet";
+        var hairMainTexLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_hair_diff_wet";
+        var hairToonMapLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_hair_shad_c_wet";
         var eyeMaterialLogicalPath = $"sourceresources/3d/chara/head/chr{characterId}_{_costumeId}/materials/mtl_chr{characterId}_{_costumeId}_eye";
 
         faceMainTex = UmaAssetManager.LoadTexture2DAsset(faceMainTexLogicalPath);
@@ -434,35 +524,75 @@ public class UmaAssembler : MonoBehaviour
 public class UmaCharacter : MonoBehaviour
 {
     //public Animation UmaAnimation = null;
-    public Animator UmaAnimator = null;
+    //public RuntimeAnimatorController baseController;
+
+    Animator animator;
+    //AnimatorOverrideController overrideController;
+
     private void Start()
     {
-        UmaAnimator = GetComponent<Animator>();
+        //baseController = Resources.Load<RuntimeAnimatorController>("Controller");
+        animator = gameObject.GetComponent<Animator>();
+
+        // Create the override instance BASED on the asset template
+        //if (baseController != null)
+        //{
+        //    overrideController = new AnimatorOverrideController(baseController);
+        //    animator.runtimeAnimatorController = overrideController;
+        //}
     }
 
-    public void PlayAnimation(AnimationClip newClip)
+    public void ApplyAnimation(AnimationClip newClip)
     {
-        // Ambil controller yang sekarang sedang dipakai
-        RuntimeAnimatorController currentController = UmaAnimator.runtimeAnimatorController;
+        // Buat Override Controller berdasarkan runtime animator controller yang ada
+        AnimatorOverrideController overrideController = new AnimatorOverrideController(animator.runtimeAnimatorController);
 
-        // Cek apakah controller saat ini sudah merupakan Override Controller
-        AnimatorOverrideController overrideController = currentController as AnimatorOverrideController;
+        // Ambil list clip yang ada di controller asal
+        var overrides = new List<KeyValuePair<AnimationClip, AnimationClip>>(overrideController.overridesCount);
+        overrideController.GetOverrides(overrides);
 
-        if (overrideController == null)
+        // Ganti clip lama (misal bernama "DefaultClip") dengan yang baru dari Asset Bundle
+        for (int i = 0; i < overrides.Count; ++i)
         {
-            // Jika belum, buat baru berdasarkan controller yang ada
-            overrideController = new AnimatorOverrideController(currentController);
-            UmaAnimator.runtimeAnimatorController = overrideController;
+            overrides[i] = new KeyValuePair<AnimationClip, AnimationClip>(overrides[i].Key, newClip);
         }
 
-        // Pastikan base controller-nya tidak null sebelum digunakan
-        if (overrideController.runtimeAnimatorController != null)
+        // Terapkan kembali ke animator
+        overrideController.ApplyOverrides(overrides);
+        animator.runtimeAnimatorController = overrideController;
+
+        // Putar animasinya
+        animator.Play(newClip.name);
+    }
+}
+
+public class AnimationLoader : MonoBehaviour
+{
+    public Animator targetAnimator;
+
+    public void ApplyAnimationFromBundle(AnimationClip bundleClip, string targetStateName)
+    {
+        // 1. Ambil controller template yang sedang terpasang di Animator
+        RuntimeAnimatorController baseController = Resources.Load<RuntimeAnimatorController>("Controller");//targetAnimator.runtimeAnimatorController;
+
+        if (baseController == null)
         {
-            overrideController["default"] = newClip;
+            Debug.LogError("Animator tidak memiliki controller dasar!");
+            return;
         }
-        else
-        {
-            Debug.LogError("Master Controller tidak ditemukan di Override Controller!");
-        }
+
+        // 2. Buat Override Controller berdasarkan template tersebut
+        // Ini akan mencegah error "no AnimatorController to override"
+        AnimatorOverrideController overrideController = new AnimatorOverrideController(baseController);
+
+        // 3. Tentukan clip mana yang ingin diganti. 
+        // Dalam kasus gambar kamu, targetStateName bisa berupa "motion_1", "motion_2", dst.
+        overrideController[targetStateName] = bundleClip;
+
+        // 4. Pasang override controller ke animator
+        targetAnimator.runtimeAnimatorController = overrideController;
+
+        // 5. Mainkan animasinya
+        targetAnimator.Play(targetStateName, 0, 0f);
     }
 }

@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEditor.PackageManager;
 using Debug = UnityEngine.Debug;
 
 
-public class UmaDatabaseController
+public class UmaDatabase
 {
     public static string persistentPath = "E:\\Uma\\Persistent\\";
     public static string masterDbPath = "E:\\Uma\\Persistent\\master\\master.mdb";
@@ -18,13 +20,22 @@ public class UmaDatabaseController
 
     public static SqliteConnection mdbConn;
 
-    public static List<DataRow> CharaData;
+    public static List<CharaEntry> CharaData = new List<CharaEntry>();
     public static List<DataRow> MobCharaData;
     public static List<DataRow> FaceTypeData;
     public static List<DataRow> DressData;
     public static List<DataRow> CharaNameData;
 
     public static Dictionary<string, UmaDatabaseEntry> MetaData;
+
+    public static string BodyPath = "3d/chara/body/";
+    public static string MiniBodyPath = "3d/chara/mini/body/";
+    public static string HeadPath = "3d/chara/head/";
+    public static string TailPath = "3d/chara/tail/";
+    public static string MotionPath = "3d/motion/";
+    public static string CharaPath = "3d/chara/";
+    public static string EffectPath = "3d/effect/";
+    public static string CostumePath = "outgame/dress/";
 
     public static void CreateConnection()
     {
@@ -44,7 +55,8 @@ public class UmaDatabaseController
         try
         {
             mdbConn.Open();
-            CharaData = ReadMaster(mdbConn, "SELECT * FROM chara_data C,(SELECT D.'index' charaid,D.'text' charaname FROM text_data D WHERE id like 6) T WHERE C.id like T.charaid");
+            ReadCharaData(mdbConn);//CharaData = ReadMaster(mdbConn, "SELECT * FROM chara_data C,(SELECT D.'index' charaid,D.'text' charaname FROM text_data D WHERE id like 6) T WHERE C.id like T.charaid            
+            
             MobCharaData = ReadMaster(mdbConn, "SELECT * FROM mob_data M,(SELECT D.'index' charaid,D.'text' charaname FROM text_data D WHERE id like 59) T WHERE M.mob_id like T.charaid");
             //FaceTypeData = ReadMaster(mdbConn, "SELECT * FROM face_type");
             DressData = ReadMaster(mdbConn, "SELECT * FROM dress_data C,(SELECT D.'index' dressid,D.'text' dressname FROM text_data D WHERE id like 14) T WHERE C.id like T.dressid");
@@ -95,7 +107,94 @@ public class UmaDatabaseController
         return dr;
     }
 
-    public static Dictionary<string, UmaDatabaseEntry> ReadMetaFromEncryptedDb(string dbPath, byte[] keyBytes, int cipherIndex = -1)
+    public static void ReadCharaData(SqliteConnection conn, string sql = "SELECT * FROM chara_data C,(SELECT D.'index' charaid,D.'text' charaname FROM text_data D WHERE id like 6) T WHERE C.id like T.charaid")
+    {
+        using (var sqlite_cmd = conn.CreateCommand())
+        {
+            sqlite_cmd.CommandText = sql;
+            using var sqlite_datareader = sqlite_cmd.ExecuteReader();
+            var result = new DataTable();
+            for (int i = 0; i < sqlite_datareader.FieldCount; i++)
+            {
+                result.Columns.Add(sqlite_datareader.GetName(i), sqlite_datareader.GetFieldType(i));
+            }
+            while (sqlite_datareader.Read())
+            {
+                CharaEntry entry = new CharaEntry();
+                for (int i = 0; i < sqlite_datareader.FieldCount; i++)
+                {
+                    //row[i] = sqlite_datareader[i];
+                    if (sqlite_datareader.GetName(i) == "id")
+                    {
+                        entry.Id = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "birth_year")
+                    {
+                        entry.BirthYear = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "birth_month")
+                    {
+                        entry.BirthMonth = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "birth_day")
+                    {
+                        entry.BirthDay = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "last_year")
+                    {
+                        entry.LastYear = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "sex")
+                    {
+                        entry.Sex = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "height")
+                    {
+                        entry.Height = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "bust")
+                    {
+                        entry.Bust = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "scale")
+                    {
+                        entry.Scale = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "skin")
+                    {
+                        entry.Skin = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "shape")
+                    {
+                        entry.Shape = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "socks")
+                    {
+                        entry.Socks = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+
+                    if (sqlite_datareader.GetName(i) == "tail_model_id")
+                    {
+                        entry.TailModelId = Convert.ToInt32(sqlite_datareader[i]);
+                    }
+                }
+                CharaData.Add(entry);
+            }
+        }
+    }
+
+    static Dictionary<string, UmaDatabaseEntry> ReadMetaFromEncryptedDb(string dbPath, byte[] keyBytes, int cipherIndex = -1)
     {
         var meta = new Dictionary<string, UmaDatabaseEntry>(StringComparer.Ordinal);
         IntPtr db = IntPtr.Zero;
@@ -198,10 +297,7 @@ public class UmaDatabaseController
 
         return meta;
     }
-
-    
-
-    public static byte[] GenFinalKey(byte[] key)
+    static byte[] GenFinalKey(byte[] key)
     {
         byte[] baseKey = Utility.HexStringToBytes(DBBaseKey);
         if (baseKey.Length < 13)
@@ -211,6 +307,54 @@ public class UmaDatabaseController
             key[i] = (byte)(key[i] ^ baseKey[i % 13]);
         }
         return key;
+    }
+
+
+    public static CharaEntry GetCharaEntry(int Id)
+    {
+        return CharaData.Where(x => x.Id == Id)?.FirstOrDefault();
+    }
+
+    public static string QueryBodyPath(int characterId, int costumeId)
+    {
+
+        string _costumeId = costumeId.ToString();
+
+        if (_costumeId.Length == 1)
+        {
+            _costumeId = "0" + _costumeId;
+        }
+
+        return $"{BodyPath}bdy{characterId}_{_costumeId}/pfb_bdy{characterId}_{_costumeId}";
+    }
+
+    public static string QueryHeadPath(int characterId, int headId)
+    {
+        string _headId = headId.ToString();
+
+        if (_headId.Length == 1)
+        {
+            _headId = "0" + _headId;
+        }
+
+        return $"{HeadPath}chr{characterId}_{_headId}/pfb_chr{characterId}_{_headId}";
+    }
+
+    public static string QueryTailPath(int tailId)
+    {
+        string _tailId = tailId.ToString();
+
+        if (_tailId.Length < 4)
+        {
+            _tailId = new string('0', 4 - _tailId.Length) + _tailId;
+        }
+
+        return $"{TailPath}tail{_tailId}_00/pfb_tail{_tailId}_00";
+    }
+
+    public static string ResolvePath(string logicalPath)
+    {
+        return MetaData[logicalPath]?.QueryPath();
     }
 
 }

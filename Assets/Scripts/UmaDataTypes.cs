@@ -53,16 +53,21 @@ public enum UmaFileType
 
 public class CharaEntry
 {
-    public string Name;
-    public string EnName;
-    public Sprite Icon;
     public int Id;
-    public string ThemeColor;
-    public bool IsMob;
-    public string GetName()
-    {
-        return string.IsNullOrEmpty(EnName) ? Name : EnName;
-    }
+
+    public int BirthYear;
+    public int BirthMonth;
+    public int BirthDay;
+    public int LastYear;
+    public int Sex;
+
+    public int Height;
+    public int Bust;
+    public int Scale;
+    public int Skin;
+    public int Shape;
+    public int Socks;
+    public int TailModelId;
 }
 public class UmaDatabaseEntry
 {
@@ -81,7 +86,7 @@ public class UmaDatabaseEntry
         {
             if (fKey == null && IsEncrypted)
             {
-                var baseKeys = Utility.HexStringToBytes(UmaDatabaseController.ABKey);
+                var baseKeys = Utility.HexStringToBytes(UmaDatabase.ABKey);
                 int baseLen = baseKeys.Length;
 
                 var keys = new byte[baseLen * 8];
@@ -109,7 +114,7 @@ public class UmaDatabaseEntry
 
     public string QueryPath()
     {
-        return Path.Combine(UmaDatabaseController.persistentPath.Replace("\\", "/"), $"dat/{Url.Substring(0, 2)}/{Url}");
+        return Path.Combine(UmaDatabase.persistentPath.Replace("\\", "/"), $"dat/{Url.Substring(0, 2)}/{Url}");
     }
 }
 
