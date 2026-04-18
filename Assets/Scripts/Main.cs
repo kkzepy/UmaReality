@@ -1,8 +1,13 @@
+using Gallop;
+using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using UnityEngine;
+using System.Runtime.Remoting.Messaging;
 using TMPro;
+using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 //using Gallop;
 
 public class Main : MonoBehaviour
@@ -38,13 +43,22 @@ public class Main : MonoBehaviour
     void Start()
     {
         var chara = UmaDatabase.GetCharaEntry(1100);
-        /*
-        int id = 1007;
+
+        //var head = UmaAssembler.CreateHead(1006, 0, true);
+
+        GameObject root = new GameObject();
+        root.name = "Uma";
+        var umachar = root.AddComponent<UmaCharacter>();
+
         int costumeId = 0;
-        
+        int headId = 0;
+        umachar.charaEntry = chara;
+        umachar.costumeId = costumeId;
+        umachar.headId = headId;
+        umachar.FaceOverrideController = Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller");
 
         var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
-        var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, 0);
+        var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, headId);
         var tailLogicalPath = UmaDatabase.QueryTailPath(chara.TailModelId);
 
         UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
@@ -55,23 +69,21 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadPrerequistes(headLogicalPath);
         UmaAssetManager.LoadPrerequistes(tailLogicalPath);
 
+        umachar.bodyInstance = UmaAssembler.CreateBody(chara.Id, 0, false, root);
+        umachar.headInstance = UmaAssembler.CreateHead(chara.Id, headId, false, root);
+        umachar.tailInstance = UmaAssembler.CreateTail(chara.TailModelId, false, root);
+        UmaAssembler.ApplyTailTexture(umachar.tailInstance, chara.Id);
 
-        var bodyInstance = UmaAssembler.CreateBody(id, costumeId);
-        var headInstance = UmaAssembler.CreateHead(id, 0);
-        var tailInstance = UmaAssembler.CreateTail(chara.TailModelId);
+        umachar.Initialize();
+        umachar.LoadPhysics();
+        umachar.SetupPhysics();
+        umachar.InitializeFaceMorph();
 
-        UmaAssembler.ApplyTailTexture(tailInstance, id, chara.TailModelId);
+        umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
+            
+        root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
 
-        uma = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
-        uma.AddComponent<UmaCharacter>();
-        //uma.AddComponent<AnimationLoader>();
-        */
-
-        /*
-        uma = UmaAssembler.CreateCharacter(chara);
-        var controller = uma.GetComponent<UmaCharacter>();
-        controller.LoadPhysics();
-        */  
+        uma = root;
 
         clip = UmaAssetManager.LoadAsset<AnimationClip>("3d/motion/event/body/chara/chr1001_00/anm_eve_chr1001_00_pdk01_s");
     }

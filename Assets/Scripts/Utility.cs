@@ -26,4 +26,19 @@ class Utility
         }
         return mergedDict;
     }
+
+    public static Dictionary<string, Transform> ConvertArrayToDictionary(Transform[] transformArray)
+    {
+        Dictionary<string, Transform> dict = new Dictionary<string, Transform>();
+
+        for (int i = 0; i < transformArray.Length; i++)
+        {
+            Transform transform = transformArray[i];
+            if (!dict.ContainsKey(transform.name))
+            {
+                dict.Add(transform.name, transform);
+            }
+        }
+        return dict;
+    }
 }

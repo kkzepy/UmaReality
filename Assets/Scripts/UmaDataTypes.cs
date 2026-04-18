@@ -139,3 +139,20 @@ public class MaterialData
     public string Normal;
     public string Mask;
 }
+
+[System.Serializable]
+public class EmotionKey
+{
+    public FacialMorph morph;
+    public float weight;
+}
+
+[System.Serializable]
+public class FaceTypeData
+{
+    public string label, eyebrow_l, eyebrow_r, eye_l, eye_r, mouth, inverce_face_type;
+    public int mouth_shape_type, set_face_group;
+    public FaceEmotionKeyTarget target;
+    public List<EmotionKey> emotionKeys;
+    public float weight;
+}

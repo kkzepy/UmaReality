@@ -1,7 +1,11 @@
-using UnityEngine;
-using TMPro;
-using System;
 using Gallop;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using TMPro;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 public class UIHandler : MonoBehaviour
 {
@@ -11,6 +15,17 @@ public class UIHandler : MonoBehaviour
     public TMP_Text progressBar;
     int costumeId = 0;
     int headId = 0;
+    int morphIndex = 0;
+    float morphWeight = 0f;
+
+    UmaCharacter controller;
+    List<FacialMorph> morphs;
+
+    private void Start()
+    {
+        controller = Main.uma.GetComponent<UmaCharacter>();
+        morphs = controller.FaceDrivenKeyTarget.AllMorphs;
+    }
 
     public void OnButtonClick()
     {
@@ -45,10 +60,16 @@ public class UIHandler : MonoBehaviour
 
             var chara = UmaDatabase.GetCharaEntry(Convert.ToInt32(charaId.text));
 
-            if (chara == null) { return; }
+            GameObject root = new GameObject();
+            root.name = $"uma_{charaId.text}";
+            var umachar = root.AddComponent<UmaCharacter>();
 
-            /*
-            //costumeId = 0;
+            //int costumeId = 0;
+            //int headId = 0;
+            umachar.charaEntry = chara;
+            umachar.costumeId = costumeId;
+            umachar.headId = headId;
+            umachar.FaceOverrideController = Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller");
 
             var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
             var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, headId);
@@ -62,27 +83,62 @@ public class UIHandler : MonoBehaviour
             UmaAssetManager.LoadPrerequistes(headLogicalPath);
             UmaAssetManager.LoadPrerequistes(tailLogicalPath);
 
+            umachar.bodyInstance = UmaAssembler.CreateBody(chara.Id, 0, false, root);
+            umachar.headInstance = UmaAssembler.CreateHead(chara.Id, headId, false, root);
+            umachar.tailInstance = UmaAssembler.CreateTail(chara.TailModelId, false, root);
+            UmaAssembler.ApplyTailTexture(umachar.tailInstance, chara.Id);
 
-            var bodyInstance = UmaAssembler.CreateBody(chara.Id, costumeId);
-            var headInstance = UmaAssembler.CreateHead(chara.Id, headId);
-            var tailInstance = UmaAssembler.CreateTail(chara.TailModelId);
+            umachar.Initialize();
+            umachar.LoadPhysics();
+            umachar.SetupPhysics();
+            umachar.InitializeFaceMorph();
 
-            UmaAssembler.ApplyTailTexture(tailInstance, chara.Id, chara.TailModelId);
+            umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
 
-            Main.uma = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
-            Main.uma.AddComponent<UmaCharacter>().SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
-            //Main.uma.AddComponent<AnimationLoader>();
+            root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
 
-            Debug.Log($"Loaded char: {chara.Id}");
-            */
+            Main.uma = root;
 
-            Main.uma = UmaAssembler.CreateCharacter(chara, costumeId, headId);
-            var controller = Main.uma.GetComponent<UmaCharacter>();
-            controller.LoadPhysics();
-
-            return;
+            controller = umachar;
+            morphs = controller.FaceDrivenKeyTarget.AllMorphs;
         }
 
         Debug.LogWarning($"No input!");
+    }
+
+    private void Update()
+    {
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            controller.FaceDrivenKeyTarget.ChangeMorphWeight(morphs[morphIndex], 0); //resets
+            morphIndex++;
+            if (morphIndex+1 > morphs.Count) { morphIndex--; return; }
+            controller.FaceDrivenKeyTarget.ChangeMorphWeight(morphs[morphIndex], morphWeight);
+            Debug.Log($"Morph index: {morphIndex} | {morphs[morphIndex].name} | {morphs[morphIndex].tag}");
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            controller.FaceDrivenKeyTarget.ChangeMorphWeight(morphs[morphIndex], 0); //resets
+            morphIndex--;
+            if (morphIndex == -1) { morphIndex++; return; }
+            controller.FaceDrivenKeyTarget.ChangeMorphWeight(morphs[morphIndex], morphWeight);
+            Debug.Log($"Morph index: {morphIndex} | {morphs[morphIndex].name} | {morphs[morphIndex].tag}");
+        }
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            morphWeight += 0.1f;
+            controller.FaceDrivenKeyTarget.ChangeMorphWeight(morphs[morphIndex], morphWeight);
+            Debug.Log($"Morph weight: {morphWeight}");
+        }
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            morphWeight -= 0.1f;
+            controller.FaceDrivenKeyTarget.ChangeMorphWeight(morphs[morphIndex], morphWeight);
+            Debug.Log($"Morph weight: {morphWeight}");
+        }
     }
 }

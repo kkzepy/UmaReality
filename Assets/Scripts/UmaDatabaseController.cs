@@ -22,7 +22,7 @@ public class UmaDatabase
 
     public static List<CharaEntry> CharaData = new List<CharaEntry>();
     public static List<DataRow> MobCharaData;
-    public static List<DataRow> FaceTypeData;
+    public static List<FaceTypeData> FaceTypeData;
     public static List<DataRow> DressData;
     public static List<DataRow> CharaNameData;
 
@@ -58,7 +58,7 @@ public class UmaDatabase
             ReadCharaData(mdbConn);//CharaData = ReadMaster(mdbConn, "SELECT * FROM chara_data C,(SELECT D.'index' charaid,D.'text' charaname FROM text_data D WHERE id like 6) T WHERE C.id like T.charaid            
             
             MobCharaData = ReadMaster(mdbConn, "SELECT * FROM mob_data M,(SELECT D.'index' charaid,D.'text' charaname FROM text_data D WHERE id like 59) T WHERE M.mob_id like T.charaid");
-            //FaceTypeData = ReadMaster(mdbConn, "SELECT * FROM face_type");
+            FaceTypeData = ReadFaceTypeData(mdbConn);
             DressData = ReadMaster(mdbConn, "SELECT * FROM dress_data C,(SELECT D.'index' dressid,D.'text' dressname FROM text_data D WHERE id like 14) T WHERE C.id like T.dressid");
             CharaNameData = ReadMaster(mdbConn, "SELECT * FROM text_data WHERE id = 372");
 
@@ -194,6 +194,30 @@ public class UmaDatabase
         }
     }
 
+    public static List<FaceTypeData> ReadFaceTypeData(SqliteConnection conn)
+    {
+        List<FaceTypeData> data = new List<FaceTypeData>();
+        SqliteCommand sqlite_cmd = conn.CreateCommand();
+        sqlite_cmd.CommandText = "SELECT * FROM face_type_data";
+        SqliteDataReader sqlite_datareader = sqlite_cmd.ExecuteReader();
+        while (sqlite_datareader.Read())
+        {
+            FaceTypeData entry = new FaceTypeData()
+            {
+                label = sqlite_datareader.GetString(0),
+                eyebrow_l = sqlite_datareader.GetString(1),
+                eyebrow_r = sqlite_datareader.GetString(2),
+                eye_l = sqlite_datareader.GetString(3),
+                eye_r = sqlite_datareader.GetString(4),
+                mouth = sqlite_datareader.GetString(5),
+                mouth_shape_type = sqlite_datareader.GetInt32(6),
+                inverce_face_type = sqlite_datareader.GetString(7),
+                set_face_group = sqlite_datareader.GetInt32(8),
+            };
+            data.Add(entry);
+        }
+        return data;
+    }
     static Dictionary<string, UmaDatabaseEntry> ReadMetaFromEncryptedDb(string dbPath, byte[] keyBytes, int cipherIndex = -1)
     {
         var meta = new Dictionary<string, UmaDatabaseEntry>(StringComparer.Ordinal);

@@ -308,6 +308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbf09258dbc225d4eb8b4fde6e56d0ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  progressBar: {fileID: 1609754169}
 --- !u!4 &229637690
 Transform:
   m_ObjectHideFlags: 0
@@ -392,7 +393,7 @@ MonoBehaviour:
   charaId: {fileID: 1205204939}
   costumeIdField: {fileID: 411926508}
   headIdField: {fileID: 967648275}
-  progressBar: {fileID: 0}
+  progressBar: {fileID: 1609754169}
 --- !u!1 &236784998
 GameObject:
   m_ObjectHideFlags: 0

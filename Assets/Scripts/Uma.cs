@@ -1,16 +1,14 @@
-﻿using Codice.CM.Common.Merge;
-using Gallop;
+﻿using Gallop;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using UnityEngine;
-using static UnityEngine.Rendering.VirtualTexturing.Debugging;
 
 public class UmaAssembler : MonoBehaviour
 {
-    public static GameObject CreateBody(int charaId, int costumeId, bool loadPrerequisites = true)
+    public static GameObject CreateBody(int charaId, int costumeId, bool loadPrerequisites = true, GameObject parent = null)
     {
         var bodyLogicalPath = UmaDatabase.QueryBodyPath(charaId, costumeId);
         var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
@@ -31,7 +29,14 @@ public class UmaAssembler : MonoBehaviour
 
             var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
-            body = Instantiate(body);
+            if (parent)
+            {
+                body = Instantiate(body, parent.transform);
+            }
+            else
+            {
+                body = Instantiate(body);
+            }
 
             // Set shader
             foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
@@ -105,7 +110,7 @@ public class UmaAssembler : MonoBehaviour
         }
     }
 
-    public static GameObject CreateHead(int charaId, int headId, bool loadPrerequisites = true)
+    public static GameObject CreateHead(int charaId, int headId, bool loadPrerequisites = true, GameObject parent = null)
     {
         var headLogicalPath = UmaDatabase.QueryHeadPath(charaId, headId);
         var headPath = UmaDatabase.ResolvePath(headLogicalPath);
@@ -177,11 +182,19 @@ public class UmaAssembler : MonoBehaviour
                 }
             }
 
-            return Instantiate(head);
+            Debug.Log("created head");
+            if (parent)
+            {
+                return Instantiate(head, parent.transform);
+            }
+            else
+            {
+                return Instantiate(head);
+            }
         }
     }
 
-    public static GameObject CreateTail(int tailId, bool loadPrerequisites = true)
+    public static GameObject CreateTail(int tailId, bool loadPrerequisites = true, GameObject parent = null)
     {
         var tailLogicalPath = UmaDatabase.QueryTailPath(tailId);
         var tailPath = UmaDatabase.ResolvePath(tailLogicalPath);
@@ -202,7 +215,14 @@ public class UmaAssembler : MonoBehaviour
 
             var tail = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
-            return Instantiate(tail);
+            if (parent)
+            {
+                return Instantiate(tail, parent.transform);
+            }
+            else
+            {
+                return Instantiate(tail);
+            }
         }
 
     }
@@ -288,6 +308,60 @@ public class UmaAssembler : MonoBehaviour
 
     }
 
+    public static GameObject AssembleToExistingRoot(GameObject body, GameObject head, GameObject tail, GameObject rootObject, string name = null)
+    {
+        //GameObject rootObject = root;//string.IsNullOrEmpty(name) ? new GameObject("uma_character") : new GameObject(name);
+
+        SkinnedMeshRenderer bodySkinnedMeshRenderer = body.GetComponentInChildren<SkinnedMeshRenderer>();
+        var bodyBones = bodySkinnedMeshRenderer.bones.ToDictionary(bone => bone.name, bone => bone.transform);
+        List<Transform> emptyBones = new List<Transform>();
+        emptyBones.Add(body.transform.Find("Position/Hip/Tail_Ctrl"));
+
+        while (body.transform.childCount > 0)
+        {
+            body.transform.GetChild(0).SetParent(rootObject.transform);
+        }
+        //body.SetActive(false); //for debugging
+        //Destroy(body);
+
+        var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        foreach (SkinnedMeshRenderer headskin in headskins)
+        {
+            MergeBone(headskin, bodyBones, ref emptyBones);
+        }
+
+        var eyes = new GameObject("Eyes");
+        eyes.transform.SetParent(rootObject.transform);
+        while (head.transform.childCount > 0)
+        {
+            var child = head.transform.GetChild(0);
+            child.SetParent(child.name.Contains("info") ? eyes.transform : rootObject.transform);
+        }
+        //head.SetActive(false); //for debugging
+        //Destroy(head);
+
+        if (tail)
+        {
+            var tailskin = tail.GetComponentInChildren<SkinnedMeshRenderer>();
+            MergeBone(tailskin, bodyBones, ref emptyBones);
+            while (tail.transform.childCount > 0)
+            {
+                var child = tail.transform.GetChild(0);
+                child.SetParent(rootObject.transform);
+            }
+            //tail.SetActive(false); //for debugging
+            Destroy(tail);
+        }
+
+        emptyBones.ForEach(a => { if (a) Destroy(a.gameObject); });
+
+        var animator = rootObject.AddComponent<Animator>();
+        animator.avatar = AvatarBuilder.BuildGenericAvatar(rootObject, rootObject.name);
+
+        return rootObject;
+
+    }
+
     public static GameObject CreateCharacter(CharaEntry entry, int costumeId = 0, int headId = 0, bool loadPrerequisites = true, bool addComponents = true)
     {
         if (loadPrerequisites)
@@ -316,11 +390,14 @@ public class UmaAssembler : MonoBehaviour
         if (addComponents)
         {
             var umaCharacter = chara.AddComponent<UmaCharacter>();
-            umaCharacter.SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
+            //umaCharacter.SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
+            umaCharacter.bodyInstance = bodyInstance;
+            umaCharacter.headInstance = headInstance;
             umaCharacter.charaEntry = entry;
             umaCharacter.costumeId = costumeId;
             umaCharacter.headId = headId;
             umaCharacter.Initialize();
+            //umaCharacter.InitializeFaceMorph();
             //chara.AddComponent<AnimationLoader>();
         }
 
@@ -571,18 +648,54 @@ public class UmaCharacter : MonoBehaviour
     string _headId;
     string _costumeId;
     string _tailId;
-    AssetHolder assetHolder;
+
+    AssetHolder bodyAssetHolder;
+    AssetHolder headAssetHolder;
+
+    public GameObject headInstance;
+    public GameObject bodyInstance;
+    public GameObject tailInstance;
 
     GameObject upBodyBone;
     Vector3 upBodyPosition;
     Quaternion upBodyRotation;
 
-    Animator UmaAnimator;
-    AnimatorOverrideController UmaControllerOverride;
+    [Header("Animator")]
+    public Animator UmaAnimator;
+    public AnimatorOverrideController OverrideController;
+    public Animator UmaFaceAnimator;
+    public AnimatorOverrideController FaceOverrideController;
+    public bool isAnimatorControl;
 
+    [Header("Physics")]
+    public bool EnablePhysics = true;
+    public List<CySpringDataContainer> cySpringDataContainers;
     public GameObject PhysicsContainer;
-    List<CySpringDataContainer> cySpringDataContainers;
+    public float BodyScale = 1;
 
+    public Texture2D CheekTex_0;
+    public Texture2D CheekTex_1;
+    public Texture2D CheekTex_2;
+
+    public List<GameObject> LeftMangaObject = new List<GameObject>();
+    public List<GameObject> RightMangaObject = new List<GameObject>();
+
+    [Header("Tear")]
+    public GameObject StaticTear_L;
+    public GameObject StaticTear_R;
+    public GameObject TearPrefab_0;
+    public GameObject TearPrefab_1;
+    public List<TearController> TearControllers = new List<TearController>();
+
+    [Header("Face")]
+    public FaceDrivenKeyTarget FaceDrivenKeyTarget;
+    public FaceEmotionKeyTarget FaceEmotionKeyTarget;
+    public FaceOverrideData FaceOverrideData;
+    public GameObject HeadBone;
+    public Transform TrackTarget;
+    public float EyeHeight;
+    public bool EnableEyeTracking = true;
+    public Material FaceMaterial;
     public void Initialize()
     {
         _costumeId = costumeId.ToString();
@@ -606,48 +719,122 @@ public class UmaCharacter : MonoBehaviour
             _tailId = new string('0', 4 - _tailId.Length) + _tailId;
         }
 
-        if (assetHolder == null)
-        {
+        bodyAssetHolder = bodyInstance.GetComponent<AssetHolder>();
 
-            // Try to get AssetHolder component from the GameObject
-            assetHolder = GetComponent<AssetHolder>();
-
-            if (assetHolder == null)
-            {
-                Debug.LogWarning("AssetHolder component not found on UmaCharacter!");
-            }
-            else
-            {
-                upBodyBone = assetHolder._assetTable["upbody_ctrl"] as GameObject;
-                upBodyPosition = upBodyBone.transform.localPosition;
-                upBodyRotation = upBodyBone.transform.localRotation;
-            }
-        }
-        else
-        {
-            upBodyBone = assetHolder._assetTable["upbody_ctrl"] as GameObject;
-            upBodyPosition = upBodyBone.transform.localPosition;
-            upBodyRotation = upBodyBone.transform.localRotation;
-        }
-        
+        upBodyBone = bodyAssetHolder._assetTable["upbody_ctrl"] as GameObject;
+        upBodyPosition = upBodyBone.transform.localPosition;
+        upBodyRotation = upBodyBone.transform.localRotation;
 
         UmaAnimator = GetComponent<Animator>();
-        UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(gameObject, gameObject.name);
-        UmaControllerOverride = new AnimatorOverrideController(UmaAnimator.runtimeAnimatorController);
+        if (UmaAnimator)
+        {
+            UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(gameObject, gameObject.name);
+            OverrideController = new AnimatorOverrideController(UmaAnimator.runtimeAnimatorController);
+        }
     
         PhysicsContainer = new GameObject("PhysicsContainer");
         PhysicsContainer.transform.SetParent(transform);
     }
 
-    public void SetAssetHolder(AssetHolder assetHolder)
+    public void InitializeFaceMorph()
     {
-        this.assetHolder = assetHolder;
+        GameObject locator;
+        locator = Instantiate(UmaAssetManager.LoadAsset<GameObject>("3d/animator/drivenkeylocator", true, true), transform);
+        locator.name = "DrivenKeyLocator";
 
-        upBodyBone = assetHolder._assetTable["upbody_ctrl"] as GameObject;
-        upBodyPosition = upBodyBone.transform.localPosition;
-        upBodyRotation = upBodyBone.transform.localRotation;
+        GameObject headBone = (GameObject)headInstance.GetComponent<AssetHolder>()._assetTable["head"];
+        var eyeLocator_L = headBone.transform.Find("Eye_target_locator_L");
+        var eyeLocator_R = headBone.transform.Find("Eye_target_locator_R");
+
+        foreach (var manga in new List<string> {
+            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_000",
+            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_001",
+            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_002",
+            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_003"
+        })
+        {
+            GameObject obj = UmaAssetManager.LoadAsset<GameObject>(manga, true, true);
+            obj.SetActive(false);
+
+            GameObject leftObj = Instantiate(obj, eyeLocator_L.transform);
+            new List<Renderer>(leftObj.GetComponentsInChildren<Renderer>(true)).ForEach(a => {
+                a.material.SetFloat("_StencilMask", charaEntry.Id);
+                a.material.SetFloat("_StencilComp", (float)UnityEngine.Rendering.CompareFunction.Equal);
+                a.material.SetFloat("_StencilOp", (float)UnityEngine.Rendering.StencilOp.Keep);
+                a.material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+            });
+            LeftMangaObject.Add(leftObj);
+
+            GameObject rightObj = Instantiate(obj, eyeLocator_R.transform);
+            if (rightObj.TryGetComponent<AssetHolder>(out var holder))
+            {
+                if (holder._assetTableValue["invert"] > 0)
+                    rightObj.transform.localScale = new Vector3(-1, 1, 1);
+            }
+            new List<Renderer>(rightObj.GetComponentsInChildren<Renderer>(true)).ForEach(a => {
+                a.material.SetFloat("_StencilMask", charaEntry.Id);
+                a.material.SetFloat("_StencilComp", (float)UnityEngine.Rendering.CompareFunction.Equal);
+                a.material.SetFloat("_StencilOp", (float)UnityEngine.Rendering.StencilOp.Keep);
+                a.material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+            });
+            RightMangaObject.Add(rightObj);
+        }
+
+        foreach (var tear in new List<string> {
+            "3d/chara/common/tear/tear000/pfb_chr_tear000",
+            "3d/chara/common/tear/tear001/pfb_chr_tear001"
+        })
+        {
+            LoadTear(tear);
+        }
+
+        if (TearPrefab_0 && TearPrefab_1)
+        {
+            var p0 = TearPrefab_0;
+            var p1 = TearPrefab_1;
+            var t = headBone.transform;
+            TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 1));
+            TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 1, 1));
+            TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 0));
+            TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 1, 0));
+        }
+
+        var firsehead = headInstance;
+        var faceDriven = Instantiate(firsehead.GetComponent<AssetHolder>()._assetTable["facial_target"]) as FaceDrivenKeyTarget;
+
+        //Need Instantiate or not?
+        var earDriven = firsehead.GetComponent<AssetHolder>()._assetTable["ear_target"] as DrivenKeyTarget;
+        var faceOverride = firsehead.GetComponent<AssetHolder>()._assetTable["face_override"] as FaceOverrideData;
+
+        //faceDriven.Container = this;
+        faceDriven._earTarget = earDriven._targetFaces;
+        FaceDrivenKeyTarget = faceDriven;
+        FaceDrivenKeyTarget.Container = this;
+        FaceOverrideData = faceOverride;
+        //faceOverride?.SetEnable(UI.ModelSettings.EnableFaceOverride);
+        faceDriven.DrivenKeyLocator = locator.transform;
+        faceDriven.Initialize(Utility.ConvertArrayToDictionary(firsehead.GetComponentsInChildren<Transform>()));
+
+        var emotionDriven = ScriptableObject.CreateInstance<FaceEmotionKeyTarget>();
+        emotionDriven.name = $"char{charaEntry.Id}_{_costumeId}_emotion_target";
+        FaceEmotionKeyTarget = emotionDriven;
+        emotionDriven.FaceDrivenKeyTarget = faceDriven;
+        emotionDriven.FaceEmotionKey = UmaDatabase.FaceTypeData;
+        emotionDriven.Initialize();
     }
 
+    void LoadTear(string entry)
+    {
+        GameObject go = UmaAssetManager.LoadAsset<GameObject>(entry);
+        if (go.name.EndsWith("000"))
+        {
+            TearPrefab_0 = go;
+        }
+        else if (go.name.EndsWith("001"))
+        {
+            TearPrefab_1 = go;
+        }
+    }
     public void UpBodyReset()
     {
         if (upBodyBone)
@@ -687,8 +874,10 @@ public class UmaCharacter : MonoBehaviour
         Instantiate(UmaAssetManager.LoadAsset<GameObject>(bustClothesLogicalPath, false), PhysicsContainer.transform);
         Instantiate(UmaAssetManager.LoadAsset<GameObject>(tailClothesLogicalPath, false), PhysicsContainer.transform);
         Instantiate(UmaAssetManager.LoadAsset<GameObject>(headClothesLogicalPath, false), PhysicsContainer.transform);
+    }
 
-
+    public void SetupPhysics()
+    {
         // Initial physics setup
         cySpringDataContainers = new List<CySpringDataContainer>(PhysicsContainer.GetComponentsInChildren<CySpringDataContainer>());
         var bones = new Dictionary<string, Transform>();
@@ -708,6 +897,12 @@ public class UmaCharacter : MonoBehaviour
         for (int i = 0; i < cySpringDataContainers.Count; i++)
         {
             cySpringDataContainers[i].InitializePhysics(bones, colliders);
+        }
+
+        EnablePhysics = true;
+        foreach (CySpringDataContainer cySpring in cySpringDataContainers)
+        {
+            cySpring.EnablePhysics(true );
         }
     }
 

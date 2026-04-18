@@ -61,7 +61,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringParamDataChildElement.cs" />
+    <Compile Include="Assets\Scripts\Easing.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringCollisionComponent.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\FaceEmotionKeyTarget.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBoneCollider.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringParamDataAsset.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothWorking.cs" />
@@ -70,6 +72,7 @@
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\StageUtil.cs" />
     <Compile Include="Assets\Scripts\UmaDataTypes.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\ClothParameter.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DrivenKeyComponent.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothCollision.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringParamDataElement.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\LiveTimelineCamera.cs" />
@@ -85,9 +88,14 @@
     <Compile Include="Assets\Scripts\umamusume\Gallop\RenderPipeline\Enums.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothParameter.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringNative.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DrivenKeyTarget.cs" />
     <Compile Include="Assets\Scripts\UmaAssetManager.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\FaceOverrideData.cs" />
     <Compile Include="Assets\Scripts\Utility.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\Live\Cutt\LiveTimelineDataList\LiveTimelineFacialData.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Demo\DynamicBoneDemo1.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\FaceDrivenKeyTarget.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\TearController.cs" />
     <Compile Include="Assets\Scripts\RotationConvert.cs" />
     <Compile Include="Assets\Scripts\Sqlite3MC.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringRootBone.cs" />
@@ -98,7 +106,7 @@
     <Compile Include="Assets\Scripts\umamusume\Gallop\EarType.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBonePlaneCollider.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBone.cs" />
-    <Compile Include="Assets\Scripts\umamusume\Gallop\CharaShaderEffectData.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\FacialMorph.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringPartsParamDataElement.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringCollisionData.cs" />
     <Compile Include="Assets\Scripts\umamusume\GallopExtras.cs" />

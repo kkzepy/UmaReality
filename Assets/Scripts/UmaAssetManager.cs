@@ -173,6 +173,49 @@ public class UmaAssetManager : MonoBehaviour
             return asset;
         }
     }
+
+    public static T LoadSpecificAsset<T>(string logicalPath, string assetName, bool loadPrerequisites = true, bool keepInMemory = false) where T : UnityEngine.Object
+    {
+        string path = UmaDatabase.ResolvePath(logicalPath);
+        var fKey = UmaDatabase.MetaData[logicalPath].FKey;
+
+        if (loadPrerequisites && !string.IsNullOrEmpty(UmaDatabase.MetaData[logicalPath].Prerequisites))
+        {
+            PreLoadPrerequistes(logicalPath);
+            LoadPrerequistes(logicalPath);
+        }
+
+        using (var stream = new UmaAssetBundleStream(path, fKey))
+        {
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+            if (loadedAssets.ContainsKey(logicalPath))
+            {
+                bundle = loadedAssets[logicalPath];
+            }
+            else
+            {
+                bundle = AssetBundle.LoadFromStream(stream);
+                if (keepInMemory)
+                {
+                    loadedAssets[logicalPath] = bundle;
+                }
+            }
+
+            //if (bundle == null) return null;
+
+            T asset = bundle.LoadAsset<T>(assetName);
+
+            if (!keepInMemory)
+            {
+                bundle.Unload(false);
+            }
+
+            // Shits complicated lol
+
+            return asset;
+        }
+    }
 }
 
 public class UmaAssetBundleStream : FileStream
