@@ -1,5 +1,6 @@
 using System.Data;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 //using Gallop;
 
@@ -13,9 +14,9 @@ public class Main : MonoBehaviour
     
     void Awake()
     {
-        //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         UmaDatabase.CreateConnection();
         UmaDatabase.Initialize();
@@ -76,13 +77,13 @@ public class Main : MonoBehaviour
             }
             */
 
-            if (item.Key.StartsWith(UmaDatabase.HeadPath)) 
+            if (item.Key.Contains("anim") || item.Key.Contains("motion")) 
             {
-                log += item.Key + "\n";
+                log += item.Value.Name + "\n";
             }
 
         }
-        File.WriteAllText("head.txt", log);
+        File.WriteAllText("idk.txt", log);
      
     }
 

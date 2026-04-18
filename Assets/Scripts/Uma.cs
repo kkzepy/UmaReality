@@ -1,13 +1,10 @@
-﻿using Gallop;
+﻿using Codice.CM.Common.Merge;
+using Gallop;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using Unity.VisualScripting.TextureAssets;
-using UnityEditor.Build.Content;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
-using static UnityEditor.ObjectChangeEventStream;
 
 public class UmaAssembler : MonoBehaviour
 {
@@ -248,7 +245,7 @@ public class UmaAssembler : MonoBehaviour
             body.transform.GetChild(0).SetParent(rootObject.transform);
         }
         //body.SetActive(false); //for debugging
-        //Destroy(body);
+        Destroy(body);
 
         var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
         foreach (SkinnedMeshRenderer headskin in headskins)
@@ -286,6 +283,42 @@ public class UmaAssembler : MonoBehaviour
 
         return rootObject;
 
+    }
+
+    public static GameObject CreateCharacter(CharaEntry entry, int costumeId = 0, int headId = 0, bool loadPrerequisites = true, bool addComponents = true)
+    {
+        if (loadPrerequisites)
+        {
+            var bodyLogicalPath = UmaDatabase.QueryBodyPath(entry.Id, costumeId);
+            var headLogicalPath = UmaDatabase.QueryHeadPath(entry.Id, headId);
+            var tailLogicalPath = UmaDatabase.QueryTailPath(entry.TailModelId);
+
+            UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
+            UmaAssetManager.PreLoadPrerequistes(headLogicalPath);
+            UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
+
+            UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+            UmaAssetManager.LoadPrerequistes(headLogicalPath);
+            UmaAssetManager.LoadPrerequistes(tailLogicalPath);
+        }
+
+        var bodyInstance = CreateBody(entry.Id, costumeId);
+        var headInstance = CreateHead(entry.Id, headId);
+        var tailInstance = CreateTail(entry.TailModelId);
+
+        UmaAssembler.ApplyTailTexture(tailInstance, entry.Id, entry.TailModelId);
+
+        var chara = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
+        
+        if (addComponents)
+        {
+            chara.AddComponent<UmaCharacter>().SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
+            //chara.AddComponent<AnimationLoader>();
+        }
+
+        Debug.Log($"Loaded char: {entry.Id}");
+
+        return chara;
     }
 
     public static void ApplyBodyTexture(GameObject body, int characterId, int costumeId)

@@ -46,6 +46,7 @@ public class UIHandler : MonoBehaviour
 
             if (chara == null) { return; }
 
+            /*
             //costumeId = 0;
 
             var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
@@ -72,6 +73,9 @@ public class UIHandler : MonoBehaviour
             //Main.uma.AddComponent<AnimationLoader>();
 
             Debug.Log($"Loaded char: {chara.Id}");
+            */
+
+            Main.uma = UmaAssembler.CreateCharacter(chara, costumeId, headId);
 
             return;
         }
