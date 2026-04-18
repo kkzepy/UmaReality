@@ -76,6 +76,8 @@ public class UIHandler : MonoBehaviour
             */
 
             Main.uma = UmaAssembler.CreateCharacter(chara, costumeId, headId);
+            var controller = Main.uma.GetComponent<UmaCharacter>();
+            controller.LoadPhysics();
 
             return;
         }

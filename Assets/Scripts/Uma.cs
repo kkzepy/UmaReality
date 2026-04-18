@@ -2,13 +2,15 @@
 using Gallop;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using UnityEngine;
+using static UnityEngine.Rendering.VirtualTexturing.Debugging;
 
 public class UmaAssembler : MonoBehaviour
 {
-    public static GameObject CreateBody(int charaId, int costumeId)
+    public static GameObject CreateBody(int charaId, int costumeId, bool loadPrerequisites = true)
     {
         var bodyLogicalPath = UmaDatabase.QueryBodyPath(charaId, costumeId);
         var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
@@ -103,7 +105,7 @@ public class UmaAssembler : MonoBehaviour
         }
     }
 
-    public static GameObject CreateHead(int charaId, int headId)
+    public static GameObject CreateHead(int charaId, int headId, bool loadPrerequisites = true)
     {
         var headLogicalPath = UmaDatabase.QueryHeadPath(charaId, headId);
         var headPath = UmaDatabase.ResolvePath(headLogicalPath);
@@ -179,7 +181,7 @@ public class UmaAssembler : MonoBehaviour
         }
     }
 
-    public static GameObject CreateTail(int tailId)
+    public static GameObject CreateTail(int tailId, bool loadPrerequisites = true)
     {
         var tailLogicalPath = UmaDatabase.QueryTailPath(tailId);
         var tailPath = UmaDatabase.ResolvePath(tailLogicalPath);
@@ -202,6 +204,7 @@ public class UmaAssembler : MonoBehaviour
 
             return Instantiate(tail);
         }
+
     }
 
     static void MergeBone(SkinnedMeshRenderer from, Dictionary<string, Transform> targetBones, ref List<Transform> emptyBones)
@@ -302,17 +305,21 @@ public class UmaAssembler : MonoBehaviour
             UmaAssetManager.LoadPrerequistes(tailLogicalPath);
         }
 
-        var bodyInstance = CreateBody(entry.Id, costumeId);
-        var headInstance = CreateHead(entry.Id, headId);
-        var tailInstance = CreateTail(entry.TailModelId);
+        var bodyInstance = CreateBody(entry.Id, costumeId, false);
+        var headInstance = CreateHead(entry.Id, headId, false);
+        var tailInstance = CreateTail(entry.TailModelId, false);
 
-        UmaAssembler.ApplyTailTexture(tailInstance, entry.Id, entry.TailModelId);
+        ApplyTailTexture(tailInstance, entry.Id, entry.TailModelId);
 
-        var chara = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
+        var chara = Assemble(bodyInstance, headInstance, tailInstance);
         
         if (addComponents)
         {
-            chara.AddComponent<UmaCharacter>().SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
+            var umaCharacter = chara.AddComponent<UmaCharacter>();
+            umaCharacter.SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
+            umaCharacter.charaEntry = entry;
+            umaCharacter.costumeId = costumeId;
+            umaCharacter.Initialize();
             //chara.AddComponent<AnimationLoader>();
         }
 
@@ -345,10 +352,10 @@ public class UmaAssembler : MonoBehaviour
             var tripleMaskMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_base_wet";
             var optionMaskMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_ctrl_wet";
 
-            mainTex = UmaAssetManager.LoadTexture2DAsset(mainTexLogicalPath);
-            toonMap = UmaAssetManager.LoadTexture2DAsset(toonMapLogicalPath);
-            tripleMaskMap = UmaAssetManager.LoadTexture2DAsset(tripleMaskMapLogicalPath);
-            optionMaskMap = UmaAssetManager.LoadTexture2DAsset(optionMaskMapLogicalPath);
+            mainTex = UmaAssetManager.LoadAsset<Texture2D>(mainTexLogicalPath);
+            toonMap = UmaAssetManager.LoadAsset<Texture2D>(toonMapLogicalPath);
+            tripleMaskMap = UmaAssetManager.LoadAsset<Texture2D>(tripleMaskMapLogicalPath);
+            optionMaskMap = UmaAssetManager.LoadAsset<Texture2D>(optionMaskMapLogicalPath);
 
             r.material.SetTexture("_MainTex", mainTex);
             r.material.SetTexture("_ToonMap", toonMap);
@@ -380,10 +387,10 @@ public class UmaAssembler : MonoBehaviour
             var tripleMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_base";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_base_wet";
             var optionMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_ctrl";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_ctrl_wet";
 
-            mainTex = UmaAssetManager.LoadTexture2DAsset(mainTexLogicalPath);
-            toonMap = UmaAssetManager.LoadTexture2DAsset(toonMapLogicalPath);
-            tripleMaskMap = UmaAssetManager.LoadTexture2DAsset(tripleMaskMapLogicalPath);
-            optionMaskMap = UmaAssetManager.LoadTexture2DAsset(optionMaskMapLogicalPath);
+            mainTex = UmaAssetManager.LoadAsset<Texture2D>(mainTexLogicalPath, false);
+            toonMap = UmaAssetManager.LoadAsset<Texture2D>(toonMapLogicalPath, false);
+            tripleMaskMap = UmaAssetManager.LoadAsset<Texture2D>(tripleMaskMapLogicalPath, false);
+            optionMaskMap = UmaAssetManager.LoadAsset<Texture2D>(optionMaskMapLogicalPath, false);
 
             r.material.SetTexture("_MainTex", mainTex);
             r.material.SetTexture("_ToonMap", toonMap);
@@ -418,12 +425,11 @@ public class UmaAssembler : MonoBehaviour
         var hairToonMapLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_hair_shad_c_wet";
         var eyeMaterialLogicalPath = $"sourceresources/3d/chara/head/chr{characterId}_{_costumeId}/materials/mtl_chr{characterId}_{_costumeId}_eye";
 
-        faceMainTex = UmaAssetManager.LoadTexture2DAsset(faceMainTexLogicalPath);
-        faceToonMap = UmaAssetManager.LoadTexture2DAsset(faceToonMapLogicalPath);
-        hairMainTex = UmaAssetManager.LoadTexture2DAsset(hairMainTexLogicalPath);
-        hairToonMap = UmaAssetManager.LoadTexture2DAsset(hairToonMapLogicalPath);
-        eyeMaterial = UmaAssetManager.LoadTexture2DAsset(eyeMaterialLogicalPath);
-
+        faceMainTex = UmaAssetManager.LoadAsset<Texture2D>(faceMainTexLogicalPath, false);
+        faceToonMap = UmaAssetManager.LoadAsset<Texture2D>(faceToonMapLogicalPath, false);
+        hairMainTex = UmaAssetManager.LoadAsset<Texture2D>(hairMainTexLogicalPath, false);
+        hairToonMap = UmaAssetManager.LoadAsset<Texture2D>(hairToonMapLogicalPath, false);
+        eyeMaterial = UmaAssetManager.LoadAsset<Texture2D>(eyeMaterialLogicalPath, false);
         foreach (Renderer r in head.GetComponentsInChildren<Renderer>())
         {
             //Applying textures
@@ -558,6 +564,10 @@ public class UmaAssembler : MonoBehaviour
 
 public class UmaCharacter : MonoBehaviour
 {
+    public CharaEntry charaEntry;
+    public int costumeId;
+    string _costumeId;
+    string _tailId;
     AssetHolder assetHolder;
 
     GameObject upBodyBone;
@@ -567,20 +577,56 @@ public class UmaCharacter : MonoBehaviour
     Animator UmaAnimator;
     AnimatorOverrideController UmaControllerOverride;
 
-    private void Start()
-    {
-        /*
-        assetHolder = GetComponent<AssetHolder>();
+    public GameObject PhysicsContainer;
+    List<CySpringDataContainer> cySpringDataContainers;
 
-        upBodyBone = transform.Find("M_Body").GetComponent<AssetHolder>()._assetTable["upbody_ctrl"] as GameObject;
-        upBodyPosition = upBodyBone.transform.localPosition;
-        upBodyRotation = upBodyBone.transform.localRotation;
-        */
+    public void Initialize()
+    {
+        _costumeId = costumeId.ToString();
+
+        if (_costumeId.Length == 1)
+        {
+            _costumeId = "0" + _costumeId;
+        }
+
+        _tailId = charaEntry.TailModelId.ToString();
+
+        if (_tailId.Length < 4)
+        {
+            _tailId = new string('0', 4 - _tailId.Length) + _tailId;
+        }
+
+        if (assetHolder == null)
+        {
+
+            // Try to get AssetHolder component from the GameObject
+            assetHolder = GetComponent<AssetHolder>();
+
+            if (assetHolder == null)
+            {
+                Debug.LogWarning("AssetHolder component not found on UmaCharacter!");
+            }
+            else
+            {
+                upBodyBone = assetHolder._assetTable["upbody_ctrl"] as GameObject;
+                upBodyPosition = upBodyBone.transform.localPosition;
+                upBodyRotation = upBodyBone.transform.localRotation;
+            }
+        }
+        else
+        {
+            upBodyBone = assetHolder._assetTable["upbody_ctrl"] as GameObject;
+            upBodyPosition = upBodyBone.transform.localPosition;
+            upBodyRotation = upBodyBone.transform.localRotation;
+        }
+        
 
         UmaAnimator = GetComponent<Animator>();
         UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(gameObject, gameObject.name);
-
         UmaControllerOverride = new AnimatorOverrideController(UmaAnimator.runtimeAnimatorController);
+    
+        PhysicsContainer = new GameObject("PhysicsContainer");
+        PhysicsContainer.transform.SetParent(transform);
     }
 
     public void SetAssetHolder(AssetHolder assetHolder)
@@ -603,6 +649,55 @@ public class UmaCharacter : MonoBehaviour
         else
         {
             Debug.LogWarning("UpBody bone not found!");
+        }
+    }
+
+    public void LoadPhysics()
+    {
+        // Prevents null reference exception when loading physics before setting costumeId
+        if (_costumeId == null)
+        {
+            _costumeId = costumeId.ToString();
+
+            if (_costumeId.Length == 1)
+            {
+                _costumeId = "0" + _costumeId;
+            }
+        }
+
+        // Physics instantiating
+        string clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_cloth00";
+        string bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_bust_cloth00";
+        string tailClothesLogicalPath = UmaDatabase.TailPath + $"tail{_tailId}_00/clothes/pfb_tail{_tailId}_00_cloth00";
+        string headClothesLogicalPath = UmaDatabase.HeadPath + $"chr{charaEntry.Id}_{_costumeId}/clothes/pfb_chr{charaEntry.Id}_{_costumeId}_cloth00";
+
+        //Debug.Log($"{clothesLogicalPath}\n{bustClothesLogicalPath}\n{tailClothesLogicalPath}\n{headClothesLogicalPath}");
+
+        Instantiate(UmaAssetManager.LoadAsset<GameObject>(clothesLogicalPath, false), PhysicsContainer.transform);
+        Instantiate(UmaAssetManager.LoadAsset<GameObject>(bustClothesLogicalPath, false), PhysicsContainer.transform);
+        Instantiate(UmaAssetManager.LoadAsset<GameObject>(tailClothesLogicalPath, false), PhysicsContainer.transform);
+        Instantiate(UmaAssetManager.LoadAsset<GameObject>(headClothesLogicalPath, false), PhysicsContainer.transform);
+
+
+        // Initial physics setup
+        cySpringDataContainers = new List<CySpringDataContainer>(PhysicsContainer.GetComponentsInChildren<CySpringDataContainer>());
+        var bones = new Dictionary<string, Transform>();
+        foreach (var bone in GetComponentsInChildren<Transform>())
+        {
+            if (!bones.ContainsKey(bone.name))
+                bones.Add(bone.name, bone);
+        }
+
+        var colliders = new Dictionary<string, Transform>();
+
+        for (int i = 0; i < cySpringDataContainers.Count; i++)
+        {
+            colliders = Utility.MergeDictionaries(colliders, cySpringDataContainers[i].InitiallizeCollider(bones));
+        }
+
+        for (int i = 0; i < cySpringDataContainers.Count; i++)
+        {
+            cySpringDataContainers[i].InitializePhysics(bones, colliders);
         }
     }
 

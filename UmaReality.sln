@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umamusume", "umamusume.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{D58A1FED-A57C-F360-D137-ED43C40DBB11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins", "Plugins.csproj", "{80500B81-EB54-5631-1AAA-4F81BF96832F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{D58A1FED-A57C-F360-D137-ED43C40DBB11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D58A1FED-A57C-F360-D137-ED43C40DBB11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D58A1FED-A57C-F360-D137-ED43C40DBB11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80500B81-EB54-5631-1AAA-4F81BF96832F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80500B81-EB54-5631-1AAA-4F81BF96832F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80500B81-EB54-5631-1AAA-4F81BF96832F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80500B81-EB54-5631-1AAA-4F81BF96832F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

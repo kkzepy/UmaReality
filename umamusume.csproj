@@ -55,32 +55,52 @@
     <UnityVersion>2022.3.62f3</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.62f3\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.62f3\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringParamDataChildElement.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringCollisionComponent.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBoneCollider.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringParamDataAsset.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothWorking.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\AssetHolder.cs" />
     <Compile Include="Assets\Scripts\UmaViewerGlobalShader.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\StageUtil.cs" />
     <Compile Include="Assets\Scripts\UmaDataTypes.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\ClothParameter.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothCollision.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringParamDataElement.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\LiveTimelineCamera.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\GameObjectUtility.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBoneColliderBase.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\CySpringDataContainer.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\Character3DBase.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpring.cs" />
     <Compile Include="Assets\Scripts\Main.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CacheCamera.cs" />
     <Compile Include="Assets\Scripts\UIHandler.cs" />
     <Compile Include="Assets\Scripts\Uma.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\RenderPipeline\Enums.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothParameter.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringNative.cs" />
     <Compile Include="Assets\Scripts\UmaAssetManager.cs" />
     <Compile Include="Assets\Scripts\Utility.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Demo\DynamicBoneDemo1.cs" />
     <Compile Include="Assets\Scripts\RotationConvert.cs" />
     <Compile Include="Assets\Scripts\Sqlite3MC.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringRootBone.cs" />
     <Compile Include="Assets\Scripts\UmaDatabaseController.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\Live\Cutt\LiveTimelineDefine.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringBoneBase.cs" />
     <Compile Include="Assets\Scripts\AssetBundleBuilder.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\EarType.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBonePlaneCollider.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBone.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\CharaShaderEffectData.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringPartsParamDataElement.cs" />
+    <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringCollisionData.cs" />
     <Compile Include="Assets\Scripts\umamusume\GallopExtras.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -994,6 +1014,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Plugins.csproj">
+      <Project>{80500B81-EB54-5631-1AAA-4F81BF96832F}</Project>
+      <Name>Plugins</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

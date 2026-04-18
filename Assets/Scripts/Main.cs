@@ -14,9 +14,9 @@ public class Main : MonoBehaviour
     
     void Awake()
     {
-        UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         UmaDatabase.CreateConnection();
         UmaDatabase.Initialize();
@@ -31,9 +31,11 @@ public class Main : MonoBehaviour
 
     void Start()
     {
+        var chara = UmaDatabase.GetCharaEntry(1100);
+        /*
         int id = 1007;
         int costumeId = 0;
-        var chara = UmaDatabase.GetCharaEntry(id);
+        
 
         var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
         var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, 0);
@@ -57,8 +59,15 @@ public class Main : MonoBehaviour
         uma = UmaAssembler.Assemble(bodyInstance, headInstance, tailInstance);
         uma.AddComponent<UmaCharacter>();
         //uma.AddComponent<AnimationLoader>();
+        */
 
-        clip = UmaAssetManager.LoadAnim("3d/motion/event/body/chara/chr1001_00/anm_eve_chr1001_00_pdk01_s");
+        /*
+        uma = UmaAssembler.CreateCharacter(chara);
+        var controller = uma.GetComponent<UmaCharacter>();
+        controller.LoadPhysics();
+        */  
+
+        clip = UmaAssetManager.LoadAsset<AnimationClip>("3d/motion/event/body/chara/chr1001_00/anm_eve_chr1001_00_pdk01_s");
     }
 
     void Test()

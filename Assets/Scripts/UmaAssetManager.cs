@@ -79,31 +79,6 @@ public class UmaAssetManager : MonoBehaviour
         return result;
     }
 
-   
-    public static Texture2D LoadTexture2DAsset(string logicalPath)
-    {
-        string path = UmaDatabase.ResolvePath(logicalPath);
-        using (var stream = new UmaAssetBundleStream(path, UmaDatabase.MetaData[logicalPath].FKey))
-        {
-            var bundle = AssetBundle.LoadFromStream(stream);
-            var obj = bundle.LoadAllAssets<Texture2D>().FirstOrDefault();
-            bundle.Unload(false); // penting!
-            return obj;
-        }
-    }
-
-    public static AnimationClip LoadAnim(string logicalPath)
-    {
-        string path = UmaDatabase.ResolvePath(logicalPath);
-        using (var stream = new UmaAssetBundleStream(path, UmaDatabase.MetaData[logicalPath].FKey))
-        {
-            var bundle = AssetBundle.LoadFromStream(stream);
-            var obj = bundle.LoadAllAssets<AnimationClip>().FirstOrDefault();
-            bundle.Unload(false); // penting!
-            return obj;
-        }
-    }
-
     public static void PreLoadPrerequistes(string logicalPath, bool recursive = true)
     {
         var prerequisities = UmaDatabase.MetaData[logicalPath].Prerequisites.Split(';');
@@ -153,6 +128,46 @@ public class UmaAssetManager : MonoBehaviour
 
                 prerequisitesQueue.Remove(prereq);
             }
+        }
+    }
+
+    public static T LoadAsset<T>(string logicalPath, bool loadPrerequisites = true, bool keepInMemory = false) where T : UnityEngine.Object
+    {
+        string path = UmaDatabase.ResolvePath(logicalPath);
+        var fKey = UmaDatabase.MetaData[logicalPath].FKey;
+
+        if (loadPrerequisites && !string.IsNullOrEmpty(UmaDatabase.MetaData[logicalPath].Prerequisites))
+        {
+            PreLoadPrerequistes(logicalPath);
+            LoadPrerequistes(logicalPath);
+        }
+
+        using (var stream = new UmaAssetBundleStream(path, fKey))
+        {
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+            if (loadedAssets.ContainsKey(logicalPath))
+            {
+                bundle = loadedAssets[logicalPath];
+            }
+            else
+            {
+                bundle = AssetBundle.LoadFromStream(stream);
+                loadedAssets[logicalPath] = bundle;
+            }
+
+            if (bundle == null) return null;
+
+            T asset = bundle.LoadAllAssets<T>().FirstOrDefault();
+
+            if (!keepInMemory)
+            {
+                bundle.Unload(false);
+            }
+
+            // Shits complicated lol
+
+            return asset;
         }
     }
 }
