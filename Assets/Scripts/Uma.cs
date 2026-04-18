@@ -319,6 +319,7 @@ public class UmaAssembler : MonoBehaviour
             umaCharacter.SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
             umaCharacter.charaEntry = entry;
             umaCharacter.costumeId = costumeId;
+            umaCharacter.headId = headId;
             umaCharacter.Initialize();
             //chara.AddComponent<AnimationLoader>();
         }
@@ -565,7 +566,9 @@ public class UmaAssembler : MonoBehaviour
 public class UmaCharacter : MonoBehaviour
 {
     public CharaEntry charaEntry;
-    public int costumeId;
+    public int costumeId = 0;
+    public int headId = 0;
+    string _headId;
     string _costumeId;
     string _tailId;
     AssetHolder assetHolder;
@@ -587,6 +590,13 @@ public class UmaCharacter : MonoBehaviour
         if (_costumeId.Length == 1)
         {
             _costumeId = "0" + _costumeId;
+        }
+
+        _headId = headId.ToString();
+
+        if (_headId.Length == 1)
+        {
+            _headId = "0" + _headId;
         }
 
         _tailId = charaEntry.TailModelId.ToString();
@@ -669,7 +679,7 @@ public class UmaCharacter : MonoBehaviour
         string clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_cloth00";
         string bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_bust_cloth00";
         string tailClothesLogicalPath = UmaDatabase.TailPath + $"tail{_tailId}_00/clothes/pfb_tail{_tailId}_00_cloth00";
-        string headClothesLogicalPath = UmaDatabase.HeadPath + $"chr{charaEntry.Id}_{_costumeId}/clothes/pfb_chr{charaEntry.Id}_{_costumeId}_cloth00";
+        string headClothesLogicalPath = UmaDatabase.HeadPath + $"chr{charaEntry.Id}_{_headId}/clothes/pfb_chr{charaEntry.Id}_{_headId}_cloth00";
 
         //Debug.Log($"{clothesLogicalPath}\n{bustClothesLogicalPath}\n{tailClothesLogicalPath}\n{headClothesLogicalPath}");
 

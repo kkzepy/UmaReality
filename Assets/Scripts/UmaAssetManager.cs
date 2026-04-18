@@ -153,10 +153,13 @@ public class UmaAssetManager : MonoBehaviour
             else
             {
                 bundle = AssetBundle.LoadFromStream(stream);
-                loadedAssets[logicalPath] = bundle;
+                if (keepInMemory)
+                {
+                    loadedAssets[logicalPath] = bundle;
+                }
             }
 
-            if (bundle == null) return null;
+            //if (bundle == null) return null;
 
             T asset = bundle.LoadAllAssets<T>().FirstOrDefault();
 

@@ -2,6 +2,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using TMPro;
 //using Gallop;
 
 public class Main : MonoBehaviour
@@ -11,16 +12,21 @@ public class Main : MonoBehaviour
     
     public static GameObject uma;
     public static AnimationClip clip;
-    
+    public TMP_Text progressBar;
+
     void Awake()
     {
         //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
         //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
         //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
+        progressBar.text = "Creating DB Connenctions...";
         UmaDatabase.CreateConnection();
+        progressBar.text = "Initializing DB...";
         UmaDatabase.Initialize();
+        progressBar.text = "Loading shaders...";
         UmaAssetManager.LoadShaders();
+        progressBar.text = "";
 
         Debug.Log(UmaDatabase.CharaData.Count);
         Debug.Log(UmaAssetManager.QueryAvailableCostumeId(1025));

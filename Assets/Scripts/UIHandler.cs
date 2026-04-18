@@ -8,6 +8,7 @@ public class UIHandler : MonoBehaviour
     public TMP_InputField charaId;
     public TMP_InputField costumeIdField;
     public TMP_InputField headIdField;
+    public TMP_Text progressBar;
     int costumeId = 0;
     int headId = 0;
 
