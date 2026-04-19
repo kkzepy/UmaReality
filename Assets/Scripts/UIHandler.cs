@@ -13,6 +13,8 @@ public class UIHandler : MonoBehaviour
     public TMP_InputField costumeIdField;
     public TMP_InputField headIdField;
     public TMP_Text progressBar;
+    public TMP_InputField animField;
+
     int costumeId = 0;
     int headId = 0;
     int morphIndex = 0;
@@ -70,8 +72,9 @@ public class UIHandler : MonoBehaviour
             umachar.costumeId = costumeId;
             umachar.headId = headId;
             umachar.FaceOverrideController = Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller");
+            umachar.UmaFaceAnimator = Resources.Load<Animator>("Animations/Face Controller");
 
-            Debug.Log(chara);
+            Debug.Log(umachar.UmaAnimator);
 
             var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
             var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, headId);
@@ -102,6 +105,12 @@ public class UIHandler : MonoBehaviour
 
             root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
 
+            //if (!umachar.UmaAnimator) umachar.UmaAnimator = root.AddComponent<Animator>();
+            umachar.UmaAnimator = root.GetComponent<Animator>();
+            umachar.UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(root, root.name);
+            umachar.OverrideController = Resources.Load<AnimatorOverrideController>("Animations/Override Controller");
+            umachar.UmaAnimator.runtimeAnimatorController = umachar.OverrideController;
+
             Main.uma = root;
 
             controller = umachar;
@@ -112,6 +121,16 @@ public class UIHandler : MonoBehaviour
         Debug.LogWarning($"No input!");
     }
 
+    public void Anim()
+    {
+        if (animField && !string.IsNullOrEmpty(animField.text))
+        {
+            //var path = UmaDatabase.ResolvePath(animField.text);
+
+            controller.OverrideController["clip_s"] = UmaAssetManager.LoadAsset<AnimationClip>(animField.text);
+            controller.UmaAnimator.Play("motion_s");
+        }
+    }
     private void Update()
     {
 
@@ -145,6 +164,13 @@ public class UIHandler : MonoBehaviour
             morphWeight -= 0.1f;
             controller.FaceDrivenKeyTarget.ChangeMorphWeight(morphs[morphIndex], morphWeight);
             Debug.Log($"Morph weight: {morphWeight}");
+        }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            controller.OverrideController["clip_s"] = Main.clip;
+            controller.UmaAnimator.Play("motion_s");
+            Debug.Log($"Playing anim");
         }
     }
 }

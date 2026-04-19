@@ -21,9 +21,9 @@ public class Main : MonoBehaviour
 
     void Awake()
     {
-        UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         progressBar.text = "Creating DB Connenctions...";
         UmaDatabase.CreateConnection();
@@ -33,10 +33,7 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
-        Debug.Log(UmaDatabase.CharaData.Count);
-        Debug.Log(UmaAssetManager.QueryAvailableCostumeId(1025));
-
-        //Test();
+        Test();
     }
 
 
@@ -97,6 +94,7 @@ public class Main : MonoBehaviour
         uma = root;
 
         clip = UmaAssetManager.LoadAsset<AnimationClip>("3d/motion/event/body/chara/chr1001_00/anm_eve_chr1001_00_pdk01_s");
+        Debug.Log(UmaDatabase.MetaData["3d/motion/event/body/chara/chr1001_00/anm_eve_chr1001_00_pdk01_s"].Prerequisites);
     }
 
     void Test()
@@ -115,13 +113,13 @@ public class Main : MonoBehaviour
             }
             */
 
-            if (item.Key.Contains("anim") || item.Key.Contains("motion")) 
+            if (item.Key.Contains("anm") || item.Key.Contains("motion")) 
             {
                 log += item.Value.Name + "\n";
             }
 
         }
-        File.WriteAllText("idk.txt", log);
+        File.WriteAllText("anim.txt", log);
      
     }
 

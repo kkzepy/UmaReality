@@ -32,6 +32,7 @@ public class UmaAssetManager : MonoBehaviour
             BodyBehindAlphaShader = (Shader)bundle.LoadAsset("assets/_gallop/resources/shader/3d/character/characteralphanolinetoonbehindtser.shader");
 
             bundle.Unload(false);
+            stream.Close();
         }
     }
 
@@ -170,6 +171,7 @@ public class UmaAssetManager : MonoBehaviour
 
             // Shits complicated lol
 
+            stream.Close();
             return asset;
         }
     }
@@ -213,6 +215,7 @@ public class UmaAssetManager : MonoBehaviour
 
             // Shits complicated lol
 
+            stream.Close();
             return asset;
         }
     }
