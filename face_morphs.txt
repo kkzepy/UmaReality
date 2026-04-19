@@ -1,0 +1,202 @@
+Ear_1_R : Base_N : neutral ear position, relaxed and natural without emotional influence
+Ear_1_L : Base_N : neutral ear position, relaxed and natural without emotional influence
+Ear_2_R : Kanasi : slightly drooped ear, expressing sadness or disappointment
+Ear_2_L : Kanasi : slightly drooped ear, expressing sadness or disappointment
+Ear_3_R : Dere_N : soft relaxed ear, indicating calm affection or gentle mood
+Ear_3_L : Dere_N : soft relaxed ear, indicating calm affection or gentle mood
+Ear_4_R : Dere : more expressive affectionate ear, slightly perked with warmth
+Ear_4_L : Dere : more expressive affectionate ear, slightly perked with warmth
+Ear_5_R : Yure : lightly shaking or wavering ear, showing nervousness or instability
+Ear_5_L : Yure : lightly shaking or wavering ear, showing nervousness or instability
+Ear_6_R : Biku_N : subtle twitch, mild surprise or alert reaction
+Ear_6_L : Biku_N : subtle twitch, mild surprise or alert reaction
+Ear_7_R : Biku : strong twitch, sudden shock or startled response
+Ear_7_L : Biku : strong twitch, sudden shock or startled response
+Ear_8_R : Ikari : stiff, angled ear, showing anger or irritation
+Ear_8_L : Ikari : stiff, angled ear, showing anger or irritation
+Ear_9_R : Tanosi : perked and lively ear, expressing joy or excitement
+Ear_9_L : Tanosi : perked and lively ear, expressing joy or excitement
+Ear_10_R : Up_N : slightly raised ear, neutral attentiveness
+Ear_10_L : Up_N : slightly raised ear, neutral attentiveness
+Ear_11_R : Up : fully raised ear, alert and focused
+Ear_11_L : Up : fully raised ear, alert and focused
+Ear_12_R : Down : lowered ear, submissive or sad tone
+Ear_12_L : Down : lowered ear, submissive or sad tone
+Ear_13_R : Front : ear facing forward, attentive and curious
+Ear_13_L : Front : ear facing forward, attentive and curious
+Ear_14_R : Side : ear rotated sideways, uncertain or distracted
+Ear_14_L : Side : ear rotated sideways, uncertain or distracted
+Ear_15_R : Back : ear pulled back, fear, caution, or defensiveness
+Ear_15_L : Back : ear pulled back, fear, caution, or defensiveness
+Ear_16_R : Roll : ear rolled or rotated dynamically, playful or expressive motion
+Ear_16_L : Roll : ear rolled or rotated dynamically, playful or expressive motion
+
+EyeBrow_1_R : WaraiA : gentle upward curve, soft smile expression
+EyeBrow_1_L : WaraiA : gentle upward curve, soft smile expression
+EyeBrow_2_R : WaraiB : more pronounced happy curve, cheerful emotion
+EyeBrow_2_L : WaraiB : more pronounced happy curve, cheerful emotion
+EyeBrow_3_R : WaraiC : bright, energetic happiness with raised brow
+EyeBrow_3_L : WaraiC : bright, energetic happiness with raised brow
+EyeBrow_4_R : WaraiD : exaggerated joyful expression, highly animated
+EyeBrow_4_L : WaraiD : exaggerated joyful expression, highly animated
+EyeBrow_5_R : IkariA : inward angled brow, anger or frustration
+EyeBrow_5_L : IkariA : inward angled brow, anger or frustration
+EyeBrow_6_R : KanasiA : inner brow raised, sadness or worry
+EyeBrow_6_L : KanasiA : inner brow raised, sadness or worry
+EyeBrow_7_R : DoyaA : confident raised brow, smug or proud expression
+EyeBrow_7_L : DoyaA : confident raised brow, smug or proud expression
+EyeBrow_8_R : DereA : soft relaxed brow, affectionate or shy
+EyeBrow_8_L : DereA : soft relaxed brow, affectionate or shy
+EyeBrow_9_R : OdorokiA : raised brow, mild surprise
+EyeBrow_9_L : OdorokiA : raised brow, mild surprise
+EyeBrow_10_R : OdorokiB : higher raised brow, strong surprise
+EyeBrow_10_L : OdorokiB : higher raised brow, strong surprise
+EyeBrow_11_R : JitoA : slightly lowered flat brow, unimpressed or judging
+EyeBrow_11_L : JitoA : slightly lowered flat brow, unimpressed or judging
+EyeBrow_12_R : KomariA : awkward uneven brow, troubled or confused
+EyeBrow_12_L : KomariA : awkward uneven brow, troubled or confused
+EyeBrow_13_R : KusyoA : strained brow, discomfort or pain
+EyeBrow_13_L : KusyoA : strained brow, discomfort or pain
+EyeBrow_14_R : UreiA : drooping brow, melancholic or tired
+EyeBrow_14_L : UreiA : drooping brow, melancholic or tired
+EyeBrow_15_R : RunA : dynamic lifted brow, energetic action
+EyeBrow_15_L : RunA : dynamic lifted brow, energetic action
+EyeBrow_16_R : RunB : intense action brow, high energy or urgency
+EyeBrow_16_L : RunB : intense action brow, high energy or urgency
+EyeBrow_17_R : SeriousA : firm neutral brow, serious focus
+EyeBrow_17_L : SeriousA : firm neutral brow, serious focus
+EyeBrow_18_R : SeriousB : stronger tension, intense seriousness
+EyeBrow_18_L : SeriousB : stronger tension, intense seriousness
+EyeBrow_19_R : ShiwaA : light wrinkles, subtle tension
+EyeBrow_19_L : ShiwaA : light wrinkles, subtle tension
+EyeBrow_20_R : ShiwaB : deeper wrinkles, strong tension or stress
+EyeBrow_20_L : ShiwaB : deeper wrinkles, strong tension or stress
+EyeBrow_21_R : Offset_U : brow shifted upward
+EyeBrow_21_L : Offset_U : brow shifted upward
+EyeBrow_22_R : Offset_D : brow shifted downward
+EyeBrow_22_L : Offset_D : brow shifted downward
+EyeBrow_23_R : Offset_L : brow shifted left
+EyeBrow_23_L : Offset_L : brow shifted left
+EyeBrow_24_R : Offset_R : brow shifted right
+EyeBrow_24_L : Offset_R : brow shifted right
+
+Eye_1_R : HalfA : partially closed eye, relaxed or sleepy
+Eye_1_L : HalfA : partially closed eye, relaxed or sleepy
+Eye_2_R : CloseA : fully closed eye
+Eye_2_L : CloseA : fully closed eye
+Eye_3_R : HalfB : slightly more closed, tired or calm
+Eye_3_L : HalfB : slightly more closed, tired or calm
+Eye_4_R : HalfC : heavy-lidded, drowsy or uninterested
+Eye_4_L : HalfC : heavy-lidded, drowsy or uninterested
+Eye_5_R : WaraiA : smiling eye, gentle happiness
+Eye_5_L : WaraiA : smiling eye, gentle happiness
+Eye_6_R : WaraiB : cheerful smiling eye
+Eye_6_L : WaraiB : cheerful smiling eye
+Eye_7_R : WaraiC : bright joyful eye
+Eye_7_L : WaraiC : bright joyful eye
+Eye_8_R : WaraiD : exaggerated happy eye
+Eye_8_L : WaraiD : exaggerated happy eye
+Eye_9_R : IkariA : narrowed eye, anger or hostility
+Eye_9_L : IkariA : narrowed eye, anger or hostility
+Eye_10_R : KanasiA : droopy eye, sadness
+Eye_10_L : KanasiA : droopy eye, sadness
+Eye_11_R : DereA : soft affectionate gaze
+Eye_11_L : DereA : soft affectionate gaze
+Eye_12_R : OdorokiA : widened eye, mild surprise
+Eye_12_L : OdorokiA : widened eye, mild surprise
+Eye_13_R : OdorokiB : more widened, strong surprise
+Eye_13_L : OdorokiB : more widened, strong surprise
+Eye_14_R : OdorokiC : extreme wide eye, shock
+Eye_14_L : OdorokiC : extreme wide eye, shock
+Eye_15_R : JitoA : half-lidded judging stare
+Eye_15_L : JitoA : half-lidded judging stare
+Eye_16_R : KusyoA : strained eye, pain or discomfort
+Eye_16_L : KusyoA : strained eye, pain or discomfort
+Eye_17_R : UreiA : tired, melancholic gaze
+Eye_17_L : UreiA : tired, melancholic gaze
+Eye_18_R : RunA : energetic focused eye
+Eye_18_L : RunA : energetic focused eye
+Eye_19_R : DrivenA : determined intense gaze
+Eye_19_L : DrivenA : determined intense gaze
+Eye_20_R : XRange : horizontal eye movement control
+Eye_20_L : XRange : horizontal eye movement control
+Eye_21_R : YRange : vertical eye movement control
+Eye_21_L : YRange : vertical eye movement control
+Eye_22_R : EyeHideA : hides eye visibility
+Eye_22_L : EyeHideA : hides eye visibility
+Eye_23_R : SeriousA : focused neutral serious eye
+Eye_23_L : SeriousA : focused neutral serious eye
+Eye_24_R : PupilA : default pupil size
+Eye_24_L : PupilA : default pupil size
+Eye_25_R : PupilB : enlarged pupil, excitement or focus
+Eye_25_L : PupilB : enlarged pupil, excitement or focus
+Eye_26_R : PupilC : reduced pupil, tension or fear
+Eye_26_L : PupilC : reduced pupil, tension or fear
+Eye_27_R : EyelidHideA : hides upper eyelid
+Eye_27_L : EyelidHideA : hides upper eyelid
+Eye_28_R : EyelidHideB : hides lower eyelid
+Eye_28_L : EyelidHideB : hides lower eyelid
+
+Mouth_1_0 : Normal : neutral closed mouth
+Mouth_2_0 : CheekA_L : puffed left cheek, playful or annoyed
+Mouth_3_0 : CheekA_R : puffed right cheek, playful or annoyed
+Mouth_4_0 : WaraiA : slight smile
+Mouth_5_0 : WaraiB : happy smile
+Mouth_6_0 : WaraiC : bright cheerful smile
+Mouth_7_0 : WaraiD : wide joyful grin
+Mouth_8_0 : WaraiE : exaggerated laughter
+Mouth_9_0 : IkariA : tense angry mouth
+Mouth_10_0 : IkariB : open angry shout
+Mouth_11_0 : KanasiA : sad downturned mouth
+Mouth_12_0 : DoyaA : smug confident smirk
+Mouth_13_0 : DereA : soft affectionate smile
+Mouth_14_0 : OdorokiA : slightly open surprise
+Mouth_15_0 : OdorokiB : wide open shock
+Mouth_16_0 : JitoA : flat unimpressed mouth
+Mouth_17_0 : KomariA : awkward troubled mouth
+Mouth_18_0 : KusyoA_L : left strained expression
+Mouth_19_0 : KusyoA_R : right strained expression
+Mouth_20_0 : KusyoB_L : stronger left strain
+Mouth_21_0 : KusyoB_R : stronger right strain
+Mouth_22_0 : UreiA : melancholic soft frown
+Mouth_23_0 : TalkA_A_S : small “A” phoneme
+Mouth_24_0 : TalkA_A_L : large “A” phoneme
+Mouth_25_0 : TalkA_I_S : small “I” phoneme
+Mouth_26_0 : TalkA_I_L : large “I” phoneme
+Mouth_27_0 : TalkA_U_S : small “U” phoneme
+Mouth_28_0 : TalkA_U_L : large “U” phoneme
+Mouth_29_0 : TalkA_E_S : small “E” phoneme
+Mouth_30_0 : TalkA_E_L : large “E” phoneme
+Mouth_31_0 : TalkA_O_S : small “O” phoneme
+Mouth_32_0 : TalkA_O_L : large “O” phoneme
+Mouth_33_0 : TalkB_A_S : alternate small “A”
+Mouth_34_0 : TalkB_A_L : alternate large “A”
+Mouth_35_0 : TalkB_I_S : alternate small “I”
+Mouth_36_0 : TalkB_I_L : alternate large “I”
+Mouth_37_0 : TalkB_E_S : alternate small “E”
+Mouth_38_0 : TalkB_E_L : alternate large “E”
+Mouth_39_0 : RunA : open breathing mouth, running
+Mouth_40_0 : RunB : intense breathing mouth
+Mouth_41_0 : DrivenA : clenched determined mouth
+Mouth_42_0 : ToothHide : hides teeth
+Mouth_43_0 : TalkC_I : tight “I” phoneme
+Mouth_44_0 : TanA : tongue slightly out
+Mouth_45_0 : TanB : playful tongue out
+Mouth_46_0 : TanC_L : tongue left
+Mouth_47_0 : TanD_L : exaggerated left tongue
+Mouth_48_0 : TanC_R : tongue right
+Mouth_49_0 : TanD_R : exaggerated right tongue
+Mouth_50_0 : Offset_U : mouth shifted up
+Mouth_51_0 : Offset_D : mouth shifted down
+Mouth_52_0 : Offset_L : mouth shifted left
+Mouth_53_0 : Offset_R : mouth shifted right
+Mouth_54_0 : Scale_U : vertically stretched mouth
+Mouth_55_0 : Scale_D : vertically compressed mouth
+Mouth_56_0 : LowAngle : lowered mouth angle perspective
+
+Shade_Ctrl : Control : adjusts facial shading intensity
+Manga_Ctrl : Control : applies stylized manga shading
+Tear0_Ctrl : Control : light tear effect
+Tear1_Ctrl : Control : moderate tear effect
+Tear2_Ctrl : Control : strong tear flow
+Tear3_Ctrl : Control : heavy crying effect

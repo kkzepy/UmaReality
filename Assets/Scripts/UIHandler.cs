@@ -56,7 +56,7 @@ public class UIHandler : MonoBehaviour
 
         if (!string.IsNullOrEmpty(charaId.text))
         {
-            Destroy(Main.uma);
+            if (Main.uma) Destroy(Main.uma);
 
             var chara = UmaDatabase.GetCharaEntry(Convert.ToInt32(charaId.text));
 
@@ -71,29 +71,34 @@ public class UIHandler : MonoBehaviour
             umachar.headId = headId;
             umachar.FaceOverrideController = Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller");
 
+            Debug.Log(chara);
+
             var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
             var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, headId);
             var tailLogicalPath = UmaDatabase.QueryTailPath(chara.TailModelId);
 
             UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
             UmaAssetManager.PreLoadPrerequistes(headLogicalPath);
-            UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
+            if (chara.TailModelId != -1) UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
 
             UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
             UmaAssetManager.LoadPrerequistes(headLogicalPath);
-            UmaAssetManager.LoadPrerequistes(tailLogicalPath);
+            if (chara.TailModelId != -1) UmaAssetManager.LoadPrerequistes(tailLogicalPath);
 
-            umachar.bodyInstance = UmaAssembler.CreateBody(chara.Id, 0, false, root);
+            umachar.bodyInstance = UmaAssembler.CreateBody(chara.Id, costumeId, false, root);
             umachar.headInstance = UmaAssembler.CreateHead(chara.Id, headId, false, root);
-            umachar.tailInstance = UmaAssembler.CreateTail(chara.TailModelId, false, root);
-            UmaAssembler.ApplyTailTexture(umachar.tailInstance, chara.Id);
+            if (chara.TailModelId != -1)
+            {
+                umachar.tailInstance = UmaAssembler.CreateTail(chara.TailModelId, false, root);
+                UmaAssembler.ApplyTailTexture(umachar.tailInstance, chara.Id);
+            }
 
             umachar.Initialize();
             umachar.LoadPhysics();
             umachar.SetupPhysics();
             umachar.InitializeFaceMorph();
 
-            umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
+            //umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
 
             root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
 
@@ -101,6 +106,7 @@ public class UIHandler : MonoBehaviour
 
             controller = umachar;
             morphs = controller.FaceDrivenKeyTarget.AllMorphs;
+            return;
         }
 
         Debug.LogWarning($"No input!");

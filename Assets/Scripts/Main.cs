@@ -21,9 +21,9 @@ public class Main : MonoBehaviour
 
     void Awake()
     {
-        //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         progressBar.text = "Creating DB Connenctions...";
         UmaDatabase.CreateConnection();
@@ -79,8 +79,19 @@ public class Main : MonoBehaviour
         umachar.SetupPhysics();
         umachar.InitializeFaceMorph();
 
-        umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
-            
+        //umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
+
+        /*
+        string log = "";
+
+        foreach (FacialMorph morph in umachar.FaceDrivenKeyTarget.AllMorphs)
+        {
+            log += $"{morph.name} : {morph.tag}\n";
+        }
+
+        File.WriteAllText("morphs.txt", log);
+        */
+
         root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
 
         uma = root;

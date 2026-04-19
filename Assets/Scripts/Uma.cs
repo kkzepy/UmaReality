@@ -1,9 +1,11 @@
 ﻿using Gallop;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using UnityEditor;
 using UnityEngine;
 
 public class UmaAssembler : MonoBehaviour
@@ -12,6 +14,12 @@ public class UmaAssembler : MonoBehaviour
     {
         var bodyLogicalPath = UmaDatabase.QueryBodyPath(charaId, costumeId);
         var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
+
+        if (bodyPath == null)
+        {
+            Debug.LogWarning($"No body found: {charaId} {costumeId}");
+            return null;
+        }
 
         using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey))
         {
@@ -115,6 +123,12 @@ public class UmaAssembler : MonoBehaviour
         var headLogicalPath = UmaDatabase.QueryHeadPath(charaId, headId);
         var headPath = UmaDatabase.ResolvePath(headLogicalPath);
 
+        if (headPath == null)
+        {
+            Debug.LogWarning($"No head found: {charaId} {headId}");
+            return null;
+        }
+
         using (var stream = new UmaAssetBundleStream(headPath, UmaDatabase.MetaData[headLogicalPath].FKey))
         {
             //Prevents from loading multiple assets which Unity dont like
@@ -198,6 +212,12 @@ public class UmaAssembler : MonoBehaviour
     {
         var tailLogicalPath = UmaDatabase.QueryTailPath(tailId);
         var tailPath = UmaDatabase.ResolvePath(tailLogicalPath);
+
+        if (tailPath == null)
+        {
+            Debug.LogWarning($"No tail found: {tailId}");
+            return null;
+        }
 
         using (var stream = new UmaAssetBundleStream(tailPath, UmaDatabase.MetaData[tailLogicalPath].FKey))
         {
@@ -865,14 +885,15 @@ public class UmaCharacter : MonoBehaviour
         // Physics instantiating
         string clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_cloth00";
         string bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_bust_cloth00";
-        string tailClothesLogicalPath = UmaDatabase.TailPath + $"tail{_tailId}_00/clothes/pfb_tail{_tailId}_00_cloth00";
+        string tailClothesLogicalPath = "";
+        if (charaEntry.TailModelId != -1) tailClothesLogicalPath = UmaDatabase.TailPath + $"tail{_tailId}_00/clothes/pfb_tail{_tailId}_00_cloth00";
         string headClothesLogicalPath = UmaDatabase.HeadPath + $"chr{charaEntry.Id}_{_headId}/clothes/pfb_chr{charaEntry.Id}_{_headId}_cloth00";
 
         //Debug.Log($"{clothesLogicalPath}\n{bustClothesLogicalPath}\n{tailClothesLogicalPath}\n{headClothesLogicalPath}");
 
         Instantiate(UmaAssetManager.LoadAsset<GameObject>(clothesLogicalPath, false), PhysicsContainer.transform);
         Instantiate(UmaAssetManager.LoadAsset<GameObject>(bustClothesLogicalPath, false), PhysicsContainer.transform);
-        Instantiate(UmaAssetManager.LoadAsset<GameObject>(tailClothesLogicalPath, false), PhysicsContainer.transform);
+        if (charaEntry.TailModelId != -1) Instantiate(UmaAssetManager.LoadAsset<GameObject>(tailClothesLogicalPath, false), PhysicsContainer.transform);
         Instantiate(UmaAssetManager.LoadAsset<GameObject>(headClothesLogicalPath, false), PhysicsContainer.transform);
     }
 
