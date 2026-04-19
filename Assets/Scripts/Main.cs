@@ -33,7 +33,7 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
-        Test();
+        //Test();
     }
 
 

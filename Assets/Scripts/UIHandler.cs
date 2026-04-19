@@ -125,10 +125,12 @@ public class UIHandler : MonoBehaviour
     {
         if (animField && !string.IsNullOrEmpty(animField.text))
         {
-            //var path = UmaDatabase.ResolvePath(animField.text);
-
+            /*
             controller.OverrideController["clip_s"] = UmaAssetManager.LoadAsset<AnimationClip>(animField.text);
             controller.UmaAnimator.Play("motion_s");
+            */
+
+            //controller.PlayAnimation(UmaDatabase.MetaData[animField.text]);
         }
     }
     private void Update()
@@ -168,9 +170,18 @@ public class UIHandler : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.J))
         {
-            controller.OverrideController["clip_s"] = Main.clip;
-            controller.UmaAnimator.Play("motion_s");
-            Debug.Log($"Playing anim");
+            Debug.Log(animField.text);
+            if (animField && !string.IsNullOrEmpty(animField.text))
+            {
+                /*
+                controller.OverrideController["clip_s"] = UmaAssetManager.LoadAsset<AnimationClip>(animField.text);
+                controller.UmaAnimator.Play("motion_s");
+                */
+
+                Debug.Log($"Playing anim : {UmaDatabase.MetaData[animField.text]}");
+                controller.PlayAnimation(UmaDatabase.MetaData[animField.text]);
+            }
+            
         }
     }
 }

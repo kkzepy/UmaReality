@@ -950,160 +950,49 @@ public class UmaCharacter : MonoBehaviour
             cheek.gameObject.SetActive(!cheek.gameObject.activeSelf);
         }
     }
-    /*
-    public void LoadAnimation(UmaDatabaseEntry entry)
+    
+    public void PlayAnimation(UmaDatabaseEntry animEntry)
     {
-        var aClip = UmaAssetManager.LoadAsset<AnimationClip>(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == entry).Key);
+        Debug.Log(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == animEntry).Key);
+        AnimationClip animation = UmaAssetManager.LoadAsset<AnimationClip>(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == animEntry).Key);
+        animation.name = animEntry.Name;
 
-        if (UmaAnimator)
+        // Start anim
+        if (animation.name.EndsWith("_s"))
         {
-            //Debug.Log("LiveTime" + UI.LiveTime.ToString());
-            aClip.name = entry.Name; // Need a complete path to find dependencies
-            LoadAnimation(aClip);
-            return;
+            OverrideController["clip_s"] = animation;
         }
 
-        if (aClip.name.Contains("tear"))
+        // End anim
+        else if (animation.name.EndsWith("_e"))
         {
-            return;
+            OverrideController["clip_e"] = animation;
         }
-    }
 
-    private void LoadFaceAnimation(AnimationClip clip)
-    {
-        if (clip.name.Contains("_s_"))
+        // Tail anim
+        else if (animation.name.Contains("tail"))
         {
-            FaceOverrideController["clip_s"] = clip;
-        }
-        else if (clip.name.Contains("_e_"))
-        {
-            FaceOverrideController["clip_e"] = clip;
-        }
-        else if (clip.name.Contains("_loop"))
-        {
-            isAnimatorControl = true;
-            FaceDrivenKeyTarget.ResetLocator();
-            UmaDatabaseEntry motion_e = null;
-            UmaDatabaseEntry motion_s = null;
-            if (UmaDatabase.MetaData.TryGetValue(clip.name.Replace("_loop", "_s"), out motion_s))
-            {
-                LoadAnimation(motion_s);
-            }
-
-            if (FaceOverrideController["clip_2"].name.Contains("_loop"))
-            {
-                if (!FaceOverrideController["clip_2"].name.Contains("hom_"))//home end animation not for interpolation
-                {
-                    if (UmaDatabase.MetaData.TryGetValue(FaceOverrideController["clip_2"].name.Replace("_loop", "_e"), out motion_e))
-                    {
-                        LoadAnimation(motion_e);
-                    }
-                }
-            }
-
-            FaceOverrideController["clip_1"] = FaceOverrideController["clip_2"];
-            FaceOverrideController["clip_2"] = clip;
-            UmaFaceAnimator.Play("motion_1", 0, 0);
-            UmaFaceAnimator.SetTrigger((motion_s != null && motion_e != null) ? "next_e" : ((motion_s != null) ? "next_s" : "next"));
-        }
-        else
-        {
-            isAnimatorControl = true;
-            FaceDrivenKeyTarget.ResetLocator();
-            FaceOverrideController["clip_2"] = clip;
-            UmaFaceAnimator.Play("motion_2", 0, 0);
-        }
-    }
-
-    private void LoadEarAnimation(AnimationClip clip)
-    {
-        if (clip.name.Contains("_s_"))
-        {
-            FaceOverrideController["clip_s_ear"] = clip;
-        }
-        else if (clip.name.Contains("_e_"))
-        {
-            FaceOverrideController["clip_e_ear"] = clip;
-        }
-        else if (clip.name.Contains("_loop"))
-        {
-            UmaDatabaseEntry motion_e = null;
-            UmaDatabaseEntry motion_s = null;
-            if (UmaDatabase.MetaData.TryGetValue(clip.name.Replace("_loop", "_s"), out motion_s))
-            {
-                LoadAnimation(motion_s);
-            }
-
-            if (FaceOverrideController["clip_2_ear"].name.Contains("_loop"))
-            {
-                if (!FaceOverrideController["clip_2_ear"].name.Contains("hom_"))//home end animation not for interpolation
-                {
-                    if (UmaDatabase.MetaData.TryGetValue(FaceOverrideController["clip_2_ear"].name.Replace("_loop", "_e"), out motion_e))
-                    {
-                        LoadAnimation(motion_e);
-                    }
-                }
-            }
-
-            FaceOverrideController["clip_1_ear"] = FaceOverrideController["clip_2_ear"];
-            FaceOverrideController["clip_2_ear"] = clip;
-            UmaFaceAnimator.Play("motion_1", 1, 0);
-            UmaFaceAnimator.SetTrigger((motion_s != null && motion_e != null) ? "next_e_ear" : ((motion_s != null) ? "next_s_ear" : "next_ear"));
-        }
-        else
-        {
-            if (FaceOverrideController["clip_2"].name == "clip_2")
-            {
-                isAnimatorControl = true;
-                FaceDrivenKeyTarget.ResetLocator();
-            }
-            FaceOverrideController["clip_2_ear"] = clip;
-            UmaFaceAnimator.Play("motion_2", 1, 0);
-        }
-    }
-
-    public void LoadAnimation(AnimationClip clip)
-    {
-        if (clip.name.EndsWith("_s"))
-        {
-            OverrideController["clip_s"] = clip;
-        }
-        else if (clip.name.EndsWith("_e"))
-        {
-            OverrideController["clip_e"] = clip;
-        }
-        else if (clip.name.Contains("tail"))
-        {
-            //if (IsMini) return;
             UpBodyReset();
-            OverrideController["clip_t"] = clip;
-            UmaAnimator.Play("motion_t", 1, 0);
+            OverrideController["clip_t"] = animation;
+            UmaAnimator.Play("motion_t");
         }
-        else if (clip.name.EndsWith("_face"))
+
+        // Pose anim
+        else if (animation.name.EndsWith("_pos"))
         {
-            //if (IsMini) return;
-            LoadFaceAnimation(clip);
-        }
-        else if (clip.name.Contains("_ear"))
-        {
-            //if (IsMini) return;
-            LoadEarAnimation(clip);
-        }
-        else if (clip.name.EndsWith("_pos"))
-        {
-            //if (IsMini) return;
-            OverrideController["clip_p"] = clip;
+            OverrideController["clip_p"] = animation;
             UmaAnimator.Play("motion_p", 2, 0);
         }
-        /*
-        else if (clip.name.EndsWith("_cam"))
-        {
-            Builder.SetPreviewCamera(clip);
-        }
-        */
 
-        /*
-        else if (clip.name.Contains("_loop"))
+        // Face anim
+        else if (animation.name.EndsWith("_face"))
+        {
+            Debug.Log($"Playing face anim: {animation.name}");
+            PlayFaceAnimation(animation);
+        }
+
+        // Loop anim
+        else if (animation.name.Contains("_loop"))
         {
             UpBodyReset();
             if (isAnimatorControl && FaceDrivenKeyTarget)
@@ -1112,137 +1001,86 @@ public class UmaCharacter : MonoBehaviour
                 isAnimatorControl = false;
             }
 
-            if (Main.AbList.TryGetValue($"{clip.name.Replace("/body", "/facial")}_face", out UmaDatabaseEntry entry))
+            if (UmaDatabase.MetaData.TryGetValue($"{animation.name.Replace("/body", "/facial")}_face", out UmaDatabaseEntry entry))
             {
-                LoadAnimation(entry);
+                PlayAnimation(entry);
             }
 
-            if (Main.AbList.TryGetValue($"{clip.name.Replace("/body", "/facial")}_ear", out entry))
+            if (UmaDatabase.MetaData.TryGetValue($"{animation.name.Replace("/body", "/facial")}_ear", out entry))
             {
-                LoadAnimation(entry);
+                PlayAnimation(entry);
             }
 
             UmaDatabaseEntry motion_e = null, motion_s = null;
-            if (Main.AbList.TryGetValue(clip.name.Replace("_loop", "_s"), out motion_s))
+            if (UmaDatabase.MetaData.TryGetValue(animation.name.Replace("_loop", "_s"), out motion_s))
             {
-                LoadAnimation(motion_s);
+                PlayAnimation(motion_s);
             }
 
             if (OverrideController["clip_2"].name.Contains("_loop"))
             {
                 if (!OverrideController["clip_2"].name.Contains("hom_"))//home end animation not for interpolation
                 {
-                    if (Main.AbList.TryGetValue(OverrideController["clip_2"].name.Replace("_loop", "_e"), out motion_e))
+                    if (UmaDatabase.MetaData.TryGetValue(OverrideController["clip_2"].name.Replace("_loop", "_e"), out motion_e))
                     {
-                        LoadAnimation(motion_e);
+                        PlayAnimation(motion_e);
                     }
                 }
             }
 
-            Builder.SetPreviewCamera(null);
+            //Builder.SetPreviewCamera(null);
             OverrideController["clip_1"] = OverrideController["clip_2"];
-            OverrideController["clip_2"] = clip;
+            OverrideController["clip_2"] = animation;
             UmaAnimator.Play("motion_1", 0, 0);
             UmaAnimator.SetTrigger((motion_s != null && motion_e != null) ? "next_e" : ((motion_s != null) ? "next_s" : "next"));
         }
-        */
-        /*
-        else
+
+    }
+
+    public void PlayFaceAnimation(AnimationClip animation)
+    {
+        if (animation.name.Contains("_s_"))
         {
-            if (FaceDrivenKeyTarget)
+            FaceOverrideController["clip_s"] = animation;
+        }
+        else if (animation.name.Contains("_e_"))
+        {
+            FaceOverrideController["clip_e"] = animation;
+        }
+        else if (animation.name.Contains("_loop"))
+        {
+            isAnimatorControl = true;
+            FaceDrivenKeyTarget.ResetLocator();
+            UmaDatabaseEntry motion_e = null;
+            UmaDatabaseEntry motion_s = null;
+            if (UmaDatabase.MetaData.TryGetValue(animation.name.Replace("_loop", "_s"), out motion_s))
             {
-                FaceDrivenKeyTarget.ResetLocator();
-                isAnimatorControl = false;
-            }
-            UpBodyReset();
-            var pos_weight = UmaAnimator.GetLayerWeight(2);
-            UmaAnimator.Rebind();
-            UmaAnimator.SetLayerWeight(2, pos_weight); //keep position layer weight
-            OverrideController["clip_2"] = clip;
-            // If Cut-in, play immediately without state interpolation
-
-            if (UmaDatabase.MetaData.TryGetValue($"{clip.name.Replace("/body", "/facial")}_face", out UmaDatabaseEntry facialMotion))
-            {
-                LoadAnimation(facialMotion);
-            }
-
-            if (UmaDatabase.MetaData.TryGetValue($"{clip.name.Replace("/body", "/facial")}_ear", out UmaDatabaseEntry earMotion))
-            {
-                LoadAnimation(earMotion);
+                PlayAnimation(motion_s);
             }
 
-            /*
-            if (UmaDatabase.MetaData.TryGetValue($"{clip.name.Replace("/body", "/camera")}_cam", out UmaDatabaseEntry cameraMotion))
+            if (FaceOverrideController["clip_2"].name.Contains("_loop"))
             {
-                LoadAnimation(cameraMotion);
-            }
-            else
-            {
-                Builder.SetPreviewCamera(null);
-            }
-            
-
-            if (Main.AbList.TryGetValue($"{clip.name.Replace("/body", "/position")}_pos", out UmaDatabaseEntry posMotion))
-            {
-                LoadAnimation(posMotion);
-            }
-            else
-            {
-                OverrideController["clip_p"] = null;
-            }
-
-            if (IsMini)
-            {
-                Builder.SetPreviewCamera(null);
-            }
-
-            if (clip.name.Contains("crd") || clip.name.Contains("res_chr"))
-            {
-
-                if (clip.name.Contains("_cti_crd"))
+                if (!FaceOverrideController["clip_2"].name.Contains("hom_"))//home end animation not for interpolation
                 {
-                    ResetDynamicBone();
-                    var dir = Path.GetDirectoryName(clip.name).Replace("\\", "/");
-                    string[] param = Path.GetFileName(clip.name).Split('_');
-                    if (param.Length > 4)
+                    if (UmaDatabase.MetaData.TryGetValue(FaceOverrideController["clip_2"].name.Replace("_loop", "_e"), out motion_e))
                     {
-                        int index = int.Parse(param[4]);
-                        if (index == 1)
-                        {
-                            var cur = index + 1;
-                            while (true)
-                            {
-                                var nextSearch = $"{dir}/{param[0]}_{param[1]}_{param[2]}_{param[3]}_{cur.ToString().PadLeft(2, '0')}";
-                                if (Main.AbList.TryGetValue(nextSearch, out UmaDatabaseEntry result))
-                                {
-                                    UmaAssetManager.LoadAssetBundle(result);
-                                    cur++;
-                                }
-                                else break;
-                            }
-                        }
-
-                        index++;
-                        var next = $"{dir}/{param[0]}_{param[1]}_{param[2]}_{param[3]}_{index.ToString().PadLeft(2, '0')}";
-                        if (Main.AbList.TryGetValue(next, out UmaDatabaseEntry nextMotion))
-                        {
-                            var aevent = new AnimationEvent
-                            {
-                                time = clip.length * 0.99f,
-                                stringParameter = (nextMotion != null ? nextMotion.Name : null),
-                                functionName = (nextMotion != null ? "SetNextAnimationCut" : "SetEndAnimationCut")
-                            };
-                            clip.AddEvent(aevent);
-                        }
+                        PlayAnimation(motion_e);
                     }
                 }
-
             }
 
-            UmaAnimator.Play("motion_2", 0, 0);
+            FaceOverrideController["clip_1"] = FaceOverrideController["clip_2"];
+            FaceOverrideController["clip_2"] = animation;
+            UmaFaceAnimator.Play("motion_1", 0, 0);
+            UmaFaceAnimator.SetTrigger((motion_s != null && motion_e != null) ? "next_e" : ((motion_s != null) ? "next_s" : "next"));
         }
-    
+        else
+        {
+            isAnimatorControl = true;
+            FaceDrivenKeyTarget.ResetLocator();
+            FaceOverrideController["clip_2"] = animation;
+            UmaFaceAnimator.Play("motion_2", 0, 0);
+        }
     }
-    */
 }
 
