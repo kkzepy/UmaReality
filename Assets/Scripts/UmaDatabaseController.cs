@@ -375,7 +375,16 @@ public class UmaDatabase
 
     public static string ResolvePath(string logicalPath)
     {
-        return MetaData[logicalPath]?.QueryPath();
+        //return MetaData[logicalPath]?.QueryPath();
+
+        if (MetaData.TryGetValue(logicalPath, out var path))
+        {
+            return path.QueryPath();
+        }
+        else
+        {
+            return null;
+        }
     }
 
 }

@@ -1,11 +1,8 @@
 using Gallop;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class UIHandler : MonoBehaviour
 {
@@ -27,6 +24,7 @@ public class UIHandler : MonoBehaviour
     {
         controller = Main.uma.GetComponent<UmaCharacter>();
         morphs = controller.FaceDrivenKeyTarget.AllMorphs;
+        //loop = StartCoroutine(RandomBlinker());
     }
 
     public void OnButtonClick()
@@ -115,6 +113,9 @@ public class UIHandler : MonoBehaviour
 
             controller = umachar;
             morphs = controller.FaceDrivenKeyTarget.AllMorphs;
+
+            umachar.ToggleRandomBlink(true);
+
             return;
         }
 
@@ -182,6 +183,14 @@ public class UIHandler : MonoBehaviour
                 controller.PlayAnimation(UmaDatabase.MetaData[animField.text]);
             }
             
+        }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            if (Main.uma)   
+            {
+                controller.Blink();
+            }
         }
     }
 }

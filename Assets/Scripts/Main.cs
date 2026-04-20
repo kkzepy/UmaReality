@@ -1,13 +1,7 @@
-using Gallop;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using TMPro;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
+using UnityEngine.Rendering;
 //using Gallop;
 
 public class Main : MonoBehaviour
@@ -25,6 +19,12 @@ public class Main : MonoBehaviour
         //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
         //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
+        UmaDatabase.persistentPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\";
+        UmaDatabase.masterDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
+        UmaDatabase.DBKey = "56636B634272377665704162";
+        GraphicsSettings.renderPipelineAsset = null;
+
         progressBar.text = "Creating DB Connenctions...";
         UmaDatabase.CreateConnection();
         progressBar.text = "Initializing DB...";
@@ -34,10 +34,16 @@ public class Main : MonoBehaviour
         progressBar.text = "";
 
         //Test();
+        /*
+        foreach (var entry in UmaDatabase.MetaData.Take(28))
+        {
+            Debug.Log(entry.Value.Url);
+        }
+        */
     }
 
 
-    void Start()
+    void AStart()
     {
         var chara = UmaDatabase.GetCharaEntry(1100);
 
@@ -113,13 +119,13 @@ public class Main : MonoBehaviour
             }
             */
 
-            if (item.Key.Contains("anm") || item.Key.Contains("motion")) 
+            if (item.Key.Contains("anim") || item.Key.Contains("motion"))
             {
-                log += item.Value.Name + "\n";
+                log += item.Value.Name + " : " + item.Value.Prerequisites + "\n";
             }
 
         }
-        File.WriteAllText("anim.txt", log);
+        File.WriteAllText("animglobal.txt", log);
      
     }
 

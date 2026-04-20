@@ -1,13 +1,11 @@
 ﻿using Gallop;
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
-using UnityEditor;
 using UnityEngine;
-using static UnityEditor.ObjectChangeEventStream;
+using Random = UnityEngine.Random;
 
 public class UmaAssembler : MonoBehaviour
 {
@@ -675,6 +673,10 @@ public class UmaCharacter : MonoBehaviour
     string _costumeId;
     string _tailId;
 
+    public float randomBlinkMinInterval = 1f;
+    public float randomBlinkMaxInterval = 4.2f;
+    Coroutine randomBlinkCoroutine;
+
     AssetHolder bodyAssetHolder;
     AssetHolder headAssetHolder;
 
@@ -1001,6 +1003,8 @@ public class UmaCharacter : MonoBehaviour
                 isAnimatorControl = false;
             }
 
+            Debug.Log($"{animation.name.Replace("/body", "/facial")}_face");
+
             if (UmaDatabase.MetaData.TryGetValue($"{animation.name.Replace("/body", "/facial")}_face", out UmaDatabaseEntry entry))
             {
                 PlayAnimation(entry);
@@ -1081,6 +1085,69 @@ public class UmaCharacter : MonoBehaviour
             FaceOverrideController["clip_2"] = animation;
             UmaFaceAnimator.Play("motion_2", 0, 0);
         }
+    }
+
+    public void PlayMorph(string morphName, float startWeight, float targetWeight, float duration)
+    {
+        FacialMorph morph = FaceDrivenKeyTarget.AllMorphs.FirstOrDefault(x => x.name == morphName);
+
+        StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
+    }
+
+    public IEnumerator AnimateMorph(FacialMorph morph, float startWeight, float targetWeight, float duration)
+    {
+        float time = 0f;
+
+        while (time < duration)
+        {
+            float t = time / duration;
+            float currentWeight = Mathf.Lerp(startWeight, targetWeight, t);
+
+            FaceDrivenKeyTarget.ChangeMorphWeight(morph, currentWeight);
+
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        // Pastikan nilai akhir tepat
+        FaceDrivenKeyTarget.ChangeMorphWeight(morph, targetWeight);
+    }
+
+    public void Blink(float duration = .2f)
+    {
+        PlayMorph("Eye_2_R", 0f, 1f, duration);
+        PlayMorph("Eye_2_L", 0f, 1f, duration);
+
+        PlayMorph("Eye_2_R", 1f, 0f, duration);
+        PlayMorph("Eye_2_L", 1f, 0f, duration);
+    }
+
+    IEnumerator RandomBlinkCoroutine()
+    {
+        while (true)
+        {
+            if (FaceDrivenKeyTarget)
+            {
+                yield return new WaitForSeconds(Random.Range(randomBlinkMinInterval, randomBlinkMaxInterval));
+
+                Blink();
+            }
+
+        }
+    }
+
+    public void ToggleRandomBlink(bool state)
+    {
+        if (state)
+        {
+            if (randomBlinkCoroutine != null) { return; }
+            StartCoroutine(RandomBlinkCoroutine());
+            
+            return;
+        }
+
+        if (randomBlinkCoroutine != null) { StopCoroutine(randomBlinkCoroutine); randomBlinkCoroutine = null; }
+        return;
     }
 }
 
