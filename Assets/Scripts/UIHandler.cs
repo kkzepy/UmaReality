@@ -114,7 +114,8 @@ public class UIHandler : MonoBehaviour
             controller = umachar;
             morphs = controller.FaceDrivenKeyTarget.AllMorphs;
 
-            umachar.ToggleRandomBlink(true);
+            umachar.SetRandomBlink(true);
+            umachar.SetRandomEarTwitch(true);
 
             return;
         }

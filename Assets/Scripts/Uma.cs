@@ -345,7 +345,7 @@ public class UmaAssembler : MonoBehaviour
         {
             body.transform.GetChild(0).SetParent(rootObject.transform);
         }
-        //body.SetActive(false); //for debugging
+        body.SetActive(false); //for debugging
         //Destroy(body);
 
         var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
@@ -674,8 +674,14 @@ public class UmaCharacter : MonoBehaviour
     string _tailId;
 
     public float randomBlinkMinInterval = 1f;
-    public float randomBlinkMaxInterval = 4.2f;
+    public float randomBlinkMaxInterval = 7.5f;
     Coroutine randomBlinkCoroutine;
+
+    public float randomEarTwitchMinInterval = 1f;
+    public float randomEarTwitchMaxInterval = 8f;
+    public int minEarMorphIndex = 0;
+    public int maxEarMorphIndex = 31;
+    Coroutine randomEarTwitchCoroutine;
 
     AssetHolder bodyAssetHolder;
     AssetHolder headAssetHolder;
@@ -753,6 +759,8 @@ public class UmaCharacter : MonoBehaviour
         upBodyPosition = upBodyBone.transform.localPosition;
         upBodyRotation = upBodyBone.transform.localRotation;
 
+        EyeHeight = headInstance.GetComponent<AssetHolder>()._assetTableValue["head_center_offset_y"];
+
         UmaAnimator = GetComponent<Animator>();
         if (UmaAnimator)
         {
@@ -770,9 +778,13 @@ public class UmaCharacter : MonoBehaviour
         locator = Instantiate(UmaAssetManager.LoadAsset<GameObject>("3d/animator/drivenkeylocator", true, true), transform);
         locator.name = "DrivenKeyLocator";
 
-        GameObject headBone = (GameObject)headInstance.GetComponent<AssetHolder>()._assetTable["head"];
-        var eyeLocator_L = headBone.transform.Find("Eye_target_locator_L");
-        var eyeLocator_R = headBone.transform.Find("Eye_target_locator_R");
+        HeadBone = (GameObject)headInstance.GetComponent<AssetHolder>()._assetTable["head"];
+        var eyeLocator_L = HeadBone.transform.Find("Eye_target_locator_L");
+        var eyeLocator_R = HeadBone.transform.Find("Eye_target_locator_R");
+
+        TrackTarget = new GameObject("TrackTarget").transform;
+        TrackTarget.SetParent(transform);
+        TrackTarget.position = HeadBone.transform.TransformPoint(0, 0, 10);
 
         foreach (var manga in new List<string> {
             "3d/effect/charaemotion/pfb_eff_chr_emo_eye_000",
@@ -820,7 +832,7 @@ public class UmaCharacter : MonoBehaviour
         {
             var p0 = TearPrefab_0;
             var p1 = TearPrefab_1;
-            var t = headBone.transform;
+            var t = HeadBone.transform;
             TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 1));
             TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 1, 1));
             TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 0));
@@ -944,15 +956,11 @@ public class UmaCharacter : MonoBehaviour
         }
     }
 
-    public void ToggleBlush()
+    public void PlayAnimation(string animPath)
     {
-        var cheek = transform.Find("M_Cheek");
-        if (cheek)
-        {
-            cheek.gameObject.SetActive(!cheek.gameObject.activeSelf);
-        }
+        PlayAnimation(UmaDatabase.MetaData.FirstOrDefault(x => x.Key == animPath).Value);
     }
-    
+
     public void PlayAnimation(UmaDatabaseEntry animEntry)
     {
         Debug.Log(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == animEntry).Key);
@@ -1094,6 +1102,11 @@ public class UmaCharacter : MonoBehaviour
         StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
     }
 
+    public void PlayMorph(FacialMorph morph, float startWeight, float targetWeight, float duration)
+    {
+        StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
+    }
+
     public IEnumerator AnimateMorph(FacialMorph morph, float startWeight, float targetWeight, float duration)
     {
         float time = 0f;
@@ -1136,18 +1149,128 @@ public class UmaCharacter : MonoBehaviour
         }
     }
 
-    public void ToggleRandomBlink(bool state)
+    IEnumerator RandomEarTwitchCoroutine()
+    {
+        while (true)
+        {
+            if (FaceDrivenKeyTarget)
+            {
+                yield return new WaitForSeconds(Random.Range(randomEarTwitchMinInterval, randomEarTwitchMaxInterval));
+
+                FacialMorph morph = FaceDrivenKeyTarget.AllMorphs[Random.Range(minEarMorphIndex, maxEarMorphIndex)];
+
+                PlayMorph(morph, 1f, 0f, .4f);
+                yield return new WaitForSeconds(Random.Range(randomEarTwitchMinInterval, randomEarTwitchMaxInterval));
+                PlayMorph(morph, 1f, 0f, .4f);
+            }
+
+        }
+    }
+
+    public void SetRandomBlink(bool state)
     {
         if (state)
         {
             if (randomBlinkCoroutine != null) { return; }
-            StartCoroutine(RandomBlinkCoroutine());
+            randomBlinkCoroutine = StartCoroutine(RandomBlinkCoroutine());
             
             return;
         }
 
         if (randomBlinkCoroutine != null) { StopCoroutine(randomBlinkCoroutine); randomBlinkCoroutine = null; }
         return;
+    }
+
+    public void SetRandomEarTwitch(bool state)
+    {
+        if (state)
+        {
+            if (randomEarTwitchCoroutine != null) { return; }
+            randomEarTwitchCoroutine = StartCoroutine(RandomEarTwitchCoroutine());
+
+            return;
+        }
+
+        if (randomEarTwitchCoroutine != null) { StopCoroutine(randomEarTwitchCoroutine); randomEarTwitchCoroutine = null; }
+        return;
+    }
+
+    public void SetSmile(bool state, float weight = 1f, float duration = .1f, bool withBlush = true, bool closeEyes = false, bool includeEyeBrows = true)
+    {
+        // Smile: Mouth_12_0
+        // EyeBrow: EyeBrow_13_R, EyeBrow_13_L
+        // Eye: Eye_5_R, Eye_L_R
+
+        if (FaceDrivenKeyTarget)
+        {
+            if (state)
+            {
+                PlayMorph("Mouth_12_0", 0f, 1f, duration);
+
+                if (withBlush)
+                {
+                    SetBlush(true);
+                }
+
+                if (closeEyes)
+                {
+                    // Takes 30% of base duration
+                    PlayMorph("Eye_5_R", 0f, 1f, (30f / 100f) * duration);
+                    PlayMorph("Eye_5_L", 0f, 1f, (30f / 100f) * duration);
+                }
+
+                if (includeEyeBrows)
+                {
+                    // Takes 30% of base duration
+                    PlayMorph("EyeBrow_13_R", 0f, 1f, (30f / 100f) * duration);
+                    PlayMorph("EyeBrow_13_L", 0f, 1f, (30f / 100f) * duration);
+                }
+                return;
+            }
+
+            else
+            {
+                PlayMorph("Mouth_12_0", 1f, 0f, duration);
+
+                if (withBlush)
+                {
+                    SetBlush(false);
+                }
+
+                if (closeEyes)
+                {
+                    // Takes 30% of base duration
+                    PlayMorph("Eye_5_R", 1f, 0f, (30f / 100f) * duration);
+                    PlayMorph("Eye_5_L", 1f, 0f, (30f / 100f) * duration);
+                }
+
+                if (includeEyeBrows)
+                {
+                    // Takes 30% of base duration
+                    PlayMorph("EyeBrow_13_R", 1f, 0f, (30f / 100f) * duration);
+                    PlayMorph("EyeBrow_13_L", 1f, 0f, (30f / 100f) * duration);
+                }
+                return;
+            }
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (EnableEyeTracking && TrackTarget)
+        {
+            if (!HeadBone)
+            {
+                HeadBone = (GameObject)bodyInstance.GetComponent<AssetHolder>()._assetTable["head"];
+            }
+            Debug.Log(HeadBone);
+            var finalRotation = FaceDrivenKeyTarget.GetEyeTrackRotation(TrackTarget.transform.position);
+            FaceDrivenKeyTarget.SetEyeTrack(finalRotation);
+
+            var cam = Camera.main;
+            //LookAt Camera
+            TrackTarget.position = Vector3.Lerp(TrackTarget.position, cam.transform.position, Time.fixedDeltaTime * 3);
+        }
     }
 }
 

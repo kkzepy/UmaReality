@@ -119,8 +119,9 @@ public class Main : MonoBehaviour
             }
             */
 
-            if (item.Key.Contains("anim") || item.Key.Contains("motion"))
+            if (item.Key.Contains("/type0") || item.Key.Contains("/type99") || item.Key.Contains("anm_sty_"))
             {
+                if (item.Key.Contains("/tail") || item.Key.Contains("_pos") || item.Key.Contains("prop") || item.Key.Contains("_pose") || item.Key.Contains("_defaultmotion") || item.Key.Contains("mini")) continue;
                 log += item.Value.Name + " : " + item.Value.Prerequisites + "\n";
             }
 
@@ -135,8 +136,17 @@ public class Main : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P))
         {
             var controller = uma.GetComponent<UmaCharacter>();
-            controller.ToggleBlush();
-            controller.UpBodyReset();
+            //if (controller.transform.Find("M_Cheek").gameObject.activeSelf)
+            {
+                controller.SetSmile(true, 1f, .14f, true, true, false);
+                controller.SetRandomBlink(false);
+            }
+            /*else
+            {
+                controller.SetSmile(false, 1f, 1f, true, true, true);
+                controller.SetRandomBlink(true);
+            }*/
+            //controller.UpBodyReset();
         }
     }
 }
