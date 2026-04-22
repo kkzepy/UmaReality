@@ -72,8 +72,6 @@ public class UIHandler : MonoBehaviour
             umachar.FaceOverrideController = Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller");
             umachar.UmaFaceAnimator = Resources.Load<Animator>("Animations/Face Controller");
 
-            Debug.Log(umachar.UmaAnimator);
-
             var bodyLogicalPath = UmaDatabase.QueryBodyPath(chara.Id, costumeId);
             var headLogicalPath = UmaDatabase.QueryHeadPath(chara.Id, headId);
             var tailLogicalPath = UmaDatabase.QueryTailPath(chara.TailModelId);
@@ -116,6 +114,7 @@ public class UIHandler : MonoBehaviour
 
             umachar.SetRandomBlink(true);
             umachar.SetRandomEarTwitch(true);
+            umachar.PlaySignatureAnimation();
 
             return;
         }

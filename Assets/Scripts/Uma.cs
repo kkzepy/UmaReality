@@ -425,8 +425,6 @@ public class UmaAssembler : MonoBehaviour
             //chara.AddComponent<AnimationLoader>();
         }
 
-        Debug.Log($"Loaded char: {entry.Id}");
-
         return chara;
     }
 
@@ -488,11 +486,20 @@ public class UmaAssembler : MonoBehaviour
             var toonMapLogicalPath = $"{UmaDatabase.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_shad_c";
             var tripleMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_base";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_base_wet";
             var optionMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_ctrl";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_ctrl_wet";
-
-            mainTex = UmaAssetManager.LoadAsset<Texture2D>(mainTexLogicalPath, false);
-            toonMap = UmaAssetManager.LoadAsset<Texture2D>(toonMapLogicalPath, false);
-            tripleMaskMap = UmaAssetManager.LoadAsset<Texture2D>(tripleMaskMapLogicalPath, false);
-            optionMaskMap = UmaAssetManager.LoadAsset<Texture2D>(optionMaskMapLogicalPath, false);
+            
+            try
+            {
+                mainTex = UmaAssetManager.LoadAsset<Texture2D>(mainTexLogicalPath, false);
+                toonMap = UmaAssetManager.LoadAsset<Texture2D>(toonMapLogicalPath, false);
+                tripleMaskMap = UmaAssetManager.LoadAsset<Texture2D>(tripleMaskMapLogicalPath, false);
+                optionMaskMap = UmaAssetManager.LoadAsset<Texture2D>(optionMaskMapLogicalPath, false);
+            }
+            catch (KeyNotFoundException)
+            {
+                Debug.LogWarning($"No tail texture found for char {characterId}");
+                return;
+            }
+            
 
             r.material.SetTexture("_MainTex", mainTex);
             r.material.SetTexture("_ToonMap", toonMap);
@@ -888,7 +895,6 @@ public class UmaCharacter : MonoBehaviour
             Debug.LogWarning("UpBody bone not found!");
         }
     }
-
     public void LoadPhysics()
     {
         // Prevents null reference exception when loading physics before setting costumeId
@@ -916,7 +922,6 @@ public class UmaCharacter : MonoBehaviour
         if (charaEntry.TailModelId != -1) Instantiate(UmaAssetManager.LoadAsset<GameObject>(tailClothesLogicalPath, false), PhysicsContainer.transform);
         Instantiate(UmaAssetManager.LoadAsset<GameObject>(headClothesLogicalPath, false), PhysicsContainer.transform);
     }
-
     public void SetupPhysics()
     {
         // Initial physics setup
@@ -946,7 +951,7 @@ public class UmaCharacter : MonoBehaviour
             cySpring.EnablePhysics(true );
         }
     }
-
+    
     public void SetBlush(bool active)
     {
         var cheek = transform.Find("M_Cheek");
@@ -960,7 +965,6 @@ public class UmaCharacter : MonoBehaviour
     {
         PlayAnimation(UmaDatabase.MetaData.FirstOrDefault(x => x.Key == animPath).Value);
     }
-
     public void PlayAnimation(UmaDatabaseEntry animEntry)
     {
         Debug.Log(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == animEntry).Key);
@@ -1048,7 +1052,6 @@ public class UmaCharacter : MonoBehaviour
         }
 
     }
-
     public void PlayFaceAnimation(AnimationClip animation)
     {
         if (animation.name.Contains("_s_"))
@@ -1101,12 +1104,10 @@ public class UmaCharacter : MonoBehaviour
 
         StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
     }
-
     public void PlayMorph(FacialMorph morph, float startWeight, float targetWeight, float duration)
     {
         StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
     }
-
     public IEnumerator AnimateMorph(FacialMorph morph, float startWeight, float targetWeight, float duration)
     {
         float time = 0f;
@@ -1125,7 +1126,6 @@ public class UmaCharacter : MonoBehaviour
         // Pastikan nilai akhir tepat
         FaceDrivenKeyTarget.ChangeMorphWeight(morph, targetWeight);
     }
-
     public void Blink(float duration = .2f)
     {
         PlayMorph("Eye_2_R", 0f, 1f, duration);
@@ -1134,7 +1134,6 @@ public class UmaCharacter : MonoBehaviour
         PlayMorph("Eye_2_R", 1f, 0f, duration);
         PlayMorph("Eye_2_L", 1f, 0f, duration);
     }
-
     IEnumerator RandomBlinkCoroutine()
     {
         while (true)
@@ -1148,7 +1147,6 @@ public class UmaCharacter : MonoBehaviour
 
         }
     }
-
     IEnumerator RandomEarTwitchCoroutine()
     {
         while (true)
@@ -1166,7 +1164,6 @@ public class UmaCharacter : MonoBehaviour
 
         }
     }
-
     public void SetRandomBlink(bool state)
     {
         if (state)
@@ -1180,7 +1177,6 @@ public class UmaCharacter : MonoBehaviour
         if (randomBlinkCoroutine != null) { StopCoroutine(randomBlinkCoroutine); randomBlinkCoroutine = null; }
         return;
     }
-
     public void SetRandomEarTwitch(bool state)
     {
         if (state)
@@ -1194,7 +1190,6 @@ public class UmaCharacter : MonoBehaviour
         if (randomEarTwitchCoroutine != null) { StopCoroutine(randomEarTwitchCoroutine); randomEarTwitchCoroutine = null; }
         return;
     }
-
     public void SetSmile(bool state, float weight = 1f, float duration = .1f, bool withBlush = true, bool closeEyes = false, bool includeEyeBrows = true)
     {
         // Smile: Mouth_12_0
@@ -1254,6 +1249,17 @@ public class UmaCharacter : MonoBehaviour
             }
         }
     }
+    public void PlaySignatureAnimation()
+    {
+        if (UmaDatabase.MetaData.TryGetValue($"3d/motion/event/body/chara/chr{charaEntry.Id}_00/anm_eve_chr{charaEntry.Id}_00_idle01_loop", out UmaDatabaseEntry anim))
+        {
+            PlayAnimation(anim);
+            return;
+        }
+
+        Debug.LogWarning($"No signature animation for char {charaEntry.Id}");
+    }
+
 
     private void FixedUpdate()
     {
@@ -1263,7 +1269,6 @@ public class UmaCharacter : MonoBehaviour
             {
                 HeadBone = (GameObject)bodyInstance.GetComponent<AssetHolder>()._assetTable["head"];
             }
-            Debug.Log(HeadBone);
             var finalRotation = FaceDrivenKeyTarget.GetEyeTrackRotation(TrackTarget.transform.position);
             FaceDrivenKeyTarget.SetEyeTrack(finalRotation);
 

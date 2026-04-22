@@ -19,9 +19,9 @@ public class Main : MonoBehaviour
         //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
         //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
-        UmaDatabase.persistentPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\";
-        UmaDatabase.masterDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
-        UmaDatabase.metaDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
+        UmaDatabase.persistentPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\";
+        UmaDatabase.masterDbPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
         UmaDatabase.DBKey = "56636B634272377665704162";
         GraphicsSettings.renderPipelineAsset = null;
 
@@ -33,7 +33,7 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
-        //Test();
+        Test();
         /*
         foreach (var entry in UmaDatabase.MetaData.Take(28))
         {
@@ -119,14 +119,13 @@ public class Main : MonoBehaviour
             }
             */
 
-            if (item.Key.Contains("/type0") || item.Key.Contains("/type99") || item.Key.Contains("anm_sty_"))
+            if (item.Key.Contains("ui"))
             {
-                if (item.Key.Contains("/tail") || item.Key.Contains("_pos") || item.Key.Contains("prop") || item.Key.Contains("_pose") || item.Key.Contains("_defaultmotion") || item.Key.Contains("mini")) continue;
                 log += item.Value.Name + " : " + item.Value.Prerequisites + "\n";
             }
 
         }
-        File.WriteAllText("animglobal.txt", log);
+        File.WriteAllText("ui.txt", log);
      
     }
 
