@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
-using System;
 using System.IO;
 using System.Linq;
-using Unity.Plastic.Newtonsoft;
 using UnityEngine;
-using System.Data;
 public class UmaAssetManager : MonoBehaviour
 {
     public static Shader HairShader, FaceShader, EyeShader, CheekShader, EyebrowShader, AlphaShader, BodyAlphaShader, BodyBehindAlphaShader = null;
@@ -219,6 +216,11 @@ public class UmaAssetManager : MonoBehaviour
             return asset;
         }
     }
+}
+
+public class UmaAudio
+{
+    
 }
 
 public class UmaAssetBundleStream : FileStream

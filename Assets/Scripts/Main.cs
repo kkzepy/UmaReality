@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Media;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -12,6 +15,7 @@ public class Main : MonoBehaviour
     public static GameObject uma;
     public static AnimationClip clip;
     public TMP_Text progressBar;
+    //public List<UmaDatabaseEntry> Sounds = new List<UmaDatabaseEntry>();
 
     void Awake()
     {
@@ -24,7 +28,7 @@ public class Main : MonoBehaviour
         UmaDatabase.metaDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
         UmaDatabase.DBKey = "56636B634272377665704162";
         GraphicsSettings.renderPipelineAsset = null;
-
+        
         progressBar.text = "Creating DB Connenctions...";
         UmaDatabase.CreateConnection();
         progressBar.text = "Initializing DB...";
@@ -33,13 +37,20 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
-        Test();
-        /*
-        foreach (var entry in UmaDatabase.MetaData.Take(28))
+        //var aaaa = 
+        List<UmaDatabaseEntry> Sounds = UmaDatabase.MetaData.Where(ab => ab.Value.Type == UmaFileType.sound).Select(ab => ab.Value).ToList();
+
+
+        //Test();
+
+        string log = "";
+
+        foreach (var sound in Sounds)
         {
-            Debug.Log(entry.Value.Url);
+            log += sound.Name + "\n";
         }
-        */
+        File.WriteAllText("acbawb.txt", log);
+        
     }
 
 
@@ -119,13 +130,13 @@ public class Main : MonoBehaviour
             }
             */
 
-            if (item.Key.Contains("ui"))
+            if (item.Key.Contains("sound") || item.Key.Contains("voice") || item.Key.Contains("awb") || item.Key.Contains("acb"))
             {
                 log += item.Value.Name + " : " + item.Value.Prerequisites + "\n";
             }
 
         }
-        File.WriteAllText("ui.txt", log);
+        File.WriteAllText("acbawb.txt", log);
      
     }
 

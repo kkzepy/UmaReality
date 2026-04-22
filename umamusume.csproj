@@ -80,8 +80,10 @@
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBoneColliderBase.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\CySpringDataContainer.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\Character3DBase.cs" />
+    <Compile Include="Assets\Scripts\CriWareLibrary\Common\Endian.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpring.cs" />
     <Compile Include="Assets\Scripts\Main.cs" />
+    <Compile Include="Assets\Scripts\CriWareLibrary\SpliceStream.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CacheCamera.cs" />
     <Compile Include="Assets\Scripts\UIHandler.cs" />
     <Compile Include="Assets\Scripts\Uma.cs" />
@@ -98,6 +100,7 @@
     <Compile Include="Assets\Scripts\umamusume\Gallop\TearController.cs" />
     <Compile Include="Assets\Scripts\RotationConvert.cs" />
     <Compile Include="Assets\Scripts\Sqlite3MC.cs" />
+    <Compile Include="Assets\Scripts\CriWareLibrary\AwbReader.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringRootBone.cs" />
     <Compile Include="Assets\Scripts\UmaDatabaseController.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\Live\Cutt\LiveTimelineDefine.cs" />
@@ -105,11 +108,15 @@
     <Compile Include="Assets\Scripts\AssetBundleBuilder.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\EarType.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBonePlaneCollider.cs" />
+    <Compile Include="Assets\Scripts\CriWareLibrary\AcbParser.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBone.cs" />
+    <Compile Include="Assets\Scripts\CriWareLibrary\UtfTable.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\FacialMorph.cs" />
+    <Compile Include="Assets\Scripts\CriWareLibrary\Common\BinaryReaderEndian.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringPartsParamDataElement.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringCollisionData.cs" />
     <Compile Include="Assets\Scripts\umamusume\GallopExtras.cs" />
+    <Compile Include="Assets\Scripts\CriWareLibrary\AcbReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Scripts\umamusume.asmdef" />

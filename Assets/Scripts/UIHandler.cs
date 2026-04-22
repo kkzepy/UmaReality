@@ -22,8 +22,8 @@ public class UIHandler : MonoBehaviour
 
     private void Start()
     {
-        controller = Main.uma.GetComponent<UmaCharacter>();
-        morphs = controller.FaceDrivenKeyTarget.AllMorphs;
+        //controller = Main.uma.GetComponent<UmaCharacter>();
+        //morphs = controller.FaceDrivenKeyTarget.AllMorphs;
         //loop = StartCoroutine(RandomBlinker());
     }
 
