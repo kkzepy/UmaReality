@@ -218,11 +218,6 @@ public class UmaAssetManager : MonoBehaviour
     }
 }
 
-public class UmaAudio
-{
-    
-}
-
 public class UmaAssetBundleStream : FileStream
 {
     private const int headerSize = 256;
