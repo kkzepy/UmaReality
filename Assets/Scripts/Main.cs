@@ -23,9 +23,9 @@ public class Main : MonoBehaviour
         //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
         //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
-        UmaDatabase.persistentPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\";
-        UmaDatabase.masterDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
-        UmaDatabase.metaDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
+        UmaDatabase.persistentPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\";
+        UmaDatabase.masterDbPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
         UmaDatabase.DBKey = "56636B634272377665704162";
         GraphicsSettings.renderPipelineAsset = null;
         

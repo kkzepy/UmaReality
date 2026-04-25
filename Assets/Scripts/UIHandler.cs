@@ -1,6 +1,7 @@
 using Gallop;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ public class UIHandler : MonoBehaviour
     public TMP_InputField headIdField;
     public TMP_Text progressBar;
     public TMP_InputField animField;
+    public GameObject Dialogue;
 
     int costumeId = 0;
     int headId = 0;
@@ -20,11 +22,16 @@ public class UIHandler : MonoBehaviour
     UmaCharacter controller;
     List<FacialMorph> morphs;
 
+    ChatController chatController;
+    public string APIKey;
+
     private void Start()
     {
-        //controller = Main.uma.GetComponent<UmaCharacter>();
-        //morphs = controller.FaceDrivenKeyTarget.AllMorphs;
-        //loop = StartCoroutine(RandomBlinker());
+        chatController = new ChatController();
+        chatController.LoadUserDefinition("persona.json");
+        chatController.LoadBotDefinition("tokai_teio.json");
+        chatController.EndpointURL = "https://openrouter.ai/api/v1/chat/completions";
+        chatController.rules = File.ReadAllText("rules.txt");
     }
 
     public void OnButtonClick()
@@ -122,16 +129,26 @@ public class UIHandler : MonoBehaviour
         Debug.LogWarning($"No input!");
     }
 
-    public void Anim()
+    void HandleResponse(string value)
     {
-        if (animField && !string.IsNullOrEmpty(animField.text))
+        ExpressiveResponse response = ExpressiveResponseParser.Parse(value);
+        if (response != null)
         {
-            /*
-            controller.OverrideController["clip_s"] = UmaAssetManager.LoadAsset<AnimationClip>(animField.text);
-            controller.UmaAnimator.Play("motion_s");
-            */
+            Debug.Log($"{value}\n\n{response.Emote}\n{response.Anim}\n{response.Dialogue}\n");
+            if (response.Anim == "wave")
+            {
+                controller.PlayAnimation("3d/motion/event/body/type00/anm_eve_type00_koshiate01_01_loop");
+            }
 
-            //controller.PlayAnimation(UmaDatabase.MetaData[animField.text]);
+            if (response.Emote == "smile")
+            {
+                controller.SetSmile(true, 1f, .14f, true, true, false);
+            }
+            Dialogue.GetComponent<ChatDialogueHandler>().UpdateContent(response.Dialogue);
+        }
+        else
+        {
+            Debug.LogWarning(value);
         }
     }
     private void Update()
@@ -187,9 +204,11 @@ public class UIHandler : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.G))
         {
-            if (Main.uma)   
+            chatController.APIKey = APIKey;
+            if (Dialogue)
             {
-                controller.Blink();
+                StartCoroutine(chatController.Generate("Hi!", HandleResponse, 10, true, false, "mistral-small-creative"));
+                Debug.Log("requesting response");
             }
         }
     }

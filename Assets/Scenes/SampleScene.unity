@@ -395,6 +395,8 @@ MonoBehaviour:
   headIdField: {fileID: 967648275}
   progressBar: {fileID: 1609754169}
   animField: {fileID: 699155579}
+  Dialogue: {fileID: 370531227}
+  APIKey: 
 --- !u!1 &236784998
 GameObject:
   m_ObjectHideFlags: 0
