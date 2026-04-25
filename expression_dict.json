@@ -1,4 +1,5 @@
 {
+	"anim_map": {
 		"neutral_polite": ["3d/motion/event/body/type00/anm_eve_type00_homestand02_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand03_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi01_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi02_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi03_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi04_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi05_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi01_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi02_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi03_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi04_loop"],
 		"idle_relaxed": ["3d/motion/event/body/type00/anm_eve_type00_homestand01_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand05_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand06_loop", "3d/motion/event/body/type00/anm_eve_type00_swing02_loop"],
 		"hungry": ["3d/motion/event/body/type00/anm_eve_type00_hungry01_loop", "3d/motion/event/body/type00/anm_eve_type00_hungry02_loop", "3d/motion/event/body/type00/anm_eve_type00_hungry04_loop"],
@@ -41,4 +42,57 @@
 		"explaining": ["3d/motion/event/body/type00/anm_eve_type00_advice01_01_loop", "3d/motion/event/body/type00/anm_eve_type00_advice02_loop", "3d/motion/event/body/type00/anm_eve_type00_advice03_loop", "3d/motion/event/body/type00/anm_eve_type00_advice04_loop"],
 		"farewell": ["3d/motion/event/body/type00/anm_eve_type00_byebye08_loop", "3d/motion/event/body/type00/anm_eve_type00_byebye09_loop", "3d/motion/event/body/type00/anm_eve_type00_byebye12_loop"]
 	
+
+	},
+
+	"face_morph_map": {
+		"pout": [
+			{
+				"morphName": "EyeBrow_15_R",
+				"startWeight": 0.0,
+				"endWeight": 1.0,
+				"duration": 0.2
+			},
+			{
+				"morphName": "EyeBrow_15_L",
+				"startWeight": 0.0,
+				"endWeight": 1.0,
+				"duration": 0.2
+			}
+		],
+		"embarassed": [
+			{
+				"morphName": "EyeBrow_10_R",
+				"startWeight": 0.0,
+				"endWeight": 1.0,
+				"duration": 0.2
+			},
+			{
+				"morphName": "EyeBrow_10_L",
+				"startWeight": 0.0,
+				"endWeight": 1.0,
+				"duration": 0.2
+			},
+
+			{
+				"morphName": "Mouth_46_0",
+				"startWeight": 0.0,
+				"endWeight": 1.0,
+				"duration": 0.2
+			},
+			
+			{
+				"morphName": "Eye_5_R",
+				"startWeight": 0.0,
+				"endWeight": 1.0,
+				"duration": 0.2
+			},
+			{
+				"morphName": "Eye_5_L",
+				"startWeight": 0.0,
+				"endWeight": 1.0,
+				"duration": 0.2
+			}
+		]
+	}
 }

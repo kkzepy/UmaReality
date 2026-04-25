@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEditor.VersionControl;
 
 [System.Serializable]
@@ -11,6 +12,20 @@ public class ChatMessage
 {
     public string role;    // "system", "user", or "assistant"
     public string content;
+}
+
+public class FaceMorph
+{
+    public string morphName;
+    public float startWeight;
+    public float endWeight;
+    public float duration;
+}
+
+public class ExpressionVocab
+{
+    public Dictionary<string, List<string>> anim_map;
+    public Dictionary<string, List<FaceMorph>> face_morph_map;
 }
 
 [System.Serializable]

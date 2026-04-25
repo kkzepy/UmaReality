@@ -396,6 +396,8 @@ MonoBehaviour:
   progressBar: {fileID: 1609754169}
   animField: {fileID: 699155579}
   Dialogue: {fileID: 370531227}
+  Chat: {fileID: 0}
+  uma: {fileID: 0}
   APIKey: 
 --- !u!1 &236784998
 GameObject:
@@ -600,7 +602,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &370531228
 RectTransform:
   m_ObjectHideFlags: 0

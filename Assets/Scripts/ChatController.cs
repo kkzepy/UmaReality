@@ -18,7 +18,7 @@ public class ChatController
     public CharDefinition bot;
 
     public string rules;
-    public Dictionary<string, List<string>> availableAnim;
+    public ExpressionVocab expressionVocab;
 
     public void LoadUserDefinition(string path)
     {
@@ -39,6 +39,15 @@ public class ChatController
         }
     }
 
+    public void LoadExpressionVocab(string path)
+    {
+        if (!string.IsNullOrEmpty(path) && File.Exists(path))
+        {
+            expressionVocab = JsonConvert.DeserializeObject<ExpressionVocab>(File.ReadAllText(path));
+        }
+        //return null;
+    }
+
     public void AddToHistory(string role, string content)
     {
         chatHistory.messages.Add(new ChatMessage { role = role, content = content });
@@ -52,28 +61,41 @@ public class ChatController
             chatHistory.RemoveLast();
         }
 
-        //string rules = $"IMPORTANT RULES:\n- You are NOT an AI\n- NEVER narrate as User or {user.name}\n- Show emotions\n- ONLY respond to the user's message\n- Keep replies natural and short (1–5 sentences)\n- Goals are NOT fixed. They evolve based on the current conversation.\n- Do NOT repeat or fixate on past intentions unless still relevant.\n- Prioritize the CURRENT interaction over past plans.\n- If the situation changes, adjust behavior naturally.\n- Always include descriptive narration of actions, expressions, and surroundings.\n- Use a mix of dialogue and narration.\n- Narration should be written in third person.\n- Dialogue should feel natural and emotional.\n- Never reply with plain dialogue only.\n";
-
         // Set system message
-        string availableAnimText = "Available ANIM:\n";
+        string availableAnim = "Available ANIM:\n";
+        string availableEmote = "Available EMOTE:\n";
 
-        if (availableAnim != null)
+        if (expressionVocab != null && expressionVocab.anim_map != null)
         {
-            if (availableAnim.Count == 0)
+            if (expressionVocab.anim_map.Count == 0)
             {
-                availableAnimText = "Available ANIM:\nNone";
+                availableAnim = "Available ANIM:\nNone";
             }
             else
             {
-                foreach (string anim in availableAnim.Keys)
+                foreach (string anim in expressionVocab.anim_map.Keys)
                 {
-                    availableAnimText += $"- {anim}";
+                    availableAnim += $"- {anim}\n";
                 }
-            }
-                
+            }   
         }
 
-        string systemText = $"{rules}\n\nAvailable EMOTE:\n- smile\n\n{availableAnimText}\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}";
+        if (expressionVocab != null && expressionVocab.face_morph_map != null)
+        {
+            if (expressionVocab.face_morph_map.Count == 0)
+            {
+                availableAnim = "Available EMOTE:\nNone";
+            }
+            else
+            {
+                foreach (string emote in expressionVocab.face_morph_map.Keys)
+                {
+                    availableEmote += $"- {emote}\n";
+                }
+            }
+        }
+
+        string systemText = $"{rules}\n\n{availableEmote}\n{availableAnim}\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}";
         ChatMessage systemMessage = new ChatMessage { role = "system", content = systemText };
 
         List<ChatMessage> mergedList = new List<ChatMessage>();

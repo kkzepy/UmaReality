@@ -15,6 +15,9 @@ public class UIHandler : MonoBehaviour
     public TMP_Text progressBar;
     public TMP_InputField animField;
     public GameObject Dialogue;
+    public TMP_InputField Chat;
+
+    public GameObject uma;
 
     int costumeId = 0;
     int headId = 0;
@@ -25,7 +28,8 @@ public class UIHandler : MonoBehaviour
     List<FacialMorph> morphs;
 
     ChatController chatController;
-    Dictionary<string, List<string>> animMap;
+    ExpressionVocab expVoc;
+    string prevMorph;
     public string APIKey;
 
     private void Start()
@@ -38,8 +42,8 @@ public class UIHandler : MonoBehaviour
 
         chatController.EndpointURL = "https://openrouter.ai/api/v1/chat/completions";
         chatController.rules = File.ReadAllText("rules.txt");
-        animMap = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>( File.ReadAllText("expression_dict.json") );
-        chatController.availableAnim = animMap;
+        chatController.LoadExpressionVocab("expression_dict.json");
+        expVoc = chatController.expressionVocab;
     }
 
     public void OnButtonClick()
@@ -71,7 +75,7 @@ public class UIHandler : MonoBehaviour
 
         if (!string.IsNullOrEmpty(charaId.text))
         {
-            if (Main.uma) Destroy(Main.uma);
+            if (uma) Destroy(uma);
 
             var chara = UmaDatabase.GetCharaEntry(Convert.ToInt32(charaId.text));
 
@@ -122,7 +126,7 @@ public class UIHandler : MonoBehaviour
             umachar.OverrideController = Resources.Load<AnimatorOverrideController>("Animations/Override Controller");
             umachar.UmaAnimator.runtimeAnimatorController = umachar.OverrideController;
 
-            Main.uma = root;
+            uma = root;
 
             controller = umachar;
             morphs = controller.FaceDrivenKeyTarget.AllMorphs;
@@ -143,9 +147,10 @@ public class UIHandler : MonoBehaviour
         if (response != null)
         {
             Debug.Log($"{value}\n\n{response.Emote}\n{response.Anim}\n{response.Dialogue}\n");
-            if (animMap.ContainsKey(response.Anim))
+            
+            if (expVoc.anim_map.ContainsKey(response.Anim))
             {
-                if (animMap.TryGetValue(response.Anim, out List<string> animations))
+                if (expVoc.anim_map.TryGetValue(response.Anim, out List<string> animations))
                 {
                     int randomIndex = Random.Range(0, animations.Count);
                     controller.PlayAnimation(animations[randomIndex]);
@@ -156,6 +161,38 @@ public class UIHandler : MonoBehaviour
             {
                 controller.SetSmile(true, 1f, .14f, true, true, false);
             }
+
+            if (expVoc.face_morph_map.ContainsKey(response.Emote))
+            {
+                if (expVoc.face_morph_map.TryGetValue(response.Emote, out List<FaceMorph> morphs))
+                {
+                    if (prevMorph == null)
+                    {
+                        prevMorph = response.Emote;
+                        foreach (FaceMorph morph in morphs)
+                        {
+                            controller.PlayMorph(morph.morphName, morph.startWeight, morph.endWeight, morph.duration);
+                        }
+                    }
+
+                    else
+                    {
+                        foreach (FaceMorph morph in expVoc.face_morph_map[prevMorph])
+                        {
+                            controller.PlayMorph(morph.morphName, morph.endWeight, morph.startWeight, morph.duration);
+                        }
+
+                        foreach (FaceMorph morph in morphs)
+                        {
+                            controller.PlayMorph(morph.morphName, morph.startWeight, morph.endWeight, morph.duration);
+                        }
+
+                        prevMorph = null;
+                    }
+                    
+                }
+            }
+
             Dialogue.GetComponent<ChatDialogueHandler>().UpdateContent(response.Dialogue);
         }
         else
@@ -214,13 +251,23 @@ public class UIHandler : MonoBehaviour
             
         }
 
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.Equals))
         {
             chatController.APIKey = APIKey;
             if (Dialogue)
             {
-                StartCoroutine(chatController.Generate("Hi!", HandleResponse, 10, false, false, "mistral-small-creative"));
-                Debug.Log("requesting response");
+                string prompt = "Hi!";
+
+                if (Chat)
+                {
+                    if (!string.IsNullOrEmpty(Chat.text))
+                    {
+                        prompt = Chat.text;
+                    }
+                }
+
+                StartCoroutine(chatController.Generate(prompt, HandleResponse, 10, false, false, "mistral-small-creative"));
+                Debug.Log($"prompt: {prompt}");
             }
         }
     }
