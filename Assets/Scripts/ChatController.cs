@@ -18,6 +18,7 @@ public class ChatController
     public CharDefinition bot;
 
     public string rules;
+    public Dictionary<string, List<string>> availableAnim;
 
     public void LoadUserDefinition(string path)
     {
@@ -52,9 +53,28 @@ public class ChatController
         }
 
         //string rules = $"IMPORTANT RULES:\n- You are NOT an AI\n- NEVER narrate as User or {user.name}\n- Show emotions\n- ONLY respond to the user's message\n- Keep replies natural and short (1–5 sentences)\n- Goals are NOT fixed. They evolve based on the current conversation.\n- Do NOT repeat or fixate on past intentions unless still relevant.\n- Prioritize the CURRENT interaction over past plans.\n- If the situation changes, adjust behavior naturally.\n- Always include descriptive narration of actions, expressions, and surroundings.\n- Use a mix of dialogue and narration.\n- Narration should be written in third person.\n- Dialogue should feel natural and emotional.\n- Never reply with plain dialogue only.\n";
-        
+
         // Set system message
-        ChatMessage systemMessage = new ChatMessage { role = "system", content = $"{rules}\n\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}" };
+        string availableAnimText = "Available ANIM:\n";
+
+        if (availableAnim != null)
+        {
+            if (availableAnim.Count == 0)
+            {
+                availableAnimText = "Available ANIM:\nNone";
+            }
+            else
+            {
+                foreach (string anim in availableAnim.Keys)
+                {
+                    availableAnimText += $"- {anim}";
+                }
+            }
+                
+        }
+
+        string systemText = $"{rules}\n\nAvailable EMOTE:\n- smile\n\n{availableAnimText}\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}";
+        ChatMessage systemMessage = new ChatMessage { role = "system", content = systemText };
 
         List<ChatMessage> mergedList = new List<ChatMessage>();
         mergedList.Add(systemMessage);

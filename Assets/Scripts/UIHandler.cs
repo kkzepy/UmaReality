@@ -1,9 +1,11 @@
 using Gallop;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class UIHandler : MonoBehaviour
 {
@@ -23,15 +25,21 @@ public class UIHandler : MonoBehaviour
     List<FacialMorph> morphs;
 
     ChatController chatController;
+    Dictionary<string, List<string>> animMap;
     public string APIKey;
 
     private void Start()
     {
         chatController = new ChatController();
+
         chatController.LoadUserDefinition("persona.json");
         chatController.LoadBotDefinition("tokai_teio.json");
+        Dialogue.GetComponent<ChatDialogueHandler>().DialogueTitle.text = chatController.bot.name;
+
         chatController.EndpointURL = "https://openrouter.ai/api/v1/chat/completions";
         chatController.rules = File.ReadAllText("rules.txt");
+        animMap = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>( File.ReadAllText("expression_dict.json") );
+        chatController.availableAnim = animMap;
     }
 
     public void OnButtonClick()
@@ -135,9 +143,13 @@ public class UIHandler : MonoBehaviour
         if (response != null)
         {
             Debug.Log($"{value}\n\n{response.Emote}\n{response.Anim}\n{response.Dialogue}\n");
-            if (response.Anim == "wave")
+            if (animMap.ContainsKey(response.Anim))
             {
-                controller.PlayAnimation("3d/motion/event/body/type00/anm_eve_type00_koshiate01_01_loop");
+                if (animMap.TryGetValue(response.Anim, out List<string> animations))
+                {
+                    int randomIndex = Random.Range(0, animations.Count);
+                    controller.PlayAnimation(animations[randomIndex]);
+                }
             }
 
             if (response.Emote == "smile")
@@ -207,7 +219,7 @@ public class UIHandler : MonoBehaviour
             chatController.APIKey = APIKey;
             if (Dialogue)
             {
-                StartCoroutine(chatController.Generate("Hi!", HandleResponse, 10, true, false, "mistral-small-creative"));
+                StartCoroutine(chatController.Generate("Hi!", HandleResponse, 10, false, false, "mistral-small-creative"));
                 Debug.Log("requesting response");
             }
         }

@@ -23,9 +23,9 @@ public class Main : MonoBehaviour
         //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
         //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
-        UmaDatabase.persistentPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\";
-        UmaDatabase.masterDbPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
-        UmaDatabase.metaDbPath = "C:\\Users\\harry\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
+        UmaDatabase.persistentPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\";
+        UmaDatabase.masterDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "C:\\Users\\Rhxxza\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
         UmaDatabase.DBKey = "56636B634272377665704162";
         GraphicsSettings.renderPipelineAsset = null;
         
@@ -42,26 +42,26 @@ public class Main : MonoBehaviour
 
 
         //Test();
-
+        /*
         string log = "";
 
         foreach (var sound in Sounds)
         {
             log += sound.Name + "\n";
         }
-        File.WriteAllText("acbawb.txt", log);
+        File.WriteAllText("acbawb.txt", log);*/
         
     }
 
 
     void AStart()
     {
-        var chara = UmaDatabase.GetCharaEntry(1100);
+        var chara = UmaDatabase.GetCharaEntry(1003);
 
         //var head = UmaAssembler.CreateHead(1006, 0, true);
 
         GameObject root = new GameObject();
-        root.name = "Uma";
+        root.name = "1003";
         var umachar = root.AddComponent<UmaCharacter>();
 
         int costumeId = 0;
