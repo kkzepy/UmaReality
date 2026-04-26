@@ -13,7 +13,12 @@ Reply with this format:
 [ANIM:<animation>]
 [DIALOGUE:<text>]
 
-Format usage example:
+Format usage example 1:
 [EMOTE:smile]
 [ANIM:wave]
+[DIALOGUE:Hello!]
+
+Format usage example 2:
+[EMOTE:smile] 
+[ANIM:0_wave,3_idle] (plays anim wave after 0 seconds, and plays anim idle after 3 seconds)
 [DIALOGUE:Hello!]

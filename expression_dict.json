@@ -1,17 +1,17 @@
 {
 	"anim_map": {
-		"neutral_polite": ["3d/motion/event/body/type00/anm_eve_type00_homestand02_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand03_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi01_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi02_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi03_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi04_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi05_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi01_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi02_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi03_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi04_loop"],
-		"idle_relaxed": ["3d/motion/event/body/type00/anm_eve_type00_homestand01_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand05_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand06_loop", "3d/motion/event/body/type00/anm_eve_type00_swing02_loop"],
+		"neutral-polite": ["3d/motion/event/body/type00/anm_eve_type00_homestand02_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand03_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi01_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi02_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi03_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi04_loop", "3d/motion/event/body/type00/anm_eve_type00_sudachi05_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi01_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi02_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi03_loop", "3d/motion/event/body/type00/anm_eve_type00_tekumi04_loop"],
+		"idle-relaxed": ["3d/motion/event/body/type00/anm_eve_type00_homestand01_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand05_loop", "3d/motion/event/body/type00/anm_eve_type00_homestand06_loop", "3d/motion/event/body/type00/anm_eve_type00_swing02_loop"],
 		"hungry": ["3d/motion/event/body/type00/anm_eve_type00_hungry01_loop", "3d/motion/event/body/type00/anm_eve_type00_hungry02_loop", "3d/motion/event/body/type00/anm_eve_type00_hungry04_loop"],
 		
 		"confident": ["3d/motion/event/body/type00/anm_eve_type00_koshiate01_loop", "3d/motion/event/body/type00/anm_eve_type00_koshiate02_loop", "3d/motion/event/body/type00/anm_eve_type00_koshiate03_loop", "3d/motion/event/body/type00/anm_eve_type00_koshiate04_loop", "3d/motion/event/body/type00/anm_eve_type00_koshiate05_loop", "3d/motion/event/body/type00/anm_eve_type00_muneate02_loop", "3d/motion/event/body/type00/anm_eve_type00_neckup01_loop", "3d/motion/event/body/type00/anm_eve_type00_neckup02_loop", "3d/motion/event/body/type00/anm_eve_type00_neckup03_loop"],
 		"proud": ["3d/motion/event/body/type00/anm_eve_type00_appeal01_loop", "3d/motion/event/body/type00/anm_eve_type00_appeal02_loop", "3d/motion/event/body/type00/anm_eve_type00_appeal03_loop", "3d/motion/event/body/type00/anm_eve_type00_gatts01_loop", "3d/motion/event/body/type00/anm_eve_type00_gatts02_loop", "3d/motion/event/body/type00/anm_eve_type00_neckup01_loop", "3d/motion/event/body/type00/anm_eve_type00_neckup02_loop", "3d/motion/event/body/type00/anm_eve_type00_neckup03_loop"],
 		"happy": ["3d/motion/event/body/type00/anm_eve_type00_joy01_01_loop", "3d/motion/event/body/type00/anm_eve_type00_happy01_loop", "3d/motion/event/body/type00/anm_eve_type00_happy02_loop", "3d/motion/event/body/type00/anm_eve_type00_happy03_loop", "3d/motion/event/body/type00/anm_eve_type00_happy04_loop", "3d/motion/event/body/type00/anm_eve_type00_happy05_loop", "3d/motion/event/body/type00/anm_eve_type00_swing01_loop", "3d/motion/event/body/type00/anm_eve_type00_swing02_loop", "3d/motion/event/body/type00/anm_eve_type00_swing03_loop"],
 		"peace": ["3d/motion/event/body/type00/anm_eve_type00_peace01_loop", "3d/motion/event/body/type00/anm_eve_type00_peace02_loop", "3d/motion/event/body/type00/anm_eve_type00_peace03_loop", "3d/motion/event/body/type00/anm_eve_type00_peace04_loop"],
-		"hand_clap": ["3d/motion/event/body/type00/anm_eve_type00_clap01_loop", "3d/motion/event/body/type00/anm_eve_type00_clap02_loop", "3d/motion/event/body/type00/anm_eve_type00_clap03_loop", "3d/motion/event/body/type00/anm_eve_type00_clap05_loop"],
-		"come_closer": ["3d/motion/event/body/type00/anm_eve_type00_come03_loop", "3d/motion/event/body/type00/anm_eve_type00_come05_loop"],
-		"ear_touch": ["3d/motion/event/body/type00/anm_eve_type00_eartouch01_loop", "3d/motion/event/body/type00/anm_eve_type00_eartouch03_loop"],
-		"thumbs_up": ["3d/motion/event/body/type00/anm_eve_type00_good02_loop", "3d/motion/event/body/type00/anm_eve_type00_good01_loop"],
+		"hand-clap": ["3d/motion/event/body/type00/anm_eve_type00_clap01_loop", "3d/motion/event/body/type00/anm_eve_type00_clap02_loop", "3d/motion/event/body/type00/anm_eve_type00_clap03_loop", "3d/motion/event/body/type00/anm_eve_type00_clap05_loop"],
+		"come-closer": ["3d/motion/event/body/type00/anm_eve_type00_come03_loop", "3d/motion/event/body/type00/anm_eve_type00_come05_loop"],
+		"ear-touch": ["3d/motion/event/body/type00/anm_eve_type00_eartouch01_loop", "3d/motion/event/body/type00/anm_eve_type00_eartouch03_loop"],
+		"thumbs-up": ["3d/motion/event/body/type00/anm_eve_type00_good02_loop", "3d/motion/event/body/type00/anm_eve_type00_good01_loop"],
 		"teasing": ["3d/motion/event/body/type00/anm_eve_type00_kuchiate02_loop", "3d/motion/event/body/type00/anm_eve_type00_kuchiate03_loop", "3d/motion/event/body/type00/anm_eve_type00_kuchiate04_loop"],
 		"smile": ["3d/motion/event/body/type00/anm_eve_type00_kuchiate04_loop", "3d/motion/event/body/type00/anm_eve_type00_kuchiate05_loop"],
 		"laughing": ["3d/motion/event/body/type00/anm_eve_type00_kuchiate07_loop", "3d/motion/event/body/type00/anm_eve_type00_laugh02_loop", "3d/motion/event/body/type00/anm_eve_type00_laugh03_loop", "3d/motion/event/body/type00/anm_eve_type00_laugh04_loop", "3d/motion/event/body/type00/anm_eve_type00_laugh06_loop", "3d/motion/event/body/type00/anm_eve_type00_laugh07_loop", "3d/motion/event/body/type00/anm_eve_type00_laugh08_loop", "3d/motion/event/body/type00/anm_eve_type00_laugh09_loop"],
@@ -21,8 +21,8 @@
 		"hope": ["3d/motion/event/body/type00/anm_eve_type00_hope01_loop", "3d/motion/event/body/type00/anm_eve_type00_hope03_loop", "3d/motion/event/body/type00/anm_eve_type00_hope04_loop", "3d/motion/event/body/type00/anm_eve_type00_hope07_loop", "3d/motion/event/body/type00/anm_eve_type00_hope08_loop", ""],
 		"idea": ["3d/motion/event/body/type00/anm_eve_type00_idea01_loop", "3d/motion/event/body/type00/anm_eve_type00_idea03_loop", "3d/motion/event/body/type00/anm_eve_type00_snap01_loop"],
 		"jumping": ["3d/motion/event/body/type00/anm_eve_type00_jumpin01_loop"],
-		"leaning_in": ["3d/motion/event/body/type00/anm_eve_type00_near01_loop", "3d/motion/event/body/type00/anm_eve_type00_near02_loop", "3d/motion/event/body/type00/anm_eve_type00_near04_loop", "3d/motion/event/body/type00/anm_eve_type00_near05_loop", "3d/motion/event/body/type00/anm_eve_type00_near06_loop"],
-		"be_quiet": ["3d/motion/event/body/type00/anm_eve_type00_quiet01_loop", "3d/motion/event/body/type00/anm_eve_type00_quiet02_loop", "3d/motion/event/body/type00/anm_eve_type00_quiet03_loop"],
+		"leaning-in": ["3d/motion/event/body/type00/anm_eve_type00_near01_loop", "3d/motion/event/body/type00/anm_eve_type00_near02_loop", "3d/motion/event/body/type00/anm_eve_type00_near04_loop", "3d/motion/event/body/type00/anm_eve_type00_near05_loop", "3d/motion/event/body/type00/anm_eve_type00_near06_loop"],
+		"be-quiet": ["3d/motion/event/body/type00/anm_eve_type00_quiet01_loop", "3d/motion/event/body/type00/anm_eve_type00_quiet02_loop", "3d/motion/event/body/type00/anm_eve_type00_quiet03_loop"],
 		"please": ["3d/motion/event/body/type00/anm_eve_type00_request01_loop", "3d/motion/event/body/type00/anm_eve_type00_request02_loop"],
 
 		"sad": ["3d/motion/event/body/type00/anm_eve_type00_sad01_loop", "3d/motion/event/body/type00/anm_eve_type00_sad02_loop", ""],
@@ -46,9 +46,7 @@
 	},
 
 	"face_morph_map": {
-		"smile": [
-
-		],
+		"idle": [],
 		"pout": [
 			{
 				"morphName": "EyeBrow_15_R",

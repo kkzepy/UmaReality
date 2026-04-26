@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -186,7 +187,6 @@ public class ExpressiveController : MonoBehaviour
     public ChatController Chat;
 
     public string prevMorphSetsName;
-
     private void Start()
     {
         UmaController = GetComponent<UmaCharacter>();
@@ -202,22 +202,63 @@ public class ExpressiveController : MonoBehaviour
         }
     }
 
+    void PlayRandomAnimations(string key)
+    {
+        if (Chat.expressionVocab.anim_map.TryGetValue(key, out List<string> anims))
+        {
+            int randomIndex = Random.Range(0, anims.Count);
+            string animationPath = anims[randomIndex];
+
+            UmaController.PlayAnimation(animationPath);
+        }
+    }
+
+    IEnumerator HandleMultiAnimatons(List<string> animations)
+    {
+        foreach (string animation in animations)
+        {
+            if (!animation.Contains("_")) { PlayRandomAnimations(animation); continue; }
+
+            Debug.Log(animation.Split("_", 1).ToList().Count);
+
+            string animationName = animation.Split("_")[1];
+            
+            int animationDelay = Convert.ToInt32(animation.Split("_")[0]);
+
+            yield return new WaitForSeconds(animationDelay);
+
+            PlayRandomAnimations(animationName);
+        }
+    }
+
     void HandleResponse(string value)
     {
         ExpressiveResponse resp = ExpressiveResponseParser.Parse(value);
 
         DialogueObject.GetComponent<DIalogueController>().UpdateContent(resp.Dialogue);
 
-        if (Chat.expressionVocab.anim_map.TryGetValue(resp.Anim, out List<string> animations))
-        {
-            int randomIndex = Random.Range(0, animations.Count);
+        Debug.Log(resp.Anim);
 
-            UmaController.PlayAnimation(animations[randomIndex]);
+        if (resp.Anim.Contains(",") && resp.Anim.Contains("_"))
+        {
+            List<string> animations = resp.Anim.Split(",").ToList();
+
+            StartCoroutine(HandleMultiAnimatons(animations));
+        }
+        else //if (Chat.expressionVocab.anim_map.TryGetValue(resp.Anim, out List<string> animations))
+        {
+            /*
+            int randomIndex = Random.Range(0, animations.Count);
+            string animation = animations[randomIndex];
+
+            UmaController.PlayAnimation(animation);*/
+
+            PlayRandomAnimations(resp.Anim);
         }
 
         if (resp.Emote != null)
         {
-            PlayMorphSet(resp.Emote);
+            PlayMorphSets(resp.Emote);
         }
     }
     public void GenerateResponse(int historyLimit = 10, bool addToHistory = true, bool regenerate = false, string model = "mistral-small-creative")
@@ -230,11 +271,13 @@ public class ExpressiveController : MonoBehaviour
         }
     }
 
-    public void PlayMorphSet(string name, bool ignorePrevious = false)
+    public void PlayMorphSets(string name, bool ignorePrevious = false)
     {
         Debug.Log($"{Chat.expressionVocab.face_morph_map}");
         if (Chat.expressionVocab.face_morph_map.TryGetValue(name, out List<MorphSet> morphSets) && UmaController)
         {
+            if (morphSets.Count==0) { ResetAll(); return; }
+
             if (prevMorphSetsName != name && prevMorphSetsName != null && !ignorePrevious)
             {
                 List<MorphSet> prevMorphSets = Chat.expressionVocab.face_morph_map[prevMorphSetsName];
@@ -255,7 +298,7 @@ public class ExpressiveController : MonoBehaviour
         }
         else
         {
-            Debug.Log($"No MorphSets named: {name}");
+            Debug.Log($"No MorphSets with the key: {name}");
             ResetAll();
         }
     }

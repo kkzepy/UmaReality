@@ -1,5 +1,4 @@
 using Gallop;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -273,7 +272,7 @@ public class UIHandler : MonoBehaviour
                     }
                 }
 
-                uma.GetComponent<ExpressiveController>().GenerateResponse();
+                uma.GetComponent<ExpressiveController>().GenerateResponse(10, true);
                 Debug.Log($"prompt: {prompt}");
             }
             

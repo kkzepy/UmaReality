@@ -967,7 +967,7 @@ public class UmaCharacter : MonoBehaviour
     }
     public void PlayAnimation(UmaDatabaseEntry animEntry)
     {
-        Debug.Log(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == animEntry).Key);
+        //Debug.Log(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == animEntry).Key);
         AnimationClip animation = UmaAssetManager.LoadAsset<AnimationClip>(UmaDatabase.MetaData.FirstOrDefault(x => x.Value == animEntry).Key);
         animation.name = animEntry.Name;
 
@@ -1015,7 +1015,7 @@ public class UmaCharacter : MonoBehaviour
                 isAnimatorControl = false;
             }
 
-            Debug.Log($"{animation.name.Replace("/body", "/facial")}_face");
+            //Debug.Log($"{animation.name.Replace("/body", "/facial")}_face");
 
             if (UmaDatabase.MetaData.TryGetValue($"{animation.name.Replace("/body", "/facial")}_face", out UmaDatabaseEntry entry))
             {
