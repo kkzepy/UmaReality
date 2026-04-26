@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class ChatDialogueHandler : MonoBehaviour
+public class DIalogueController : MonoBehaviour
 {
     public TMP_Text DialogueTitle;
     public TMP_Text DialogueContent;

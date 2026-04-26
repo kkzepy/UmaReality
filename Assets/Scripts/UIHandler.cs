@@ -29,6 +29,7 @@ public class UIHandler : MonoBehaviour
 
     ChatController chatController;
     ExpressionVocab expVoc;
+    ExpressiveController expCon;
     string prevMorph;
     public string APIKey;
 
@@ -38,7 +39,7 @@ public class UIHandler : MonoBehaviour
 
         chatController.LoadUserDefinition("persona.json");
         chatController.LoadBotDefinition("tokai_teio.json");
-        Dialogue.GetComponent<ChatDialogueHandler>().DialogueTitle.text = chatController.bot.name;
+        Dialogue.GetComponent<DIalogueController>().DialogueTitle.text = chatController.bot.name;
 
         chatController.EndpointURL = "https://openrouter.ai/api/v1/chat/completions";
         chatController.rules = File.ReadAllText("rules.txt");
@@ -135,6 +136,11 @@ public class UIHandler : MonoBehaviour
             umachar.SetRandomEarTwitch(true);
             umachar.PlaySignatureAnimation();
 
+            uma.AddComponent<ExpressiveController>().Chat = chatController;
+            expCon = uma.GetComponent<ExpressiveController>();
+            expCon.UserInputField = Chat;
+            expCon.DialogueObject = Dialogue;
+
             return;
         }
 
@@ -164,12 +170,12 @@ public class UIHandler : MonoBehaviour
 
             if (expVoc.face_morph_map.ContainsKey(response.Emote))
             {
-                if (expVoc.face_morph_map.TryGetValue(response.Emote, out List<FaceMorph> morphs))
+                if (expVoc.face_morph_map.TryGetValue(response.Emote, out List<MorphSet> morphs))
                 {
                     if (prevMorph == null)
                     {
                         prevMorph = response.Emote;
-                        foreach (FaceMorph morph in morphs)
+                        foreach (MorphSet morph in morphs)
                         {
                             controller.PlayMorph(morph.morphName, morph.startWeight, morph.endWeight, morph.duration);
                         }
@@ -177,12 +183,12 @@ public class UIHandler : MonoBehaviour
 
                     else
                     {
-                        foreach (FaceMorph morph in expVoc.face_morph_map[prevMorph])
+                        foreach (MorphSet morph in expVoc.face_morph_map[prevMorph])
                         {
                             controller.PlayMorph(morph.morphName, morph.endWeight, morph.startWeight, morph.duration);
                         }
 
-                        foreach (FaceMorph morph in morphs)
+                        foreach (MorphSet morph in morphs)
                         {
                             controller.PlayMorph(morph.morphName, morph.startWeight, morph.endWeight, morph.duration);
                         }
@@ -193,7 +199,7 @@ public class UIHandler : MonoBehaviour
                 }
             }
 
-            Dialogue.GetComponent<ChatDialogueHandler>().UpdateContent(response.Dialogue);
+            Dialogue.GetComponent<DIalogueController>().UpdateContent(response.Dialogue);
         }
         else
         {
@@ -253,6 +259,7 @@ public class UIHandler : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Equals))
         {
+            
             chatController.APIKey = APIKey;
             if (Dialogue)
             {
@@ -266,9 +273,17 @@ public class UIHandler : MonoBehaviour
                     }
                 }
 
-                StartCoroutine(chatController.Generate(prompt, HandleResponse, 10, false, false, "mistral-small-creative"));
+                uma.GetComponent<ExpressiveController>().GenerateResponse();
                 Debug.Log($"prompt: {prompt}");
             }
+            
+
+            //uma.GetComponent<ExpressiveController>().PlayMorphSet("embarassed");
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            controller.FaceDrivenKeyTarget.ResetLocator();
         }
     }
 }

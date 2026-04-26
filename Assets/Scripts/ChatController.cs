@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using Random = UnityEngine.Random;
 
 public class ChatController
 {
@@ -169,5 +171,97 @@ public static class ExpressiveResponseParser
             return match.Groups[1].Value.Trim();
 
         return null;
+    }
+}
+
+public class ExpressiveController : MonoBehaviour
+{
+    public UmaCharacter UmaController;
+
+    public GameObject DialogueObject;
+    
+    public TMP_InputField UserInputField;
+    public DIalogueController ChatDialogueHandler;
+
+    public ChatController Chat;
+
+    public string prevMorphSetsName;
+
+    private void Start()
+    {
+        UmaController = GetComponent<UmaCharacter>();
+
+        if (DialogueObject && UserInputField)
+        {
+            ChatDialogueHandler = UserInputField.GetComponent<DIalogueController>();
+
+            if (!string.IsNullOrEmpty(Chat.bot.name) && ChatDialogueHandler)
+            {
+                ChatDialogueHandler.SetTitle(Chat.bot.name);
+            }
+        }
+    }
+
+    void HandleResponse(string value)
+    {
+        ExpressiveResponse resp = ExpressiveResponseParser.Parse(value);
+
+        DialogueObject.GetComponent<DIalogueController>().UpdateContent(resp.Dialogue);
+
+        if (Chat.expressionVocab.anim_map.TryGetValue(resp.Anim, out List<string> animations))
+        {
+            int randomIndex = Random.Range(0, animations.Count);
+
+            UmaController.PlayAnimation(animations[randomIndex]);
+        }
+
+        if (resp.Emote != null)
+        {
+            PlayMorphSet(resp.Emote);
+        }
+    }
+    public void GenerateResponse(int historyLimit = 10, bool addToHistory = true, bool regenerate = false, string model = "mistral-small-creative")
+    {
+        if (!string.IsNullOrEmpty(UserInputField.text))
+        {
+            StartCoroutine(
+                Chat.Generate(UserInputField.text, HandleResponse, historyLimit, addToHistory, regenerate, model)
+            );
+        }
+    }
+
+    public void PlayMorphSet(string name, bool ignorePrevious = false)
+    {
+        Debug.Log($"{Chat.expressionVocab.face_morph_map}");
+        if (Chat.expressionVocab.face_morph_map.TryGetValue(name, out List<MorphSet> morphSets) && UmaController)
+        {
+            if (prevMorphSetsName != name && prevMorphSetsName != null && !ignorePrevious)
+            {
+                List<MorphSet> prevMorphSets = Chat.expressionVocab.face_morph_map[prevMorphSetsName];
+
+                foreach (MorphSet prevMorphSet in prevMorphSets)
+                {
+                    UmaController.PlayMorph(prevMorphSet.morphName, prevMorphSet.endWeight, prevMorphSet.startWeight, prevMorphSet.duration);
+                }
+            }
+
+            foreach (MorphSet morphSet in morphSets)
+            {
+                UmaController.PlayMorph(morphSet.morphName, morphSet.startWeight, morphSet.endWeight, morphSet.duration);
+                Debug.Log($"Playing morph: {morphSet.morphName}");
+            }
+
+            prevMorphSetsName = name;
+        }
+        else
+        {
+            Debug.Log($"No MorphSets named: {name}");
+            ResetAll();
+        }
+    }
+
+    public void ResetAll()
+    {
+        UmaController.FaceDrivenKeyTarget.ResetLocator();
     }
 }

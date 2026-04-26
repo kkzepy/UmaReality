@@ -14,7 +14,7 @@ public class ChatMessage
     public string content;
 }
 
-public class FaceMorph
+public class MorphSet
 {
     public string morphName;
     public float startWeight;
@@ -25,7 +25,7 @@ public class FaceMorph
 public class ExpressionVocab
 {
     public Dictionary<string, List<string>> anim_map;
-    public Dictionary<string, List<FaceMorph>> face_morph_map;
+    public Dictionary<string, List<MorphSet>> face_morph_map;
 }
 
 [System.Serializable]
