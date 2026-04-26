@@ -93,7 +93,90 @@
 				"startWeight": 0.0,
 				"endWeight": 1.0,
 				"duration": 0.2
+			},
+
+			{
+				"morphName": "BLUSH"
 			}
+		],
+		"smile": [
+			{
+				"morphName": "Mouth_12_0",
+				"startWeight": 0,
+				"endWeight": 1,
+				"duration": 0.1
+			}
+		],
+		"smile_warm": [
+			{
+				"morphName": "Mouth_12_0",
+				"startWeight": 0,
+				"endWeight": 1,
+				"duration": 0.1
+			},
+
+			{
+				"morphName": "Eye_5_R",
+				"startWeight": 0,
+				"endWeight": 1,
+				"duration": 0.03
+			},
+			{
+				"morphName": "Eye_5_L",
+				"startWeight": 0,
+				"endWeight": 1,
+				"duration": 0.03
+			},
+
+			{
+				"morphName": "EyeBrow_13_R",
+				"startWeight": 0,
+				"endWeight": 1,
+				"duration": 0.03
+			},
+			{
+				"morphName": "EyeBrow_13_L",
+				"startWeight": 0,
+				"endWeight": 1,
+				"duration": 0.03
+			},
+
+			{
+				"morphName": "BLUSH"
+			}
+		],
+
+		"surprised": [
+			{
+				"morphName": "Mouth_32_0",
+				"startWeight": 0,
+				"endWeight": 1,
+				"duration": 0.22
+			},
+
+			{
+				"morphName": "EyeBrow_21_R",
+				"startWeight": 0,
+				"endWeight": 0.65,
+				"duration": 0.1
+			},
+			{
+				"morphName": "EyeBrow_21_L",
+				"startWeight": 0,
+				"endWeight": 0.65,
+				"duration": 0.1
+			},
+
+			{
+				"morphName": "EyeBrow_21_R",
+				"startWeight": 0,
+				"endWeight": 0.65,
+				"duration": 0.1
+			}
+		],
+
+		"wink": [
+			
 		]
 	}
 }

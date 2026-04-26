@@ -31,6 +31,7 @@ public class UIHandler : MonoBehaviour
     ExpressiveController expCon;
     string prevMorph;
     public string APIKey;
+    public string Model = "meta-llama/llama-4-scout-17b-16e-instruct";
 
     private void Start()
     {
@@ -40,7 +41,7 @@ public class UIHandler : MonoBehaviour
         chatController.LoadBotDefinition("tokai_teio.json");
         Dialogue.GetComponent<DIalogueController>().DialogueTitle.text = chatController.bot.name;
 
-        chatController.EndpointURL = "https://openrouter.ai/api/v1/chat/completions";
+        chatController.EndpointURL = "https://api.groq.com/openai/v1/chat/completions";//"https://openrouter.ai/api/v1/chat/completions";
         chatController.rules = File.ReadAllText("rules.txt");
         chatController.LoadExpressionVocab("expression_dict.json");
         expVoc = chatController.expressionVocab;
@@ -272,7 +273,7 @@ public class UIHandler : MonoBehaviour
                     }
                 }
 
-                uma.GetComponent<ExpressiveController>().GenerateResponse(10, true);
+                uma.GetComponent<ExpressiveController>().GenerateResponse(10, true, false, Model);
                 Debug.Log($"prompt: {prompt}");
             }
             

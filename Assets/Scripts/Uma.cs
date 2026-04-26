@@ -888,7 +888,7 @@ public class UmaCharacter : MonoBehaviour
         {
             upBodyBone.transform.localPosition = upBodyPosition;
             upBodyBone.transform.localRotation = upBodyRotation;
-            Debug.Log("UpBody reset to default position and rotation.");
+            //Debug.Log("UpBody reset to default position and rotation.");
         }
         else
         {

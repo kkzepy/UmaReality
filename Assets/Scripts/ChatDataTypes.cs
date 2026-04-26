@@ -49,11 +49,12 @@ public class ExpressiveResponse
 }
 
 [Serializable]
-public class OpenRouterRequest
+public class OpenAIChatCompletion
 {
     public string model;
     public List<ChatMessage> messages;
     public int max_tokens = 500;
+    public float temperature = 0.9f;
 }
 
 [System.Serializable]
@@ -63,6 +64,17 @@ public class CharDefinition
     public string nickname;
     public string definition;
     public string additional_rules;
+}
+
+public class BotDefinition
+{
+    public string name;
+    public string nickname;
+
+    public string definition;
+    public string additional_rules;
+
+    public string scenario;
 }
 
 [Serializable]

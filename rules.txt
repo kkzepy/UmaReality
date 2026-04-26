@@ -20,5 +20,5 @@ Format usage example 1:
 
 Format usage example 2:
 [EMOTE:smile] 
-[ANIM:0_wave,3_idle] (plays anim wave after 0 seconds, and plays anim idle after 3 seconds)
+[ANIM:0_wave,3_idle-relaxed,3_thumbs-up] (plays anim wave after 0 seconds, then plays anim idle after 3 seconds, then plays anim thumbs up after 3 seconds)
 [DIALOGUE:Hello!]

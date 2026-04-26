@@ -399,6 +399,7 @@ MonoBehaviour:
   Chat: {fileID: 1152719164}
   uma: {fileID: 0}
   APIKey: 
+  Model: llama-3.3-70b-versatile
 --- !u!1 &236784998
 GameObject:
   m_ObjectHideFlags: 0

@@ -56,9 +56,62 @@ public class ChatController
         chatHistory.messages.Add(new ChatMessage { role = role, content = content });
     }
 
-    public IEnumerator Generate(string prompt, System.Action<string> callback, int historyLimit = 10, bool addToHistory = true, bool regenerate = false, string model = "mistralai/mistral-small-creative")
+    public List<ChatMessage> BuildPrompt(string userInput, int historyLimit = 10, bool regenerate = false)
     {
+        if (regenerate)
+        {
+            chatHistory.RemoveLast();
+        }
 
+        // Set system message
+        string availableAnim = "Available ANIM:\n";
+        string availableEmote = "Available EMOTE:\n";
+
+        if (expressionVocab != null && expressionVocab.anim_map != null)
+        {
+            if (expressionVocab.anim_map.Count == 0)
+            {
+                availableAnim = "Available ANIM:\nNone";
+            }
+            else
+            {
+                foreach (string anim in expressionVocab.anim_map.Keys)
+                {
+                    availableAnim += $"- {anim}\n";
+                }
+            }
+        }
+
+        if (expressionVocab != null && expressionVocab.face_morph_map != null)
+        {
+            if (expressionVocab.face_morph_map.Count == 0)
+            {
+                availableAnim = "Available EMOTE:\nNone";
+            }
+            else
+            {
+                foreach (string emote in expressionVocab.face_morph_map.Keys)
+                {
+                    availableEmote += $"- {emote}\n";
+                }
+            }
+        }
+
+        string systemText = $"{rules}\n\n{availableEmote}\n{availableAnim}\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}";
+        ChatMessage systemMessage = new ChatMessage { role = "system", content = systemText };
+
+        List<ChatMessage> mergedList = new List<ChatMessage>();
+        mergedList.Add(systemMessage);
+        mergedList.AddRange(chatHistory.messages.TakeLast(historyLimit));
+        mergedList.Add(new ChatMessage { role = "user", content = userInput });
+
+
+        return mergedList;
+    }
+
+    public IEnumerator Generate(List<ChatMessage> messages, System.Action<string> callback, bool addToHistory = true, string model = "meta-llama/llama-4-scout-17b-16e-instruct")
+    {
+        /*
         if (regenerate)
         {
             chatHistory.RemoveLast();
@@ -105,12 +158,13 @@ public class ChatController
         mergedList.Add(systemMessage);
         mergedList.AddRange(chatHistory.messages.TakeLast(historyLimit));
         mergedList.Add(new ChatMessage { role = "user", content = prompt });
+        */
 
         // 1. Setup the request body
-        OpenRouterRequest requestData = new OpenRouterRequest
+        OpenAIChatCompletion requestData = new OpenAIChatCompletion
         {
             model = model,
-            messages = mergedList
+            messages = messages
         };
 
         string jsonPayload = JsonUtility.ToJson(requestData);
@@ -140,7 +194,8 @@ public class ChatController
 
                 if (addToHistory)
                 {
-                    AddToHistory("user", prompt);
+                    AddToHistory("user", messages.TakeLast(1).FirstOrDefault().content);
+                    Debug.Log(messages.TakeLast(1).FirstOrDefault().role);
                     AddToHistory("assistant", responseText);
                 }
 
@@ -211,6 +266,10 @@ public class ExpressiveController : MonoBehaviour
 
             UmaController.PlayAnimation(animationPath);
         }
+        else
+        {
+            Debug.Log($"PlayRandomAnimations: no anim with key: {key}");
+        }
     }
 
     IEnumerator HandleMultiAnimatons(List<string> animations)
@@ -219,15 +278,29 @@ public class ExpressiveController : MonoBehaviour
         {
             if (!animation.Contains("_")) { PlayRandomAnimations(animation); continue; }
 
-            Debug.Log(animation.Split("_", 1).ToList().Count);
-
             string animationName = animation.Split("_")[1];
             
             int animationDelay = Convert.ToInt32(animation.Split("_")[0]);
 
-            yield return new WaitForSeconds(animationDelay);
+            if (animationDelay!=0) yield return new WaitForSeconds(animationDelay);
 
             PlayRandomAnimations(animationName);
+        }
+    }
+
+    IEnumerator HandleMultiEmotes(List<string> emotes)
+    {
+        foreach (string emote in emotes)
+        {
+            if (!emote.Contains("_")) { PlayRandomAnimations(emote); continue; }
+
+            string morphSetName = emote.Split("_")[1];
+
+            int morphSetDelay = Convert.ToInt32(emote.Split("_")[0]);
+
+            if (morphSetDelay != 0) yield return new WaitForSeconds(morphSetDelay);
+
+            PlayMorphSets(morphSetName);
         }
     }
 
@@ -256,7 +329,13 @@ public class ExpressiveController : MonoBehaviour
             PlayRandomAnimations(resp.Anim);
         }
 
-        if (resp.Emote != null)
+        if (resp.Emote.Contains(",") && resp.Emote.Contains("_"))
+        {
+            List<string> emotes = resp.Emote.Split(",").ToList();
+
+            StartCoroutine(HandleMultiEmotes(emotes));
+        }
+        else
         {
             PlayMorphSets(resp.Emote);
         }
@@ -265,15 +344,16 @@ public class ExpressiveController : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(UserInputField.text))
         {
+            List<ChatMessage> finalPrompt = Chat.BuildPrompt(UserInputField.text, historyLimit, regenerate);
+
             StartCoroutine(
-                Chat.Generate(UserInputField.text, HandleResponse, historyLimit, addToHistory, regenerate, model)
+                Chat.Generate(finalPrompt, HandleResponse, addToHistory, model)
             );
         }
     }
 
     public void PlayMorphSets(string name, bool ignorePrevious = false)
     {
-        Debug.Log($"{Chat.expressionVocab.face_morph_map}");
         if (Chat.expressionVocab.face_morph_map.TryGetValue(name, out List<MorphSet> morphSets) && UmaController)
         {
             if (morphSets.Count==0) { ResetAll(); return; }
@@ -284,12 +364,24 @@ public class ExpressiveController : MonoBehaviour
 
                 foreach (MorphSet prevMorphSet in prevMorphSets)
                 {
+                    if (prevMorphSet.morphName=="BLUSH")
+                    {
+                        UmaController.SetBlush(false);
+                        continue;
+                    }
+
                     UmaController.PlayMorph(prevMorphSet.morphName, prevMorphSet.endWeight, prevMorphSet.startWeight, prevMorphSet.duration);
                 }
             }
 
             foreach (MorphSet morphSet in morphSets)
             {
+                if (morphSet.morphName == "BLUSH")
+                {
+                    UmaController.SetBlush(true);
+                    continue;
+                }
+
                 UmaController.PlayMorph(morphSet.morphName, morphSet.startWeight, morphSet.endWeight, morphSet.duration);
                 Debug.Log($"Playing morph: {morphSet.morphName}");
             }
@@ -306,5 +398,6 @@ public class ExpressiveController : MonoBehaviour
     public void ResetAll()
     {
         UmaController.FaceDrivenKeyTarget.ResetLocator();
+        UmaController.SetBlush(false);
     }
 }
