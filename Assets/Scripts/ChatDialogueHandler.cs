@@ -1,10 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
+using UnityEngine;
 
-public class DIalogueController : MonoBehaviour
+public class DialogueController : MonoBehaviour
 {
     public TMP_Text DialogueTitle;
     public TMP_Text DialogueContent;
@@ -29,7 +27,7 @@ public class DIalogueController : MonoBehaviour
         }
     }
 
-    public void UpdateContent(string contentText, bool append = false, bool stream = true, float duration = 2.5f)
+    public void UpdateContent(string contentText, bool stream = true, bool append = false, float duration = 2.5f)
     {
         if (!append) DialogueContent.text = "";
 
@@ -44,15 +42,34 @@ public class DIalogueController : MonoBehaviour
         }
     }
 
-    public void SetTitle(string titleText)
+    public string title
     {
-        DialogueTitle.text = titleText;
+        set
+        {
+            if (DialogueTitle)
+            {
+                DialogueTitle.text = value;
+            }
+        }
+        get
+        {
+            if (DialogueTitle)
+            {
+                return DialogueTitle.text;
+            }
+            return null;
+        }
     }
 
-    public void SetActive(bool state)
+    public bool active
     {
-        DialogueContent.gameObject.SetActive(state);
-        DialogueTitle.gameObject.SetActive(state);
-        gameObject.SetActive(state);
+        set
+        {
+            gameObject.SetActive(value);
+        }
+        get
+        {
+            return gameObject.activeSelf;
+        }
     }
 }

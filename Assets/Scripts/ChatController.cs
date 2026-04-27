@@ -18,9 +18,12 @@ public class ChatController
 
     public ChatHistory chatHistory = new ChatHistory();
     public CharDefinition user;
-    public CharDefinition bot;
+    public BotDefinition bot;
 
     public string rules;
+    public string additionalRules = "";
+    public string format;
+    public string scenario = "";
     public ExpressionVocab expressionVocab;
 
     public void LoadUserDefinition(string path)
@@ -38,7 +41,17 @@ public class ChatController
         {
             Debug.Log(File.Exists(path));
             var file = File.ReadAllText(path);
-            bot = JsonConvert.DeserializeObject<CharDefinition>(file);
+            bot = JsonConvert.DeserializeObject<BotDefinition>(file);
+
+            if (!string.IsNullOrEmpty(bot.additional_rules))
+            {
+                additionalRules = bot.additional_rules;
+            }
+
+            if (!string.IsNullOrEmpty(bot.scenario))
+            {
+                scenario = bot.scenario;
+            }
         }
     }
 
@@ -97,7 +110,15 @@ public class ChatController
             }
         }
 
-        string systemText = $"{rules}\n\n{availableEmote}\n{availableAnim}\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}";
+        string systemText = $"{rules}{additionalRules}\n\n{availableEmote}\n{availableAnim}\n{format}\n\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}";
+
+        if (!string.IsNullOrEmpty(scenario))
+        {
+            systemText += $"\n\nCurrent scenario/context:\n{scenario}";
+        }
+
+        Debug.Log(systemText);
+
         ChatMessage systemMessage = new ChatMessage { role = "system", content = systemText };
 
         List<ChatMessage> mergedList = new List<ChatMessage>();
@@ -111,54 +132,7 @@ public class ChatController
 
     public IEnumerator Generate(List<ChatMessage> messages, System.Action<string> callback, bool addToHistory = true, string model = "meta-llama/llama-4-scout-17b-16e-instruct")
     {
-        /*
-        if (regenerate)
-        {
-            chatHistory.RemoveLast();
-        }
-
-        // Set system message
-        string availableAnim = "Available ANIM:\n";
-        string availableEmote = "Available EMOTE:\n";
-
-        if (expressionVocab != null && expressionVocab.anim_map != null)
-        {
-            if (expressionVocab.anim_map.Count == 0)
-            {
-                availableAnim = "Available ANIM:\nNone";
-            }
-            else
-            {
-                foreach (string anim in expressionVocab.anim_map.Keys)
-                {
-                    availableAnim += $"- {anim}\n";
-                }
-            }   
-        }
-
-        if (expressionVocab != null && expressionVocab.face_morph_map != null)
-        {
-            if (expressionVocab.face_morph_map.Count == 0)
-            {
-                availableAnim = "Available EMOTE:\nNone";
-            }
-            else
-            {
-                foreach (string emote in expressionVocab.face_morph_map.Keys)
-                {
-                    availableEmote += $"- {emote}\n";
-                }
-            }
-        }
-
-        string systemText = $"{rules}\n\n{availableEmote}\n{availableAnim}\nCharacter Profile (for internal use only, DO NOT expose unless relevant):\n{bot.definition}\n\nUser Profile ({user.name}):\n{user.definition}";
-        ChatMessage systemMessage = new ChatMessage { role = "system", content = systemText };
-
-        List<ChatMessage> mergedList = new List<ChatMessage>();
-        mergedList.Add(systemMessage);
-        mergedList.AddRange(chatHistory.messages.TakeLast(historyLimit));
-        mergedList.Add(new ChatMessage { role = "user", content = prompt });
-        */
+        
 
         // 1. Setup the request body
         OpenAIChatCompletion requestData = new OpenAIChatCompletion
@@ -195,7 +169,7 @@ public class ChatController
                 if (addToHistory)
                 {
                     AddToHistory("user", messages.TakeLast(1).FirstOrDefault().content);
-                    Debug.Log(messages.TakeLast(1).FirstOrDefault().role);
+                    //Debug.Log(messages.TakeLast(1).FirstOrDefault().role);
                     AddToHistory("assistant", responseText);
                 }
 
@@ -237,7 +211,7 @@ public class ExpressiveController : MonoBehaviour
     public GameObject DialogueObject;
     
     public TMP_InputField UserInputField;
-    public DIalogueController ChatDialogueHandler;
+    public DialogueController ChatDialogueHandler;
 
     public ChatController Chat;
 
@@ -248,11 +222,11 @@ public class ExpressiveController : MonoBehaviour
 
         if (DialogueObject && UserInputField)
         {
-            ChatDialogueHandler = UserInputField.GetComponent<DIalogueController>();
+            ChatDialogueHandler = UserInputField.GetComponent<DialogueController>();
 
             if (!string.IsNullOrEmpty(Chat.bot.name) && ChatDialogueHandler)
             {
-                ChatDialogueHandler.SetTitle(Chat.bot.name);
+                ChatDialogueHandler.title = Chat.bot.name;
             }
         }
     }
@@ -308,9 +282,9 @@ public class ExpressiveController : MonoBehaviour
     {
         ExpressiveResponse resp = ExpressiveResponseParser.Parse(value);
 
-        DialogueObject.GetComponent<DIalogueController>().UpdateContent(resp.Dialogue);
+        DialogueObject.GetComponent<DialogueController>().UpdateContent(resp.Dialogue);
 
-        Debug.Log(resp.Anim);
+        Debug.Log(value);
 
         if (resp.Anim.Contains(",") && resp.Anim.Contains("_"))
         {
@@ -339,6 +313,15 @@ public class ExpressiveController : MonoBehaviour
         {
             PlayMorphSets(resp.Emote);
         }
+    }
+
+    public void GenerateResponse(string prompt, int historyLimit = 10, bool addToHistory = true, bool regenerate = false, string model = "mistral-small-creative")
+    {
+        List<ChatMessage> finalPrompt = Chat.BuildPrompt(prompt, historyLimit, regenerate);
+
+        StartCoroutine(
+            Chat.Generate(finalPrompt, HandleResponse, addToHistory, model)
+        );
     }
     public void GenerateResponse(int historyLimit = 10, bool addToHistory = true, bool regenerate = false, string model = "mistral-small-creative")
     {
@@ -383,7 +366,7 @@ public class ExpressiveController : MonoBehaviour
                 }
 
                 UmaController.PlayMorph(morphSet.morphName, morphSet.startWeight, morphSet.endWeight, morphSet.duration);
-                Debug.Log($"Playing morph: {morphSet.morphName}");
+                //Debug.Log($"Playing morph: {morphSet.morphName}");
             }
 
             prevMorphSetsName = name;

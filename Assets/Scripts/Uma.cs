@@ -1,4 +1,5 @@
 ﻿using Gallop;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -386,46 +387,60 @@ public class UmaAssembler : MonoBehaviour
 
     }
 
-    public static GameObject CreateCharacter(CharaEntry entry, int costumeId = 0, int headId = 0, bool loadPrerequisites = true, bool addComponents = true)
+    public static GameObject CreateUma(CharaEntry entry, int costumeId = 0, int headId = 0, bool addComponents = true)
     {
-        if (loadPrerequisites)
+        GameObject root = new GameObject();
+        root.name = $"uma_{entry.Id}";
+        var umachar = root.AddComponent<UmaCharacter>();
+
+        //int costumeId = 0;
+        //int headId = 0;
+        umachar.charaEntry = entry;
+        umachar.costumeId = costumeId;
+        umachar.headId = headId;
+        umachar.FaceOverrideController = Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller");
+        umachar.UmaFaceAnimator = Resources.Load<Animator>("Animations/Face Controller");
+
+        var bodyLogicalPath = UmaDatabase.QueryBodyPath(entry.Id, costumeId);
+        var headLogicalPath = UmaDatabase.QueryHeadPath(entry.Id, headId);
+        var tailLogicalPath = UmaDatabase.QueryTailPath(entry.TailModelId);
+
+        UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
+        UmaAssetManager.PreLoadPrerequistes(headLogicalPath);
+        if (entry.TailModelId != -1) UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
+
+        UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+        UmaAssetManager.LoadPrerequistes(headLogicalPath);
+        if (entry.TailModelId != -1) UmaAssetManager.LoadPrerequistes(tailLogicalPath);
+
+        umachar.bodyInstance = UmaAssembler.CreateBody(entry.Id, costumeId, false, root);
+        umachar.headInstance = UmaAssembler.CreateHead(entry.Id, headId, false, root);
+        if (entry.TailModelId != -1)
         {
-            var bodyLogicalPath = UmaDatabase.QueryBodyPath(entry.Id, costumeId);
-            var headLogicalPath = UmaDatabase.QueryHeadPath(entry.Id, headId);
-            var tailLogicalPath = UmaDatabase.QueryTailPath(entry.TailModelId);
-
-            UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
-            UmaAssetManager.PreLoadPrerequistes(headLogicalPath);
-            UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
-
-            UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
-            UmaAssetManager.LoadPrerequistes(headLogicalPath);
-            UmaAssetManager.LoadPrerequistes(tailLogicalPath);
+            umachar.tailInstance = UmaAssembler.CreateTail(entry.TailModelId, false, root);
+            UmaAssembler.ApplyTailTexture(umachar.tailInstance, entry.Id);
         }
 
-        var bodyInstance = CreateBody(entry.Id, costumeId, false);
-        var headInstance = CreateHead(entry.Id, headId, false);
-        var tailInstance = CreateTail(entry.TailModelId, false);
+        umachar.Initialize();
+        umachar.LoadPhysics();
+        umachar.SetupPhysics();
+        umachar.InitializeFaceMorph();
 
-        ApplyTailTexture(tailInstance, entry.Id, entry.TailModelId);
+        //umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
 
-        var chara = Assemble(bodyInstance, headInstance, tailInstance);
-        
+        root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
+
+        //if (!umachar.UmaAnimator) umachar.UmaAnimator = root.AddComponent<Animator>();
+
         if (addComponents)
         {
-            var umaCharacter = chara.AddComponent<UmaCharacter>();
-            //umaCharacter.SetAssetHolder(bodyInstance.GetComponent<AssetHolder>());
-            umaCharacter.bodyInstance = bodyInstance;
-            umaCharacter.headInstance = headInstance;
-            umaCharacter.charaEntry = entry;
-            umaCharacter.costumeId = costumeId;
-            umaCharacter.headId = headId;
-            umaCharacter.Initialize();
-            //umaCharacter.InitializeFaceMorph();
-            //chara.AddComponent<AnimationLoader>();
+            umachar.UmaAnimator = root.GetComponent<Animator>();
+            umachar.UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(root, root.name);
+            umachar.OverrideController = Resources.Load<AnimatorOverrideController>("Animations/Override Controller");
+            umachar.UmaAnimator.runtimeAnimatorController = umachar.OverrideController;
         }
 
-        return chara;
+        return root;
     }
 
     public static void ApplyBodyTexture(GameObject body, int characterId, int costumeId)

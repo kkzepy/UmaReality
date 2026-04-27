@@ -69,7 +69,6 @@ public class CharDefinition
 public class BotDefinition
 {
     public string name;
-    public string nickname;
 
     public string definition;
     public string additional_rules;

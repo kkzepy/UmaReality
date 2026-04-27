@@ -37,13 +37,14 @@ public class UIHandler : MonoBehaviour
     {
         chatController = new ChatController();
 
-        chatController.LoadUserDefinition("persona.json");
-        chatController.LoadBotDefinition("tokai_teio.json");
-        Dialogue.GetComponent<DIalogueController>().DialogueTitle.text = chatController.bot.name;
+        chatController.LoadUserDefinition("bots/persona.json");
+        chatController.LoadBotDefinition("bots/tokai_teio.json");
+        Dialogue.GetComponent<DialogueController>().DialogueTitle.text = chatController.bot.name;
 
         chatController.EndpointURL = "https://api.groq.com/openai/v1/chat/completions";//"https://openrouter.ai/api/v1/chat/completions";
-        chatController.rules = File.ReadAllText("rules.txt");
-        chatController.LoadExpressionVocab("expression_dict.json");
+        chatController.rules = File.ReadAllText("bots/rules.txt");
+        chatController.format = File.ReadAllText("bots/format.txt");
+        chatController.LoadExpressionVocab("bots/expression_dict.json");
         expVoc = chatController.expressionVocab;
     }
 
@@ -80,6 +81,7 @@ public class UIHandler : MonoBehaviour
 
             var chara = UmaDatabase.GetCharaEntry(Convert.ToInt32(charaId.text));
 
+            /*
             GameObject root = new GameObject();
             root.name = $"uma_{charaId.text}";
             var umachar = root.AddComponent<UmaCharacter>();
@@ -126,15 +128,16 @@ public class UIHandler : MonoBehaviour
             umachar.UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(root, root.name);
             umachar.OverrideController = Resources.Load<AnimatorOverrideController>("Animations/Override Controller");
             umachar.UmaAnimator.runtimeAnimatorController = umachar.OverrideController;
+            */
 
-            uma = root;
+            uma = UmaAssembler.CreateUma(chara, costumeId, headId);
 
-            controller = umachar;
+            controller = uma.GetComponent<UmaCharacter>();
             morphs = controller.FaceDrivenKeyTarget.AllMorphs;
 
-            umachar.SetRandomBlink(true);
-            umachar.SetRandomEarTwitch(true);
-            umachar.PlaySignatureAnimation();
+            controller.SetRandomBlink(true);
+            controller.SetRandomEarTwitch(true);
+            controller.PlaySignatureAnimation();
 
             uma.AddComponent<ExpressiveController>().Chat = chatController;
             expCon = uma.GetComponent<ExpressiveController>();
@@ -147,65 +150,7 @@ public class UIHandler : MonoBehaviour
         Debug.LogWarning($"No input!");
     }
 
-    void HandleResponse(string value)
-    {
-        ExpressiveResponse response = ExpressiveResponseParser.Parse(value);
-        if (response != null)
-        {
-            Debug.Log($"{value}\n\n{response.Emote}\n{response.Anim}\n{response.Dialogue}\n");
-            
-            if (expVoc.anim_map.ContainsKey(response.Anim))
-            {
-                if (expVoc.anim_map.TryGetValue(response.Anim, out List<string> animations))
-                {
-                    int randomIndex = Random.Range(0, animations.Count);
-                    controller.PlayAnimation(animations[randomIndex]);
-                }
-            }
-
-            if (response.Emote == "smile")
-            {
-                controller.SetSmile(true, 1f, .14f, true, true, false);
-            }
-
-            if (expVoc.face_morph_map.ContainsKey(response.Emote))
-            {
-                if (expVoc.face_morph_map.TryGetValue(response.Emote, out List<MorphSet> morphs))
-                {
-                    if (prevMorph == null)
-                    {
-                        prevMorph = response.Emote;
-                        foreach (MorphSet morph in morphs)
-                        {
-                            controller.PlayMorph(morph.morphName, morph.startWeight, morph.endWeight, morph.duration);
-                        }
-                    }
-
-                    else
-                    {
-                        foreach (MorphSet morph in expVoc.face_morph_map[prevMorph])
-                        {
-                            controller.PlayMorph(morph.morphName, morph.endWeight, morph.startWeight, morph.duration);
-                        }
-
-                        foreach (MorphSet morph in morphs)
-                        {
-                            controller.PlayMorph(morph.morphName, morph.startWeight, morph.endWeight, morph.duration);
-                        }
-
-                        prevMorph = null;
-                    }
-                    
-                }
-            }
-
-            Dialogue.GetComponent<DIalogueController>().UpdateContent(response.Dialogue);
-        }
-        else
-        {
-            Debug.LogWarning(value);
-        }
-    }
+    
     private void Update()
     {
 

@@ -1,0 +1,9 @@
+Reply with this format:
+[EMOTE:<emotion>]
+[ANIM:<animation>]
+[DIALOGUE:<text>]
+
+Format usage example:
+[EMOTE:0_smile,3_wink] (emotes smile after 0 seconds, and then emotes wink after 3 seconds) 
+[ANIM:0_wave,3_idle-relaxed,3_thumbs-up] (plays anim wave after 0 seconds, then plays anim idle after 3 seconds, then plays anim thumbs up after 3 seconds)
+[DIALOGUE:Hello!]
