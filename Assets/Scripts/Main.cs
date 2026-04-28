@@ -1,4 +1,7 @@
+using PlasticGui.WorkspaceWindow.Items;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Media;
@@ -36,6 +39,44 @@ public class Main : MonoBehaviour
         progressBar.text = "Loading shaders...";
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
+
+        string motset = "";
+        int id = -1;
+
+        foreach (DataRow row in UmaDatabase.CharaMotionSet)
+        {
+            int currentId = Convert.ToInt32(row[0].ToString().Substring(0, 4));
+
+            if (id == -1)
+            {
+                id = currentId;
+            }
+            if (id!=currentId)
+            {
+                id = currentId;
+                motset += $"\n\n{row[0]}, {row[1]}, {row[4]}\n";
+                //continue;
+            }
+            else
+            {
+                motset += $"{row[0]}, {row[1]}, {row[4]}\n";
+            }
+
+        }
+
+        File.WriteAllText("motset.txt", motset);
+
+        string loops = "";
+
+        foreach (string key in UmaDatabase.MetaData.Keys)
+        {
+            if (key.Contains("_loop"))
+            {
+                loops += key + "\n";
+            }
+        }
+
+        File.WriteAllText("loops.txt", loops);
     }
 
     void Update()

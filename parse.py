@@ -1,0 +1,143 @@
+import re
+
+motion_set_data = {
+    "motion_set":{
+
+    }
+}
+
+"""
+ idea: idea
+ hope: hope
+ fight: excited
+ soppo: facing-away
+ sad: sad
+ muneate: hand-on-chest
+ think: thinking
+ shy: shy
+ tekumi: hands-intertwined
+ surprise: surprised
+ kuchiate: covering-mouth
+ hello: greeting
+ handsup: hands-up
+ bow: bow
+ sneeze: sneeze
+ idle: idle
+ sleep: sleep
+ guard: guard-self
+ sudachi: stand-straight
+ joy: happy
+ koshiate: hands-on-hip
+ angry: angry
+ shock: shock
+ cry: cry
+ gatts: confident
+ pose: pose
+ akire: idk
+ near: leaning-in
+ udekumi: folded-arms
+ byebye: farewell
+ tired: tired
+ laugh: laughing
+ good: thumbs-up
+ peace: peace
+ happy: happy
+ advice: advice
+ clap: hands-clap
+ mot: NONE
+ pain: pain
+ send: lending-hands
+ quiet: be-quiet
+ homestand: NONE
+ hungry: hungry
+ see: seeing-away
+ ikaku: ready
+ come: come-closer
+ point: point
+ stretch: stretch
+ hot: hot
+ neckup: neckup-nod
+ oh: excited
+ yell: yell
+ joke: joking
+ swing: swinging-hands
+ shake: shake
+ sorry: sorry
+ ng: no-gesture
+ muscle: muscle
+ salute: salute
+ pdk: NONE
+ stop: stop
+ request: please
+ set: NONE
+ kiss: NONE
+ stomp: stomp
+ hurry: hurry
+ act: NONE
+ diarywrite: write_diary
+ check: NONE
+ watchbase: NONE
+ watchlook: NONE
+"""
+
+def CollectAllMotset():
+    with open("motset.txt","r") as motset_file:
+        chars = motset_file.read().split("\n\n")
+        for char in chars:
+            motset = char.split("\n")
+
+            char_id = int(motset[1][:4])
+            #if char_id != 1025: continue
+            
+            data = {
+                    "excited":[], #fight
+                    "covering_mouth":[], #kuchiate
+                    "hand_on_chest":[], #muneate
+                    "sad": [], #sad
+                    "hands_intertwined":[], #tekumi
+                    "tired":[], #tired,
+                    "thinking":[], #think
+                    "facing_away":[], #soppo
+                    "guard_self":[], #guard
+                    "seeing_away":[], #see
+                    "bow":[], #bow
+                    "come_closer":[], #come
+                    "hope":[], #hope
+            }
+            
+            for line in motset:
+                line = line.split(",")
+                if len(line) == 1: continue
+
+                keys = {"fight":"excited","kuchiate":"covering_mouth","muneate":"hand_on_chest","sad":"sad","tekumi":"hands_intertwined","tired":"tired","think":"thinking","soppo":"facing_away","guard":"guard_self","see":"seeing_away","bow":"bow","come":"come_closer","hope":"hope"}
+
+                for k, v in keys.items():
+                    if k in line[1]:
+                        data[v].append(f"3d/motion/event/body/type00/anm_eve_type00_{line[1][1:]}_loop")
+                        break
+
+            motion_set_data[str(char_id)] = data
+
+def AnimsOverrideKeys():
+    with open("motset.txt","r") as motset_file:
+        animov_names = []
+
+        chars = motset_file.read().split("\n\n")
+        for char in chars:
+            motset = char.split("\n")
+
+            char_id = int(motset[1][:4])
+
+            for line in motset:
+                line = line.split(",")
+                if len(line) == 1: continue
+
+                name = line[1].replace("_mirror","")
+                name = re.sub(r'\d', '', name)
+
+                if not name in animov_names:
+                    animov_names.append(name)
+
+        print(animov_names)
+
+AnimsOverrideKeys()

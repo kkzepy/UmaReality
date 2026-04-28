@@ -22,6 +22,7 @@ public class UmaDatabase
     public static List<FaceTypeData> FaceTypeData;
     public static List<DataRow> DressData;
     public static List<DataRow> CharaNameData;
+    public static List<DataRow> CharaMotionSet;
 
     public static Dictionary<string, UmaDatabaseEntry> MetaData;
 
@@ -58,6 +59,7 @@ public class UmaDatabase
             FaceTypeData = ReadFaceTypeData(mdbConn);
             DressData = ReadMaster(mdbConn, "SELECT * FROM dress_data C,(SELECT D.'index' dressid,D.'text' dressname FROM text_data D WHERE id like 14) T WHERE C.id like T.dressid");
             CharaNameData = ReadMaster(mdbConn, "SELECT * FROM text_data WHERE id = 372");
+            CharaMotionSet = ReadMaster(mdbConn, "SELECT * FROM chara_motion_set WHERE id > 1001000 AND id < 9100125;");
 
             MetaData = ReadMetaFromEncryptedDb(metaDbPath, GenFinalKey(Utility.HexStringToBytes(DBKey)), 3);
         }
