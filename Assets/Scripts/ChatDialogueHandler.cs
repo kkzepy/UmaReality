@@ -16,7 +16,7 @@ public class DialogueController : MonoBehaviour
         }
     }
 
-    IEnumerator StreamContentUpdate(string contentText, float duration = 2.5f)
+    IEnumerator StreamContentUpdate(string contentText, float duration = 1f)
     {
         foreach (char c in contentText)
         {

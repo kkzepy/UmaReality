@@ -400,6 +400,7 @@ MonoBehaviour:
   uma: {fileID: 0}
   APIKey: 
   Model: llama-3.3-70b-versatile
+  DefinitionPath: bots/manhattan_cafe.json
 --- !u!1 &236784998
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,6 @@
 Reply with this format:
-[EMOTE:<emotion>]
-[ANIM:<animation>]
+[EMOTE:<delay>_<emotion>]
+[ANIM:<delay>_<animation>]
 [DIALOGUE:<text>]
 
 Format usage example:

@@ -32,13 +32,14 @@ public class UIHandler : MonoBehaviour
     string prevMorph;
     public string APIKey;
     public string Model = "meta-llama/llama-4-scout-17b-16e-instruct";
+    public string DefinitionPath="bots/tokai_teio.json";
 
     private void Start()
     {
         chatController = new ChatController();
 
         chatController.LoadUserDefinition("bots/persona.json");
-        chatController.LoadBotDefinition("bots/tokai_teio.json");
+        chatController.LoadBotDefinition(DefinitionPath);
         Dialogue.GetComponent<DialogueController>().DialogueTitle.text = chatController.bot.name;
 
         chatController.EndpointURL = "https://api.groq.com/openai/v1/chat/completions";//"https://openrouter.ai/api/v1/chat/completions";
@@ -46,6 +47,12 @@ public class UIHandler : MonoBehaviour
         chatController.format = File.ReadAllText("bots/format.txt");
         chatController.LoadExpressionVocab("bots/expression_dict.json");
         expVoc = chatController.expressionVocab;
+
+        //var motsets = ExpressiveController.GetCharacterMotionSets(1003);
+        /*foreach (var item in motsets)
+        {
+            Debug.Log($"{item.Key} : {item.Value.Count} : {item.Value[0]}");
+        }*/
     }
 
     public void OnButtonClick()
@@ -143,6 +150,8 @@ public class UIHandler : MonoBehaviour
             expCon = uma.GetComponent<ExpressiveController>();
             expCon.UserInputField = Chat;
             expCon.DialogueObject = Dialogue;
+            chatController.expressionVocab.anim_map = new Dictionary<string, List<string>>();
+            expCon.MergeAnimMapWithMotionSets(ExpressiveController.GetCharacterMotionSets(chara.Id));
 
             return;
         }
@@ -198,7 +207,10 @@ public class UIHandler : MonoBehaviour
 
                 Debug.Log($"Playing anim : {UmaDatabase.MetaData[animField.text]}");
                 controller.PlayAnimation(UmaDatabase.MetaData[animField.text]);
+                return;
             }
+
+            //expCon.MergeAnimMapWithMotionSets( ExpressiveController.GetCharacterMotionSets( uma.GetComponent<UmaCharacter>().charaEntry.Id ) );
             
         }
 

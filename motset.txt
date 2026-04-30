@@ -2425,25 +2425,6 @@
 1051021, yell01, WaraiA
 1051022, muneate03, WaraiA
 1051023, hope03, WaraiC
-1051800, kuchiate04, WaraiA
-1051801, hope01, WaraiC
-1051802, muneate02, KomariA
-1051803, muneate02, WaraiC
-1051804, hope01, WaraiA
-1051805, tekumi01, KanasiA
-1051806, fight05, WaraiA
-1051807, muneate02, DoyaA
-1051808, muneate04, DoyaA
-1051809, muneate06, KomariA
-1051810, muneate06, KanasiC
-1051811, think06, KomariA
-1051812, think03, WaraiA
-1051813, tekumi01, KusyoAL
-1051814, pain05, KanasiC
-1051815, near10, KanasiA
-1051816, hope06, WaraiC
-1051817, guard02, KomariC
-1051818, fight15, IkariA
 
 
 1052000, gatts06, DoyaA
@@ -3165,26 +3146,6 @@
 1072016, happy02, KusyoAL
 1072017, bow15, IkariA
 1072018, hope03, FutuA
-1072800, muneate11, FutuA
-1072801, homestand13, IkariA
-1072802, think09, WaraiA
-1072803, homestand13, WaraiA
-1072804, homestand13, DoyaA
-1072805, muneate01, IkariA
-1072806, surprise05, OdorokiA
-1072807, fight06, IkariA
-1072808, muneate02, FutuA
-1072809, fight01, WaraiA
-1072810, kuchiate04, KomariA
-1072811, kuchiate04, IkariA
-1072812, homestand13, KusyoAL
-1072813, think05, FutuA
-1072814, gatts03, WaraiA
-1072815, muneate11, WaraiA
-1072816, muneate11, IkariA
-1072817, think05, FutuA
-1072818, surprise02, OdorokiC
-1072819, muneate02, WaraiA
 
 
 1074000, joy07, WaraiC

@@ -1,14 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using CriWareLibrary;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Windows;
+using File = System.IO.File;
 using Random = UnityEngine.Random;
 
 public class ChatController
@@ -231,6 +236,159 @@ public class ExpressiveController : MonoBehaviour
         }
     }
 
+    public static Dictionary<string, List<string>> GetCharacterMotionSets(int charaId)
+    {
+        if (UmaDatabase.CharaMotionSet != null)
+        {
+            Dictionary<string, string> keyValuePairs = new()
+            {
+                { "idea", "idea" },
+                { "hope", "hope" },
+                { "fight", "excited" },
+                { "soppo", "facing-away" },
+                { "sad", "sad" },
+                { "muneate", "hand-on-chest" },
+                { "think", "thinking" },
+                { "shy", "shy" },
+                { "tekumi", "hands-intertwined" },
+                { "surprise", "surprised" },
+                { "kuchiate", "covering-mouth" },
+                { "hello", "greeting" },
+                { "handsup", "hands-up" },
+                { "bow", "bow" },
+                { "sneeze", "sneeze" },
+                { "idle", "idle" },
+                { "sleep", "sleep" },
+                { "guard", "guard-self" },
+                { "sudachi", "stand-straight" },
+                { "joy", "happy" },
+                { "koshiate", "hands-on-hip" },
+                { "angry", "angry" },
+                { "shock", "shock" },
+                { "cry", "cry" },
+                { "gatts", "confident" },
+                { "pose", "pose" },
+                { "akire", "idk" },
+                { "near", "leaning-in" },
+                { "udekumi", "folded-arms" },
+                { "byebye", "farewell" },
+                { "tired", "tired" },
+                { "laugh", "laughing" },
+                { "good", "thumbs-up" },
+                { "peace", "peace" },
+                { "happy", "happy" },
+                { "advice", "advice" },
+                { "clap", "hands-clap" },
+                { "mot", null },
+                { "pain", "pain" },
+                { "send", "lending-hands" },
+                { "quiet", "be-quiet" },
+                { "homestand", null },
+                { "hungry", "hungry" },
+                { "see", "seeing-away" },
+                { "ikaku", "ready" },
+                { "come", "come-closer" },
+                { "point", "point" },
+                { "stretch", "stretch" },
+                { "hot", "hot" },
+                { "neckup", "neckup-nod" },
+                { "oh", "excited" },
+                { "yell", "yell" },
+                { "joke", "joking" },
+                { "swing", "swinging-hands" },
+                { "shake", "shake" },
+                { "sorry", "sorry" },
+                { "ng", "no-gesture" },
+                { "muscle", "muscle" },
+                { "salute", "salute" },
+                { "pdk", null },
+                { "stop", "stop" },
+                { "request", "please" },
+                { "set", null },
+                { "kiss", null },
+                { "stomp", "stomp" },
+                { "hurry", "hurry" },
+                { "act", null },
+                { "diarywrite", "write_diary" },
+                { "check", null },
+                { "watchbase", null },
+                { "watchlook", null }
+            };
+
+            Dictionary<string, List<string>> results = new();
+
+            foreach (DataRow row in UmaDatabase.CharaMotionSet)
+            {
+                if (row[0].ToString().StartsWith(charaId.ToString()))
+                {
+                    string match = keyValuePairs.Keys.FirstOrDefault(k => row[1].ToString().StartsWith(k));
+
+                    if (match != null)
+                    {
+                        string value = keyValuePairs[match];
+                        if (value == null) continue;
+                        // var result = results.ContainsKey(value);
+
+                        string path = $"3d/motion/event/body/type00/anm_eve_type00_{row[1].ToString()}_loop";
+                        if (row[1].ToString().Contains("_mirror")) path += "_mirror";
+
+                        if (results.ContainsKey(value))
+                        {
+                            var list = results[value];
+                            list.Add(path);
+                            results[value] = list;
+                        }
+                        else
+                        {
+                            results.Add(value, new List<string>());
+
+                            var list = results[value];
+                            list.Add(path);
+                            results[value] = list;
+                        }
+
+                        //Debug.Log(row[1].ToString());
+                    }
+                }
+            }
+
+            //Debug.Log(results.Count);
+            return results;
+        }
+        return null;
+    }
+
+    public void MergeAnimMapWithMotionSets(Dictionary<string, List<string>> motsets)
+    {
+        if (Chat != null && Chat.expressionVocab != null)
+        {
+            //var anim_map = Chat.expressionVocab.anim_map;
+
+            foreach (var item in motsets)
+            {
+                if (Chat.expressionVocab.anim_map.ContainsKey(item.Key))
+                {
+                    var list = Chat.expressionVocab.anim_map[item.Key];
+                    Debug.Log($"{item.Key} | before: {list.Count}");
+                    list.AddRange(motsets[item.Key]);
+                    Chat.expressionVocab.anim_map[item.Key] = list;
+                    Debug.Log($"{item.Key} | after: {list.Count}");
+                }
+                else
+                {
+                    Chat.expressionVocab.anim_map.Add(item.Key, motsets[item.Key]);
+
+                    /*var list = Chat.expressionVocab.anim_map[item.Key];
+                    list.AddRange(motsets[item.Key]);
+                    Chat.expressionVocab.anim_map[item.Key] = list;*/
+                }
+            }
+            return;
+        }
+
+        Debug.LogError("not initialized yet!");
+    }
+
     void PlayRandomAnimations(string key)
     {
         if (Chat.expressionVocab.anim_map.TryGetValue(key, out List<string> anims))
@@ -286,7 +444,7 @@ public class ExpressiveController : MonoBehaviour
 
         Debug.Log(value);
 
-        if (resp.Anim.Contains(",") && resp.Anim.Contains("_"))
+        if (resp.Anim.Contains(",") || resp.Anim.Contains("_"))
         {
             List<string> animations = resp.Anim.Split(",").ToList();
 
@@ -303,7 +461,7 @@ public class ExpressiveController : MonoBehaviour
             PlayRandomAnimations(resp.Anim);
         }
 
-        if (resp.Emote.Contains(",") && resp.Emote.Contains("_"))
+        if (resp.Emote.Contains(",") || resp.Emote.Contains("_"))
         {
             List<string> emotes = resp.Emote.Split(",").ToList();
 
@@ -350,6 +508,7 @@ public class ExpressiveController : MonoBehaviour
                     if (prevMorphSet.morphName=="BLUSH")
                     {
                         UmaController.SetBlush(false);
+                        UmaController.SetRandomBlink(true);
                         continue;
                     }
 
@@ -362,6 +521,7 @@ public class ExpressiveController : MonoBehaviour
                 if (morphSet.morphName == "BLUSH")
                 {
                     UmaController.SetBlush(true);
+                    UmaController.SetRandomBlink(false);
                     continue;
                 }
 

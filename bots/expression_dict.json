@@ -109,6 +109,10 @@
 		],
 		"smile_warm": [
 			{
+				"morphName": "TOGGLE_RANDOM_BLINK"
+			},
+
+			{
 				"morphName": "Mouth_12_0",
 				"startWeight": 0,
 				"endWeight": 1,
