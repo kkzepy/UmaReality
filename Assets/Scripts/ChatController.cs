@@ -358,6 +358,84 @@ public class ExpressiveController : MonoBehaviour
         return null;
     }
 
+    public static Dictionary<string, List<MorphSet>> GetCharacterEmoteSets(int charaId)
+    {
+        if (UmaDatabase.CharaMotionSet != null)
+        {
+            Dictionary<string, string> keyValuePairs = new()
+            {
+                { "FutuA", "normal" },
+                { "Base", null },
+                { "KomariC", "troubled" },
+                { "OdorokiA", "surprised" },
+                { "KanasiC", "sad" },
+                { "IkariA", "angry" },
+                { "JitomeA", "disdainful-stare" },
+                { "KusyoAL", "smirking-left" },
+                { "WinkL", "wink-left" },
+                { "DereA", "lovestruck" },
+                { "OutGameWaraiB", null },
+                { "OdorokiC", "shocked" },
+                { "DoyaA", "smug" },
+                { "IkariC", "furious" },
+                { "KanasiA", "sorrowful" },
+                { "KomariA", "worried" },
+                { "WaraiC", "big-smile" },
+                { "KusyoCL", "grinning-left" },
+                { "WaraiA", "smile" }
+            };
+
+            Dictionary<string, List<MorphSet>> results = new();
+
+            foreach (DataRow row in UmaDatabase.CharaMotionSet)
+            {
+                if (row[0].ToString().StartsWith(charaId.ToString()))
+                {
+                    string match = keyValuePairs.Keys.FirstOrDefault(k => row[4].ToString().StartsWith(k));
+
+                    if (match != null)
+                    {
+                        string value = keyValuePairs[match];
+                        if (value == null) continue;
+                        // var result = results.ContainsKey(value);
+
+                        //string path = $"3d/motion/event/body/type00/anm_eve_type00_{row[1].ToString()}_loop";
+                        //if (row[1].ToString().Contains("_mirror")) path += "_mirror";
+
+                        if (results.ContainsKey(value))
+                        {
+                            var morph = new MorphSet {
+                                morphTag = row[4].ToString(),
+                                startWeight = 0f,
+                                endWeight = 1f,
+                                duration = .1f
+                            };
+                            results[value].Add(morph);
+                        }
+                        else
+                        {
+                            results.Add(value, new List<MorphSet>());
+
+                            var morph = new MorphSet {
+                                morphTag = row[4].ToString(),
+                                startWeight = 0f,
+                                endWeight = 1f,
+                                duration = .1f
+                            };
+                            results[value].Add(morph);
+                        }
+
+                        Debug.Log(row[1].ToString());
+                    }
+                }
+            }
+
+            Debug.Log(results.Count);
+            return results;
+        }
+        return null;
+    }
+
     public void MergeAnimMapWithMotionSets(Dictionary<string, List<string>> motsets)
     {
         if (Chat != null && Chat.expressionVocab != null)
@@ -377,6 +455,39 @@ public class ExpressiveController : MonoBehaviour
                 else
                 {
                     Chat.expressionVocab.anim_map.Add(item.Key, motsets[item.Key]);
+
+                    /*var list = Chat.expressionVocab.anim_map[item.Key];
+                    list.AddRange(motsets[item.Key]);
+                    Chat.expressionVocab.anim_map[item.Key] = list;*/
+                }
+            }
+            return;
+        }
+
+        Debug.LogError("not initialized yet!");
+    }
+
+    public void MergeFaceMorphMapWithEmoteSets(Dictionary<string, List<MorphSet>> emotesets)
+    {
+        if (Chat != null && Chat.expressionVocab != null)
+        {
+            //var anim_map = Chat.expressionVocab.anim_map;
+
+            foreach (var item in emotesets)
+            {
+                if (Chat.expressionVocab.face_morph_map.ContainsKey(item.Key))
+                {
+                    /*
+                    var list = Chat.expressionVocab.anim_map[item.Key];
+                    Debug.Log($"{item.Key} | before: {list.Count}");
+                    list.AddRange(emotesets[item.Key]);
+                    Chat.expressionVocab.anim_map[item.Key] = list;
+                    Debug.Log($"{item.Key} | after: {list.Count}");*/
+                    continue;
+                }
+                else
+                {
+                    Chat.expressionVocab.face_morph_map.Add(item.Key, emotesets[item.Key]);
 
                     /*var list = Chat.expressionVocab.anim_map[item.Key];
                     list.AddRange(motsets[item.Key]);
@@ -505,27 +616,27 @@ public class ExpressiveController : MonoBehaviour
 
                 foreach (MorphSet prevMorphSet in prevMorphSets)
                 {
-                    if (prevMorphSet.morphName=="BLUSH")
+                    if (prevMorphSet.morphTag=="BLUSH")
                     {
                         UmaController.SetBlush(false);
                         UmaController.SetRandomBlink(true);
                         continue;
                     }
 
-                    UmaController.PlayMorph(prevMorphSet.morphName, prevMorphSet.endWeight, prevMorphSet.startWeight, prevMorphSet.duration);
+                    UmaController.PlayMorph(prevMorphSet.morphTag, prevMorphSet.endWeight, prevMorphSet.startWeight, prevMorphSet.duration);
                 }
             }
 
             foreach (MorphSet morphSet in morphSets)
             {
-                if (morphSet.morphName == "BLUSH")
+                if (morphSet.morphTag == "BLUSH")
                 {
                     UmaController.SetBlush(true);
                     UmaController.SetRandomBlink(false);
                     continue;
                 }
 
-                UmaController.PlayMorph(morphSet.morphName, morphSet.startWeight, morphSet.endWeight, morphSet.duration);
+                UmaController.PlayMorph(morphSet.morphTag, morphSet.startWeight, morphSet.endWeight, morphSet.duration);
                 //Debug.Log($"Playing morph: {morphSet.morphName}");
             }
 

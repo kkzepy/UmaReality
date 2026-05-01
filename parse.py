@@ -80,6 +80,28 @@ keys = {#{"fight":"excited","kuchiate":"covering_mouth","muneate":"hand_on_chest
  " watchlook": None
 }
 
+{
+    "FutuA": "normal",
+    "Base": None,
+    "KomariC": "troubled",
+    "OdorokiA": "surprised",
+    "KanasiC": "sad",
+    "IkariA": "angry",
+    "JitomeA": "disdainful-stare",
+    "KusyoAL": "smirking-left",
+    "WinkL": "wink-left",
+    "DereA": "lovestruck",
+    "OutGameWaraiB": None,
+    "OdorokiC": "shocked",
+    "DoyaA": "smug",
+    "IkariC": "furious",
+    "KanasiA": "sorrowful",
+    "KomariA": "worried",
+    "WaraiC": "big-smile",
+    "KusyoCL": "grinning-left",
+    "WaraiA": "smile"
+}
+
 def CollectAllMotset():
     with open("motset.txt","r") as motset_file:
         chars = motset_file.read().split("\n\n")
@@ -149,6 +171,13 @@ def AnimsOverrideKeys():
 
         print(animov_names)
 
+def FaceTypeDatas():
+    with open("face_type.txt","r") as ft_file:
+        faced_names = ft_file.read().split("\n")
+
+        print(set(faced_names))
+
 #AnimsOverrideKeys()
-CollectAllMotset()
-json.dump(motion_set_data, open("motset_final.json","w"), indent=4)
+#CollectAllMotset()
+#json.dump(motion_set_data, open("motset_final.json","w"), indent=4)
+FaceTypeDatas()

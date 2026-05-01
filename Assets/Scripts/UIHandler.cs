@@ -48,8 +48,8 @@ public class UIHandler : MonoBehaviour
         chatController.LoadExpressionVocab("bots/expression_dict.json");
         expVoc = chatController.expressionVocab;
 
-        //var motsets = ExpressiveController.GetCharacterMotionSets(1003);
-        /*foreach (var item in motsets)
+        /*var emotesets = ExpressiveController.GetCharacterEmoteSets(1025);
+        foreach (var item in emotesets)
         {
             Debug.Log($"{item.Key} : {item.Value.Count} : {item.Value[0]}");
         }*/
@@ -150,8 +150,12 @@ public class UIHandler : MonoBehaviour
             expCon = uma.GetComponent<ExpressiveController>();
             expCon.UserInputField = Chat;
             expCon.DialogueObject = Dialogue;
+
             chatController.expressionVocab.anim_map = new Dictionary<string, List<string>>();
+            chatController.expressionVocab.face_morph_map = new Dictionary<string, List<MorphSet>>();
             expCon.MergeAnimMapWithMotionSets(ExpressiveController.GetCharacterMotionSets(chara.Id));
+            expCon.MergeFaceMorphMapWithEmoteSets(ExpressiveController.GetCharacterEmoteSets(chara.Id));
+
 
             return;
         }

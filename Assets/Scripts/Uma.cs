@@ -1113,12 +1113,23 @@ public class UmaCharacter : MonoBehaviour
         }
     }
 
+    public void PlayMorph(string morphTag, float startWeight, float targetWeight, float duration)
+    {
+        List<FacialMorph> morphs = FaceDrivenKeyTarget.AllMorphs.Where(x => x.tag == morphTag).ToList();
+
+        //StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
+        foreach (var morph in morphs)
+        {
+            PlayMorph(morph, startWeight, targetWeight, duration);
+        }
+    }
+    /*
     public void PlayMorph(string morphName, float startWeight, float targetWeight, float duration)
     {
         FacialMorph morph = FaceDrivenKeyTarget.AllMorphs.FirstOrDefault(x => x.name == morphName);
 
         StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
-    }
+    }*/
     public void PlayMorph(FacialMorph morph, float startWeight, float targetWeight, float duration)
     {
         StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
@@ -1143,11 +1154,11 @@ public class UmaCharacter : MonoBehaviour
     }
     public void Blink(float duration = .2f)
     {
-        PlayMorph("Eye_2_R", 0f, 1f, duration);
-        PlayMorph("Eye_2_L", 0f, 1f, duration);
+        PlayMorph("CloseA", 0f, 1f, duration);
+        //PlayMorph("Eye_2_L", 0f, 1f, duration);
 
-        PlayMorph("Eye_2_R", 1f, 0f, duration);
-        PlayMorph("Eye_2_L", 1f, 0f, duration);
+        PlayMorph("CloseA", 1f, 0f, duration);
+        //PlayMorph("Eye_2_L", 1f, 0f, duration);
     }
     IEnumerator RandomBlinkCoroutine()
     {

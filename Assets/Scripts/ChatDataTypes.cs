@@ -10,7 +10,7 @@ public class ChatMessage
 
 public class MorphSet
 {
-    public string morphName;
+    public string morphTag;
     public float startWeight;
     public float endWeight;
     public float duration;
@@ -69,11 +69,13 @@ public class CharDefinition
 public class BotDefinition
 {
     public string name;
-
     public string definition;
     public string additional_rules;
-
     public string scenario;
+
+    public int id;
+    public bool use_builtin_motions;
+    public ExpressionVocab exp_voc;
 }
 
 [Serializable]

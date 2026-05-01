@@ -40,32 +40,17 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
+        
         string motset = "";
         int id = -1;
 
         foreach (DataRow row in UmaDatabase.CharaMotionSet)
         {
-            int currentId = Convert.ToInt32(row[0].ToString().Substring(0, 4));
-
-            if (id == -1)
-            {
-                id = currentId;
-            }
-            if (id!=currentId)
-            {
-                id = currentId;
-                motset += $"\n\n{row[0]}, {row[1]}, {row[4]}\n";
-                //continue;
-            }
-            else
-            {
-                motset += $"{row[0]}, {row[1]}, {row[4]}\n";
-            }
-
+            motset += row[4].ToString() + "\n";
         }
 
-        File.WriteAllText("motset.txt", motset);
-
+        File.WriteAllText("face_type.txt", motset);
+        /*
         string loops = "";
 
         foreach (string key in UmaDatabase.MetaData.Keys)
@@ -76,7 +61,7 @@ public class Main : MonoBehaviour
             }
         }
 
-        File.WriteAllText("loops.txt", loops);
+        File.WriteAllText("loops.txt", loops);*/
     }
 
     void Update()
