@@ -15,8 +15,10 @@ public class UIHandler : MonoBehaviour
     public TMP_InputField animField;
     public GameObject Dialogue;
     public TMP_InputField Chat;
+    public TMP_InputField PropField;
 
     public GameObject uma;
+    public GameObject currentProp;
 
     int costumeId = 0;
     int headId = 0;
@@ -155,7 +157,7 @@ public class UIHandler : MonoBehaviour
             chatController.expressionVocab.face_morph_map = new Dictionary<string, List<MorphSet>>();
             expCon.MergeAnimMapWithMotionSets(ExpressiveController.GetCharacterMotionSets(chara.Id));
             expCon.MergeFaceMorphMapWithEmoteSets(ExpressiveController.GetCharacterEmoteSets(chara.Id));
-
+            Debug.Log($"{chatController.expressionVocab.anim_map}\n{chatController.expressionVocab.face_morph_map}");
 
             return;
         }
@@ -163,6 +165,19 @@ public class UIHandler : MonoBehaviour
         Debug.LogWarning($"No input!");
     }
 
+    public void OnPropBtnClick()
+    {
+        if (PropField && !string.IsNullOrEmpty(PropField.text))
+        {
+            if (currentProp)
+            {
+                Destroy(currentProp);
+                currentProp = null;
+            }
+
+            currentProp = UmaAssembler.LoadProp(PropField.text);
+        }
+    }
     
     private void Update()
     {

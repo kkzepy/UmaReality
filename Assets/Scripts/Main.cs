@@ -20,17 +20,18 @@ public class Main : MonoBehaviour
     {
         // Initialization
 
-        //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
-        //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
-        //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
+        UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
+        /*
         string user = "Rhxxza";
 
         UmaDatabase.persistentPath = $"C:\\Users\\{user}\\AppData\\LocalLow\\Cygames\\umamusume\\";
         UmaDatabase.masterDbPath = $"C:\\Users\\{user}\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb";
         UmaDatabase.metaDbPath = $"C:\\Users\\{user}\\AppData\\LocalLow\\Cygames\\umamusume\\meta";
         UmaDatabase.DBKey = "56636B634272377665704162"; //Global DB Key
-        GraphicsSettings.renderPipelineAsset = null; // Set to null for global
+        GraphicsSettings.renderPipelineAsset = null; // Set to null for global*/
 
         progressBar.text = "Creating DB Connenctions...";
         UmaDatabase.CreateConnection();
@@ -40,17 +41,50 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
-        
-        string motset = "";
-        int id = -1;
+        string props = "";
 
-        foreach (DataRow row in UmaDatabase.CharaMotionSet)
+        foreach (var item in UmaDatabase.MetaData)
         {
-            motset += row[4].ToString() + "\n";
+            if (item.Key.StartsWith("3d/env") && Path.GetFileName(item.Key).StartsWith("pfb_"))
+            {
+                props += item.Key + "\n";
+            }
         }
 
-        File.WriteAllText("face_type.txt", motset);
+        File.WriteAllText("props.txt", props);
+
         /*
+        string motset = "";
+        string emoteset = "";
+        int id = -1;
+
+        
+        foreach (DataRow row in UmaDatabase.CharaMotionSet)
+        {
+            emoteset += row[5].ToString() + "\n";
+
+            int currentId = Convert.ToInt32(row[0].ToString().Substring(0, 4));
+
+            if (id == -1)
+            {
+                id = currentId;
+            }
+            if (id!=currentId)
+            {
+                id = currentId;
+                motset += $"\n\n{row[0]}, {row[1]}, {row[4]}\n";
+                //continue;
+            }
+            else
+            {
+                motset += $"{row[0]}, {row[1]}, {row[4]}\n";
+            }
+
+        }
+
+        File.WriteAllText("motset.txt", motset);
+        File.WriteAllText("face_type.txt", emoteset);
+
         string loops = "";
 
         foreach (string key in UmaDatabase.MetaData.Keys)

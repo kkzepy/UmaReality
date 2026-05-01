@@ -684,6 +684,21 @@ public class UmaAssembler : MonoBehaviour
             }
         }
     }
+
+    public static GameObject LoadProp(string logicalPath, bool loadPrerequisites = true)
+    {
+        string path = UmaDatabase.ResolvePath(logicalPath);
+
+        if (path == null) return null;
+
+        GameObject container = new GameObject(logicalPath);
+
+        var go = UmaAssetManager.LoadAsset<GameObject>(logicalPath, loadPrerequisites);
+
+        Instantiate(go, container.transform);
+
+        return container;
+    }
 }
 
 public class UmaCharacter : MonoBehaviour

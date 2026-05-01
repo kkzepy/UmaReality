@@ -182,6 +182,25 @@ public class ChatController
             }
         }
     }
+
+    public void ExportMessages(string path)
+    {
+        if (chatHistory == null) { Debug.LogError("chatHistory not yet initialized!");  return; }
+
+        if (path==null)
+        {
+            DateTime now = DateTime.Now;
+            string timestamp = now.ToString("yyyy-MM-dd_HH-mm-ss");
+
+            string fileName = $"{bot.name}_" + timestamp + ".json";
+
+            File.WriteAllText(fileName, JsonConvert.SerializeObject(chatHistory));
+
+            return;
+        }
+
+        File.WriteAllText(path, JsonConvert.SerializeObject(chatHistory));
+    }
 }
 
 public static class ExpressiveResponseParser
@@ -281,6 +300,7 @@ public class ExpressiveController : MonoBehaviour
                 { "clap", "hands-clap" },
                 { "mot", null },
                 { "pain", "pain" },
+                { "eartouch", "eartouch" },
                 { "send", "lending-hands" },
                 { "quiet", "be-quiet" },
                 { "homestand", null },
@@ -294,7 +314,16 @@ public class ExpressiveController : MonoBehaviour
                 { "neckup", "neckup-nod" },
                 { "oh", "excited" },
                 { "yell", "yell" },
+                { "opera", "opera" },
                 { "joke", "joking" },
+                { "sing", "singing" },
+                { "carrotman", null },
+                { "snap", "hand-snap" },
+                { "talk", null },
+                { "banzai", "jump-happy" },
+                { "ok", "ok" },
+                { "breath", "deep-breath" },
+                { "chuni", "trying-to-be-cool" },
                 { "swing", "swinging-hands" },
                 { "shake", "shake" },
                 { "sorry", "sorry" },
@@ -364,34 +393,47 @@ public class ExpressiveController : MonoBehaviour
         {
             Dictionary<string, string> keyValuePairs = new()
             {
-                { "FutuA", "normal" },
-                { "Base", null },
-                { "KomariC", "troubled" },
-                { "OdorokiA", "surprised" },
                 { "KanasiC", "sad" },
-                { "IkariA", "angry" },
-                { "JitomeA", "disdainful-stare" },
-                { "KusyoAL", "smirking-left" },
-                { "WinkL", "wink-left" },
+                { "DoyaA", "smug-proud" },
+                { "CloseE", "eyes-closed" },
+                { "SeriousA", "serious" },
+                { "KomariC", "troubled" },
+                { "CloseC", "eyes-closed" },
                 { "DereA", "lovestruck" },
-                { "OutGameWaraiB", null },
-                { "OdorokiC", "shocked" },
-                { "DoyaA", "smug" },
-                { "IkariC", "furious" },
-                { "KanasiA", "sorrowful" },
-                { "KomariA", "worried" },
-                { "WaraiC", "big-smile" },
-                { "KusyoCL", "grinning-left" },
-                { "WaraiA", "smile" }
+                { "FutuA", "normal" },
+                { "KusyoEL", "grinning" },
+                { "WinkL", "wink-left" },
+                { "WaraiA", "smile" },
+                { "KusyoAL", "grinning" },
+                { "CloseA", "eyes-closed" },
+                { "OdorokiC", "surprised" },
+                { "OdorokiA", "surprised" },
+                { "KanasiA", "sad" },
+                { "WinkR", "wink-right" },
+                { "KomariA", "troubled" },
+                { "KusyoCL", "grinning" },
+                { "Base", "default" },
+                { "FutuC", "normal" },
+                { "IkariC", "angry" },
+                { "WaraiC", "smile" },
+                { "OutGameWaraiB", "outgame-smile" },
+                { "IkariA", "angry" },
+                { "JitomeA", "half-lidded-stare" }
             };
 
             Dictionary<string, List<MorphSet>> results = new();
+
+            int face_typeIndex = 4;
+            if (UmaDatabase.CharaMotionSet[0][face_typeIndex].ToString().Length==1) // Auto detect if using global database
+            {
+                face_typeIndex = 5;
+            }
 
             foreach (DataRow row in UmaDatabase.CharaMotionSet)
             {
                 if (row[0].ToString().StartsWith(charaId.ToString()))
                 {
-                    string match = keyValuePairs.Keys.FirstOrDefault(k => row[4].ToString().StartsWith(k));
+                    string match = keyValuePairs.Keys.FirstOrDefault(k => row[face_typeIndex].ToString().StartsWith(k));
 
                     if (match != null)
                     {
@@ -405,7 +447,7 @@ public class ExpressiveController : MonoBehaviour
                         if (results.ContainsKey(value))
                         {
                             var morph = new MorphSet {
-                                morphTag = row[4].ToString(),
+                                morphTag = row[face_typeIndex].ToString(),
                                 startWeight = 0f,
                                 endWeight = 1f,
                                 duration = .1f
@@ -417,7 +459,7 @@ public class ExpressiveController : MonoBehaviour
                             results.Add(value, new List<MorphSet>());
 
                             var morph = new MorphSet {
-                                morphTag = row[4].ToString(),
+                                morphTag = row[face_typeIndex].ToString(),
                                 startWeight = 0f,
                                 endWeight = 1f,
                                 duration = .1f

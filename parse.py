@@ -177,7 +177,7 @@ def FaceTypeDatas():
 
         print(set(faced_names))
 
-#AnimsOverrideKeys()
+AnimsOverrideKeys()
 #CollectAllMotset()
 #json.dump(motion_set_data, open("motset_final.json","w"), indent=4)
-FaceTypeDatas()
+#FaceTypeDatas()
