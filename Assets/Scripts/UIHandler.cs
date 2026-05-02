@@ -1,4 +1,5 @@
 using Gallop;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,6 +32,7 @@ public class UIHandler : MonoBehaviour
     ChatController chatController;
     ExpressionVocab expVoc;
     ExpressiveController expCon;
+    Dictionary<string, UmaEnvironment> envColl;
     string prevMorph;
     public string APIKey;
     public string Model = "meta-llama/llama-4-scout-17b-16e-instruct";
@@ -50,6 +52,8 @@ public class UIHandler : MonoBehaviour
         chatController.LoadExpressionVocab("bots/expression_dict.json");
         expVoc = chatController.expressionVocab;
 
+        envColl = JsonConvert.DeserializeObject<Dictionary<string, UmaEnvironment>>(File.ReadAllText("env_map.json"));
+        Debug.Log(envColl == null? "kosong jir" : envColl.Keys);
         /*var emotesets = ExpressiveController.GetCharacterEmoteSets(1025);
         foreach (var item in emotesets)
         {
@@ -169,13 +173,22 @@ public class UIHandler : MonoBehaviour
     {
         if (PropField && !string.IsNullOrEmpty(PropField.text))
         {
-            if (currentProp)
+            try
             {
-                Destroy(currentProp);
-                currentProp = null;
-            }
+                if (currentProp)
+                {
+                    Destroy(currentProp);
+                    currentProp = null;
+                }
 
-            currentProp = UmaAssembler.LoadProp(PropField.text);
+                currentProp = UmaAssembler.LoadProp(PropField.text);
+                if (currentProp == null) throw new Exception();
+            }
+            catch (Exception e)
+            {
+                Debug.Log(envColl.Count);
+                currentProp = ExpressiveController.LoadEnv(envColl[PropField.text]);
+            }
         }
     }
     

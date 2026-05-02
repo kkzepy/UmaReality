@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [System.Serializable]
 public class ChatMessage
@@ -76,6 +77,15 @@ public class BotDefinition
     public int id;
     public bool use_builtin_motions;
     public ExpressionVocab exp_voc;
+}
+
+public class UmaEnvironment
+{
+    public string path;
+    public int cam_fov = 20;
+    public Vector3 cam_rot = new(0, 180, 0);
+    public Vector3 cam_xyz = new(0, 0, 0);
+    public string light_color = "FFFFFF";
 }
 
 [Serializable]

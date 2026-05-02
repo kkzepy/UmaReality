@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Networking;
 using UnityEngine.Windows;
 using File = System.IO.File;
@@ -231,9 +232,9 @@ public static class ExpressiveResponseParser
 public class ExpressiveController : MonoBehaviour
 {
     public UmaCharacter UmaController;
-
     public GameObject DialogueObject;
-    
+    Light sceneLight;
+
     public TMP_InputField UserInputField;
     public DialogueController ChatDialogueHandler;
 
@@ -253,8 +254,29 @@ public class ExpressiveController : MonoBehaviour
                 ChatDialogueHandler.title = Chat.bot.name;
             }
         }
+
+        sceneLight = GameObject.FindAnyObjectByType<Light>();
     }
 
+    public static GameObject LoadEnv(UmaEnvironment env)
+    {
+        string actualPath = UmaDatabase.ResolvePath(env.path);
+        if (actualPath == null) return null;
+
+        GameObject prop = UmaAssembler.LoadProp(env.path);
+
+        Camera.main.transform.position = env.cam_xyz;
+        Camera.main.fieldOfView = env.cam_fov;
+
+        Light sceneLight = GameObject.FindAnyObjectByType<Light>();
+
+        if (sceneLight && ColorUtility.TryParseHtmlString(env.light_color, out Color lightColor))
+        {
+            sceneLight.color = lightColor;
+        }
+
+        return prop;
+    }
     public static Dictionary<string, List<string>> GetCharacterMotionSets(int charaId)
     {
         if (UmaDatabase.CharaMotionSet != null)
