@@ -20,9 +20,9 @@ public class Main : MonoBehaviour
     {
         // Initialization
 
-        UmaDatabase.persistentPath = "E:\\Uma\\Persistent\\";
-        UmaDatabase.masterDbPath = "E:\\Uma\\Persistent\\master\\master.mdb";
-        UmaDatabase.metaDbPath = "E:\\Uma\\Persistent\\meta";
+        UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
+        UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
         /*
         string user = "Rhxxza";

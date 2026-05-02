@@ -174,7 +174,7 @@ public class ChatController
 
                 if (addToHistory)
                 {
-                    AddToHistory("user", messages.TakeLast(1).FirstOrDefault().content);
+                    AddToHistory("user", messages.LastOrDefault(x => x.role == "user").content);
                     //Debug.Log(messages.TakeLast(1).FirstOrDefault().role);
                     AddToHistory("assistant", responseText);
                 }
@@ -184,18 +184,18 @@ public class ChatController
         }
     }
 
-    public void ExportMessages(string path)
+    public void ExportMessages(string path = null)
     {
         if (chatHistory == null) { Debug.LogError("chatHistory not yet initialized!");  return; }
 
-        if (path==null)
+        if (string.IsNullOrEmpty(path))
         {
             DateTime now = DateTime.Now;
             string timestamp = now.ToString("yyyy-MM-dd_HH-mm-ss");
 
             string fileName = $"{bot.name}_" + timestamp + ".json";
 
-            File.WriteAllText(fileName, JsonConvert.SerializeObject(chatHistory));
+            File.WriteAllText(fileName, JsonConvert.SerializeObject(chatHistory, Formatting.Indented));
 
             return;
         }

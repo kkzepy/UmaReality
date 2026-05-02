@@ -192,6 +192,35 @@ public class UIHandler : MonoBehaviour
         }
     }
     
+    public void OnSendBtnClick()
+    {
+        if (chatController == null || uma == null) return;
+
+        chatController.APIKey = APIKey;
+        if (Dialogue)
+        {
+            string prompt = "Hi!";
+
+            if (Chat)
+            {
+                if (!string.IsNullOrEmpty(Chat.text))
+                {
+                    prompt = Chat.text;
+                }
+            }
+
+            uma.GetComponent<ExpressiveController>().GenerateResponse(10, true, false, Model);
+            Debug.Log($"prompt: {prompt}");
+        }
+    }
+
+    public void OnExportBtnClick()
+    {
+        if (chatController == null) return;
+
+        chatController.ExportMessages();
+    }
+
     private void Update()
     {
 
@@ -246,29 +275,6 @@ public class UIHandler : MonoBehaviour
             
         }
 
-        if (Input.GetKeyDown(KeyCode.Equals))
-        {
-            
-            chatController.APIKey = APIKey;
-            if (Dialogue)
-            {
-                string prompt = "Hi!";
-
-                if (Chat)
-                {
-                    if (!string.IsNullOrEmpty(Chat.text))
-                    {
-                        prompt = Chat.text;
-                    }
-                }
-
-                uma.GetComponent<ExpressiveController>().GenerateResponse(10, true, false, Model);
-                Debug.Log($"prompt: {prompt}");
-            }
-            
-
-            //uma.GetComponent<ExpressiveController>().PlayMorphSet("embarassed");
-        }
 
         if (Input.GetKeyDown(KeyCode.T))
         {
