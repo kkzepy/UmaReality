@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Bson;
 using PlasticGui.WorkspaceWindow.Items;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Media;
 using TMPro;
+using Uma;
 using UnityEngine;
 using UnityEngine.Rendering;
 //using Gallop;
@@ -41,62 +43,27 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
-        /*
-        string props = "";
-
-        foreach (var item in UmaDatabase.MetaData)
-        {
-            if (item.Key.StartsWith("3d/env") && Path.GetFileName(item.Key).StartsWith("pfb_"))
-            {
-                props += item.Key + " | " + item.Value.Prerequisites + "\n";
-            }
-        }
-
-        File.WriteAllText("props.txt", props);
-
-        /*
-        string motset = "";
-        string emoteset = "";
-        int id = -1;
-
         
-        foreach (DataRow row in UmaDatabase.CharaMotionSet)
-        {
-            emoteset += row[5].ToString() + "\n";
+    }
 
-            int currentId = Convert.ToInt32(row[0].ToString().Substring(0, 4));
+    private void Start()
+    {
+        //3d/chara/body/bdy{costumeIdShort}/pfb_bdy{costumeId}_{height}_{shape}_{bust}  
+        //(costume id)_(body_type_sub)_(body_setting)_(height)_(shape)_(bust)  
 
-            if (id == -1)
-            {
-                id = currentId;
-            }
-            if (id!=currentId)
-            {
-                id = currentId;
-                motset += $"\n\n{row[0]}, {row[1]}, {row[4]}\n";
-                //continue;
-            }
-            else
-            {
-                motset += $"{row[0]}, {row[1]}, {row[4]}\n";
-            }
+        var chara = UmaDatabase.CharaData.FirstOrDefault(x => x.Id == 1007);
+        
+        int costumeId;
+        int bodyTypeSub;
+        int bodySetting;
 
-        }
+        var dressEntry = UmaDatabase.DressData.FirstOrDefault(x => x.Id == 100302);
 
-        File.WriteAllText("motset.txt", motset);
-        File.WriteAllText("face_type.txt", emoteset);
+        costumeId = Convert.ToInt32(dressEntry.Id.ToString()[^2..]);
+        bodyTypeSub = dressEntry.BodyTypeSub;
+        bodySetting = dressEntry.BodySetting;
 
-        string loops = "";
-
-        foreach (string key in UmaDatabase.MetaData.Keys)
-        {
-            if (key.Contains("_loop"))
-            {
-                loops += key + "\n";
-            }
-        }
-
-        File.WriteAllText("loops.txt", loops);*/
+        UmaAssembler.CreateGenericBody(skin : chara.Skin, costumeId : costumeId, bodyTypeSub : bodyTypeSub, bodySetting : bodySetting, height : chara.Height, shape : dressEntry.BodyShape, bust : chara.Bust, socks : chara.Socks);
     }
 
     void Update()

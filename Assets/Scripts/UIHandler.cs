@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
+using Uma;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -19,6 +20,7 @@ public class UIHandler : MonoBehaviour
     public TMP_InputField PropField;
 
     public GameObject uma;
+    public GameObject bdy;
     public GameObject currentProp;
 
     int costumeId = 0;
@@ -52,7 +54,7 @@ public class UIHandler : MonoBehaviour
         chatController.LoadExpressionVocab("bots/expression_dict.json");
         expVoc = chatController.expressionVocab;
 
-        envColl = JsonConvert.DeserializeObject<Dictionary<string, UmaEnvironment>>(File.ReadAllText("env_map.json"));
+        envColl = JsonConvert.DeserializeObject<Dictionary<string, UmaEnvironment>>(File.ReadAllText("bots/env_map.json"));
         Debug.Log(envColl == null? "kosong jir" : envColl.Keys);
         /*var emotesets = ExpressiveController.GetCharacterEmoteSets(1025);
         foreach (var item in emotesets)
@@ -91,6 +93,26 @@ public class UIHandler : MonoBehaviour
         if (!string.IsNullOrEmpty(charaId.text))
         {
             if (uma) Destroy(uma);
+
+            if (charaId.text.Contains("_"))
+            {
+                if (bdy)
+                {
+                    Destroy(bdy);
+                    bdy = null;
+                }
+
+                var txt = charaId.text.Split("_");
+                int a = Convert.ToInt32(txt[0]);
+                int b = Convert.ToInt32(txt[1]);
+                int c = Convert.ToInt32(txt[2]);
+                int d = Convert.ToInt32(txt[3]);
+                int e = Convert.ToInt32(txt[4]);
+                int f = Convert.ToInt32(txt[5]);
+
+                //bdy = UmaAssembler.CreateGenericBody(skin : 0, costumeId : a, bodyTypeSub : b, bodySetting : c, height : d, shape: e, bust: f, socks : 0);
+                return;
+            }
 
             var chara = UmaDatabase.GetCharaEntry(Convert.ToInt32(charaId.text));
 

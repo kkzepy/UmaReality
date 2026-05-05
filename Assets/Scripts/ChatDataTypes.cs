@@ -82,9 +82,14 @@ public class BotDefinition
 public class UmaEnvironment
 {
     public string path;
+
+    public Vector3 env_xyz = new(0, 0, 0);
+    public Quaternion env_rot = new(0, 0, 0, 0);
+
     public int cam_fov = 20;
-    public Vector3 cam_rot = new(0, 180, 0);
+    public Quaternion cam_rot = new(0, 180, 0, 0);
     public Vector3 cam_xyz = new(0, 0, 0);
+
     public string light_color = "FFFFFF";
 }
 

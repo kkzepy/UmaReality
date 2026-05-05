@@ -1,4 +1,5 @@
 ﻿using CriWareLibrary;
+using Mono.Cecil.Cil;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -10,6 +11,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
+using Uma;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Networking;
@@ -265,7 +267,11 @@ public class ExpressiveController : MonoBehaviour
 
         GameObject prop = UmaAssembler.LoadProp(env.path);
 
+        prop.transform.position = env.env_xyz;
+        prop.transform.rotation = env.env_rot;
+
         Camera.main.transform.position = env.cam_xyz;
+        Camera.main.transform.rotation = env.cam_rot;
         Camera.main.fieldOfView = env.cam_fov;
 
         Light sceneLight = GameObject.FindAnyObjectByType<Light>();
@@ -368,6 +374,30 @@ public class ExpressiveController : MonoBehaviour
 
             Dictionary<string, List<string>> results = new();
 
+            foreach (var motset in UmaDatabase.CharaMotionSet.Where(x => x.Id == charaId))
+            {
+                string match = keyValuePairs.Keys.FirstOrDefault(k => motset.BodyMotion.StartsWith(k));
+                string value = keyValuePairs[match];
+                string path = motset.GetAnimPath();
+
+                if (results.ContainsKey(value))
+                {
+                    var list = results[value];
+                    list.Add(path);
+                    results[value] = list;
+                }
+                else
+                {
+                    results.Add(value, new List<string>());
+
+                    var list = results[value];
+                    list.Add(path);
+                    results[value] = list;
+                }
+
+                //results.Add(motset.GetAnimPath());
+            }
+            /*
             foreach (DataRow row in UmaDatabase.CharaMotionSet)
             {
                 if (row[0].ToString().StartsWith(charaId.ToString()))
@@ -402,7 +432,7 @@ public class ExpressiveController : MonoBehaviour
                     }
                 }
             }
-
+            */
             //Debug.Log(results.Count);
             return results;
         }
@@ -445,6 +475,40 @@ public class ExpressiveController : MonoBehaviour
 
             Dictionary<string, List<MorphSet>> results = new();
 
+            foreach (var motset in UmaDatabase.CharaMotionSet.Where(x => x.Id == charaId))
+            {
+                string match = keyValuePairs.Keys.FirstOrDefault(k => motset.FaceType.StartsWith(k));
+                string value = keyValuePairs[match];
+
+                if (results.ContainsKey(value))
+                {
+                    var morph = new MorphSet
+                    {
+                        morphTag = motset.FaceType,
+                        startWeight = 0f,
+                        endWeight = 1f,
+                        duration = .1f
+                    };
+                    results[value].Add(morph);
+                }
+                else
+                {
+                    results.Add(value, new List<MorphSet>());
+
+                    var morph = new MorphSet
+                    {
+                        morphTag = motset.FaceType,
+                        startWeight = 0f,
+                        endWeight = 1f,
+                        duration = .1f
+                    };
+                    results[value].Add(morph);
+                }
+
+                //results.Add()
+            }
+
+            /*
             int face_typeIndex = 4;
             if (UmaDatabase.CharaMotionSet[0][face_typeIndex].ToString().Length==1) // Auto detect if using global database
             {
@@ -493,7 +557,7 @@ public class ExpressiveController : MonoBehaviour
                     }
                 }
             }
-
+            */
             Debug.Log(results.Count);
             return results;
         }

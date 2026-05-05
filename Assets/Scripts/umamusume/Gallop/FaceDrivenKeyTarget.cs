@@ -6,6 +6,7 @@ using UnityEngine;
 using static DynamicBone;
 using static Gallop.DrivenKeyComponent;
 using static Gallop.Live.Cutt.LiveTimelineDefine;
+using Uma;
 
 namespace Gallop
 {
