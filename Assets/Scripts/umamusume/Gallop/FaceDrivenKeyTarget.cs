@@ -12,7 +12,7 @@ namespace Gallop
 {
     public class FaceDrivenKeyTarget : ScriptableObject
     {
-        public UmaCharacter Container;
+        public Uma.UmaCharacter Container;
 
         public List<EyeTarget> _eyeTarget;
         public List<EyebrowTarget> _eyebrowTarget;
@@ -217,7 +217,7 @@ namespace Gallop
                 {
                     name = "Cheek_Ctrl",
                     locator = DrivenKeyLocator.Find("Cheek_Ctrl"),
-                    BindGameObject = Container.headInstance.transform.Find("M_Cheek").gameObject//Container.Head.transform.Find("M_Cheek").gameObject
+                    BindGameObject = Container.head.transform.Find("M_Cheek").gameObject//Container.Head.transform.Find("M_Cheek").gameObject
                 };
                 var bindMaterial = CheekMorph.BindGameObject.GetComponent<SkinnedMeshRenderer>().material;
 
@@ -260,7 +260,7 @@ namespace Gallop
                 this.CheekMorph = CheekMorph;
             }
 
-            Container.FaceMaterial = Container.headInstance.transform.Find("M_Face").GetComponent<SkinnedMeshRenderer>().material;//Container.Head.transform.Find("M_Face").GetComponent<SkinnedMeshRenderer>().material;
+            Container.FaceMaterial = Container.head.transform.Find("M_Face").GetComponent<SkinnedMeshRenderer>().material;//Container.Head.transform.Find("M_Face").GetComponent<SkinnedMeshRenderer>().material;
             if (Container.FaceMaterial)
             {
                 FacialOtherMorph FaceShadowMorph = new FacialOtherMorph()

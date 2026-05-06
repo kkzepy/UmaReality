@@ -8,6 +8,7 @@ using System.Linq;
 using System.Media;
 using TMPro;
 using Uma;
+using Uma;
 using UnityEngine;
 using UnityEngine.Rendering;
 //using Gallop;
@@ -58,6 +59,7 @@ public class Main : MonoBehaviour
         //3d/chara/body/bdy{costumeIdShort}/pfb_bdy{costumeId}_{height}_{shape}_{bust}  
         //(costume id)_(body_type_sub)_(body_setting)_(height)_(shape)_(bust)  
 
+        /*
         var chara = UmaDatabase.CharaData.FirstOrDefault(x => x.Id == 1007);
         
         int costumeId;
@@ -71,6 +73,19 @@ public class Main : MonoBehaviour
         bodySetting = dressEntry.BodySetting;
 
         UmaAssembler.CreateGenericBody(skin : chara.Skin, costumeId : costumeId, bodyTypeSub : bodyTypeSub, bodySetting : bodySetting, height : chara.Height, shape : dressEntry.BodyShape, bust : chara.Bust, socks : chara.Socks);
+        
+
+        var chara = UmaDatabase.CharaData.FirstOrDefault(x => x.Id == 1007);
+
+        GameObject root = new();
+
+        var controller = root.AddComponent<Uma.UmaCharacter>();
+        controller.charaData = chara;
+        controller.InstantiateParts();
+        controller.Initialize(Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller"), Resources.Load<Animator>("Animations/Face Controller"));
+        controller.InitializePhysics();
+        controller.InitializeFaceMorph();
+        controller.AssembleParts();*/
     }
 
     void Update()

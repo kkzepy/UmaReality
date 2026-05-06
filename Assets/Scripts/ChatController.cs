@@ -265,7 +265,7 @@ public class ExpressiveController : MonoBehaviour
         string actualPath = UmaDatabase.ResolvePath(env.path);
         if (actualPath == null) return null;
 
-        GameObject prop = UmaAssembler.LoadProp(env.path);
+        GameObject prop = Assembler.LoadProp(env.path);
 
         prop.transform.position = env.env_xyz;
         prop.transform.rotation = env.env_rot;

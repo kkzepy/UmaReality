@@ -110,7 +110,7 @@ public class UIHandler : MonoBehaviour
                 int e = Convert.ToInt32(txt[4]);
                 int f = Convert.ToInt32(txt[5]);
 
-                //bdy = UmaAssembler.CreateGenericBody(skin : 0, costumeId : a, bodyTypeSub : b, bodySetting : c, height : d, shape: e, bust: f, socks : 0);
+                //bdy = Assembler.CreateGenericBody(skin : 0, costumeId : a, bodyTypeSub : b, bodySetting : c, height : d, shape: e, bust: f, socks : 0);
                 return;
             }
 
@@ -141,12 +141,12 @@ public class UIHandler : MonoBehaviour
             UmaAssetManager.LoadPrerequistes(headLogicalPath);
             if (chara.TailModelId != -1) UmaAssetManager.LoadPrerequistes(tailLogicalPath);
 
-            umachar.bodyInstance = UmaAssembler.CreateBody(chara.Id, costumeId, false, root);
-            umachar.headInstance = UmaAssembler.CreateHead(chara.Id, headId, false, root);
+            umachar.bodyInstance = Assembler.CreateBody(chara.Id, costumeId, false, root);
+            umachar.headInstance = Assembler.CreateHead(chara.Id, headId, false, root);
             if (chara.TailModelId != -1)
             {
-                umachar.tailInstance = UmaAssembler.CreateTail(chara.TailModelId, false, root);
-                UmaAssembler.ApplyTailTexture(umachar.tailInstance, chara.Id);
+                umachar.tailInstance = Assembler.CreateTail(chara.TailModelId, false, root);
+                Assembler.ApplyTailTexture(umachar.tailInstance, chara.Id);
             }
 
             umachar.Initialize();
@@ -156,16 +156,16 @@ public class UIHandler : MonoBehaviour
 
             //umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
 
-            root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
+            root = Assembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
 
             //if (!umachar.UmaAnimator) umachar.UmaAnimator = root.AddComponent<Animator>();
             umachar.UmaAnimator = root.GetComponent<Animator>();
             umachar.UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(root, root.name);
             umachar.OverrideController = Resources.Load<AnimatorOverrideController>("Animations/Override Controller");
             umachar.UmaAnimator.runtimeAnimatorController = umachar.OverrideController;
-            */
+            
 
-            uma = UmaAssembler.CreateUma(chara, costumeId, headId, prioritizeGenericBody : true);
+            uma = Assembler.CreateUma(chara, costumeId, headId, prioritizeGenericBody : true);
 
             controller = uma.GetComponent<UmaCharacter>();
             morphs = controller.FaceDrivenKeyTarget.AllMorphs;
@@ -184,6 +184,21 @@ public class UIHandler : MonoBehaviour
             expCon.MergeAnimMapWithMotionSets(ExpressiveController.GetCharacterMotionSets(chara.Id));
             expCon.MergeFaceMorphMapWithEmoteSets(ExpressiveController.GetCharacterEmoteSets(chara.Id));
             Debug.Log($"{chatController.expressionVocab.anim_map}\n{chatController.expressionVocab.face_morph_map}");
+            */
+
+            uma = new GameObject();
+
+            controller = uma.AddComponent<Uma.UmaCharacter>();
+            controller.charaData = chara;
+            controller.InstantiateParts();
+            controller.Initialize(Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller"), Resources.Load<Animator>("Animations/Face Controller"));
+            controller.InitializePhysics();
+            controller.InitializeFaceMorph();
+            controller.AssembleParts();
+
+            controller.PlaySignatureAnimation();
+
+            controller.PlayMorph("Cheek_A", 0f, 1f, .2f);
 
             return;
         }
@@ -203,7 +218,7 @@ public class UIHandler : MonoBehaviour
                     currentProp = null;
                 }
 
-                currentProp = UmaAssembler.LoadProp(PropField.text);
+                currentProp = Assembler.LoadProp(PropField.text);
                 if (currentProp == null) throw new Exception();
             }
             catch (Exception e)

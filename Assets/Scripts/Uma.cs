@@ -5,211 +5,203 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using Uma;
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 using Random = UnityEngine.Random;
 
 namespace Uma
 {
-    public class UmaAssembler : MonoBehaviour
+    public class Assembler : MonoBehaviour
     {
-        public static GameObject CreateBody(int charaId, int costumeId, bool loadPrerequisites = true, GameObject parent = null)
+        static bool AlreadyLoaded(string logicalPath)
+        {
+            return UmaAssetManager.loadedAssets.ContainsKey(logicalPath);
+        }
+
+        public static GameObject CreateBody(int charaId, int costumeId = 0, bool loadPrerequisites = true, GameObject parent = null)
         {
             var bodyLogicalPath = UmaDatabase.QueryBodyPath(charaId, costumeId);
             var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
 
             if (bodyPath == null)
             {
-                Debug.LogWarning($"No body found: {charaId} {costumeId}");
+                Debug.LogError($"No body found: {charaId} {costumeId}");
                 return null;
             }
 
-            using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey))
+            if (loadPrerequisites)
             {
-                //Prevents from loading multiple assets which Unity dont like
-                AssetBundle bundle;
-                if (UmaAssetManager.loadedAssets.ContainsKey(bodyLogicalPath))
-                {
-                    bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
-                }
-                else
-                {
-                    bundle = AssetBundle.LoadFromStream(stream);
-                    UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
-                }
+                UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
+                UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+            }
 
-                var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
 
-                if (parent)
-                {
-                    body = Instantiate(body, parent.transform);
-                }
-                else
-                {
-                    body = Instantiate(body);
-                }
+            if (AlreadyLoaded(bodyLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
+            }
+            else
+            {
+                var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey);
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
+            }
 
-                // Set shader
-                foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
+            var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+            body = parent ? Instantiate(body, parent.transform) : Instantiate(body); // if parent, instantiate with parent. else dont.
+
+            // Set shader
+            foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
+            {
+                foreach (Material m in r.sharedMaterials)
                 {
-                    foreach (Material m in r.sharedMaterials)
+                    if (m == null) continue;
+                    //BodyAlapha's shader need to change manually.
+                    if (m.name.Contains("bdy") && m.name.Contains("Alpha"))
                     {
-                        if (m == null) continue;
-                        //BodyAlapha's shader need to change manually.
-                        if (m.name.Contains("bdy") && m.name.Contains("Alpha"))
-                        {
-                            m.shader = UmaAssetManager.BodyAlphaShader;
-                        }
+                        m.shader = UmaAssetManager.BodyAlphaShader;
                     }
                 }
-
-                stream.Close();
-                return body;
             }
+            return body;
+            //this.body = body;
         }
 
-        public static GameObject CreateGenericBody(int costumeId, int bodyTypeSub, int bodySetting, int height, int shape, int bust, int socks, int skin, bool loadPrerequisites = true)
+        public static GameObject CreateGenericBody(int costumeId = 2, int bodyTypeSub = 0, int bodySetting = 0, CharaData charaData = null, bool loadPrerequisites = true, GameObject parent = null)
         {
-            try
+            return CreateGenericBody(costumeId.ToString().PadLeft(4,'0'), bodyTypeSub.ToString().PadLeft(2,'0'), bodySetting.ToString().PadLeft(2, '0'), charaData, loadPrerequisites, parent);
+        }
+
+        public static GameObject CreateGenericBody(string costumeId = "0002", string bodyTypeSub = "00", string bodySetting = "00", CharaData charaData = null, bool loadPrerequisites = true, GameObject parent = null)
+        {
+            var bodyLogicalPath = $"3d/chara/body/bdy{costumeId}_{bodyTypeSub}/pfb_bdy{costumeId}_{bodyTypeSub}_{bodySetting}_{charaData.Height}_{charaData.Shape}_{charaData.Bust}";//UmaDatabase.QueryBodyPath(charaId, costumeId);
+            var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
+
+            if (bodyPath == null)
             {
-                string _costumeId = costumeId.ToString();
-
-                if (_costumeId.Length < 4)
-                {
-                    _costumeId = new string('0', 4 - _costumeId.Length) + _costumeId;
-                }
-
-                string _bodyTypeSub = bodyTypeSub.ToString().PadLeft(2, '0');
-                string _bodySetting = bodySetting.ToString().PadLeft(2, '0');
-                string _socks = socks.ToString().PadLeft(2, '0');
-
-                //var bodyLogicalPath = UmaDatabase.BodyPath + $"bdy{_costumeId}_{_bodyTypeSub}/pfb_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{height}_{shape}_{bust}";
-                var bodyLogicalPath = UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains($"bdy{_costumeId}_{_bodyTypeSub}/pfb_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{height}_{shape}_{bust}"));
-                var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
-
-                if (loadPrerequisites)
-                {
-                    UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
-                    UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
-                }
-
-                using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey))
-                {
-                    //Prevents from loading multiple assets which Unity dont like
-                    AssetBundle bundle;
-                    if (UmaAssetManager.loadedAssets.ContainsKey(bodyLogicalPath))
-                    {
-                        bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
-                    }
-                    else
-                    {
-                        bundle = AssetBundle.LoadFromStream(stream);
-                        UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
-                    }
-
-                    var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
-
-                    body = Instantiate(body);
-
-                    // Set shader
-                    foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
-                    {
-                        foreach (Material m in r.sharedMaterials)
-                        {
-                            if (m == null) continue;
-
-                            m.name = m.name.Replace(" (Instance)", "");
-
-                            if (m.shader.name.Contains("Noline") && m.shader.name.Contains("TSER"))
-                            {
-
-                                var s = UmaAssetManager.ShaderList.Find(a => a.name == m.shader.name.Replace("Noline", "")); //Generic costume shader need to change manually.
-                                Debug.Log($"set shader: {s}");
-                                if (s)
-                                {
-                                    m.shader = s;
-                                }
-
-                                //Debug.Log(m.shader.name);
-                            }
-
-                            string mainTex = "", toonMap = "", tripleMap = "", optionMap = "", zekkenNumberTex = "";
-                            string completeCostumeId = $"{_costumeId}_{_bodyTypeSub}_{_bodySetting}";//_{height}_{shape}_{bust}";
-
-                            switch (_costumeId)
-                            {
-                                case "0001":
-                                    switch (r.sharedMaterials.ToList().IndexOf(m))
-                                    {
-                                        case 0:
-                                            mainTex = $"tex_bdy{_costumeId}_00_waku0_diff";
-                                            toonMap = $"tex_bdy{_costumeId}_00_waku0_shad_c";
-                                            tripleMap = $"tex_bdy{_costumeId}_00_waku0_base";
-                                            optionMap = $"tex_bdy{_costumeId}_00_waku0_ctrl";
-                                            break;
-                                        case 1:
-                                            mainTex = $"tex_bdy{_costumeId}_00_{bodySetting}_{bust}_{_socks}_diff";
-                                            toonMap = $"tex_bdy{_costumeId}_00_{bodySetting}_{bust}_{_socks}_shad_c";
-                                            tripleMap = $"tex_bdy{_costumeId}_00_0_{bust}_00_base";
-                                            optionMap = $"tex_bdy{_costumeId}_00_0_{bust}_00_ctrl";
-                                            break;
-                                        case 2:
-                                            int color = UnityEngine.Random.Range(0, 4);
-                                            mainTex = $"tex_bdy0001_00_zekken{color}_{bust}_diff";
-                                            toonMap = $"tex_bdy0001_00_zekken{color}_{bust}_shad_c";
-                                            tripleMap = $"tex_bdy0001_00_zekken0_{bust}_base";
-                                            optionMap = $"tex_bdy0001_00_zekken0_{bust}_ctrl";
-                                            break;
-                                    }
-
-                                    zekkenNumberTex = $"tex_bdy0001_00_num{UnityEngine.Random.Range(1, 18):d2}";
-                                    break;
-                                case "0003":
-                                    mainTex = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_{skin}_{bust}_diff";
-                                    toonMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_{skin}_{bust}_shad_c";
-                                    tripleMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_0_{bust}_base";
-                                    optionMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_0_{bust}_ctrl";
-                                    break;
-                                case "0006":
-                                case "0009":
-                                case "0015":
-                                    mainTex = $"tex_bdy{completeCostumeId}_{bodySetting}_{bust}_{"00"}_diff";
-                                    toonMap = $"tex_bdy{completeCostumeId}_{bodySetting}_{bust}_{"00"}_shad_c";
-                                    tripleMap = $"tex_bdy{completeCostumeId}_0_{bust}_00_base";
-                                    optionMap = $"tex_bdy{completeCostumeId}_0_{bust}_00_ctrl";
-                                    break;
-                                default:
-                                    /*mainTex = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{socks}_{bust}_diff";
-                                    toonMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{socks}_{bust}_shad_c";
-                                    tripleMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_0_{socks}_base";
-                                    optionMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_0_{socks}_ctrl";*/
-                                    mainTex = $"tex_bdy{completeCostumeId}_{skin}_{bust}_diff";
-                                    toonMap = $"tex_bdy{completeCostumeId}_{skin}_{bust}_shad_c";
-                                    tripleMap = $"tex_bdy{completeCostumeId}_0_{bust}_base";
-                                    optionMap = $"tex_bdy{completeCostumeId}_0_{bust}_ctrl";
-                                    break;
-                            }
-
-                            Debug.Log($"{mainTex}\n{toonMap}\n{tripleMap}\n{optionMap}\n{zekkenNumberTex}");
-
-                            m.SetTexture("_MainTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(mainTex))));
-                            m.SetTexture("_ToonMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(toonMap))));
-                            m.SetTexture("_TripleMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(tripleMap))));
-                            m.SetTexture("_OptionMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(optionMap))));
-
-                            if (!string.IsNullOrEmpty(zekkenNumberTex)) m.SetTexture("_ZekkenNumberTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(zekkenNumberTex))));
-                        }
-                    }
-
-                    stream.Close();
-                    return body;
-                }
-                
-            } 
-            catch (Exception e)
-            {
-                Debug.LogError($"Error creating generic body: {e}");
+                Debug.LogError($"No generic body found!");
                 return null;
             }
+
+            if (loadPrerequisites)
+            {
+                UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
+                UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+            }
+
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+
+            if (AlreadyLoaded(bodyLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
+            }
+            else
+            {
+                var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey);
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
+            }
+
+            var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+            body = parent ? Instantiate(body, parent.transform) : Instantiate(body); // if parent, instantiate with parent. else dont.
+
+            // Set shader+texture
+            foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
+            {
+                foreach (Material m in r.sharedMaterials)
+                {
+                    if (m == null) continue;
+
+                    m.name = m.name.Replace(" (Instance)", "");
+
+                    if (m.shader.name.Contains("Noline") && m.shader.name.Contains("TSER"))
+                    {
+
+                        var s = UmaAssetManager.ShaderList.Find(a => a.name == m.shader.name.Replace("Noline", "")); //Generic costume shader need to change manually.
+                        Debug.Log($"set shader: {s}");
+                        if (s)
+                        {
+                            m.shader = s;
+                        }
+
+                        //Debug.Log(m.shader.name);
+                    }
+
+                    string mainTex = "", toonMap = "", tripleMap = "", optionMap = "", zekkenNumberTex = "";
+                    string completeCostumeId = $"{costumeId}_{bodyTypeSub}_{bodySetting}";//_{height}_{shape}_{bust}";
+
+                    switch (costumeId)
+                    {
+                        case "0001":
+                            switch (r.sharedMaterials.ToList().IndexOf(m))
+                            {
+                                case 0:
+                                    mainTex = $"tex_bdy{costumeId}_00_waku0_diff";
+                                    toonMap = $"tex_bdy{costumeId}_00_waku0_shad_c";
+                                    tripleMap = $"tex_bdy{costumeId}_00_waku0_base";
+                                    optionMap = $"tex_bdy{costumeId}_00_waku0_ctrl";
+                                    break;
+                                case 1:
+                                    mainTex = $"tex_bdy{costumeId}_00_{bodySetting}_{charaData.Bust}_{charaData.Socks}_diff";
+                                    toonMap = $"tex_bdy{costumeId}_00_{bodySetting}_{charaData.Bust}_{charaData.Socks}_shad_c";
+                                    tripleMap = $"tex_bdy{costumeId}_00_0_{charaData.Bust}_00_base";
+                                    optionMap = $"tex_bdy{costumeId}_00_0_{charaData.Bust}_00_ctrl";
+                                    break;
+                                case 2:
+                                    int color = UnityEngine.Random.Range(0, 4);
+                                    mainTex = $"tex_bdy0001_00_zekken{color}_{charaData.Bust}_diff";
+                                    toonMap = $"tex_bdy0001_00_zekken{color}_{charaData.Bust}_shad_c";
+                                    tripleMap = $"tex_bdy0001_00_zekken0_{charaData.Bust}_base";
+                                    optionMap = $"tex_bdy0001_00_zekken0_{charaData.Bust}_ctrl";
+                                    break;
+                            }
+
+                            zekkenNumberTex = $"tex_bdy0001_00_num{UnityEngine.Random.Range(1, 18):d2}";
+                            break;
+                        case "0003":
+                            mainTex = $"tex_bdy{costumeId}_{bodyTypeSub}_00_{charaData.Skin}_{charaData.Bust}_diff";
+                            toonMap = $"tex_bdy{costumeId}_{bodyTypeSub}_00_{charaData.Skin}_{charaData.Bust}_shad_c";
+                            tripleMap = $"tex_bdy{costumeId}_{bodyTypeSub}_00_0_{charaData.Bust}_base";
+                            optionMap = $"tex_bdy{costumeId}_{bodyTypeSub}_00_0_{charaData.Bust}_ctrl";
+                            break;
+                        case "0006":
+                        case "0009":
+                        case "0015":
+                            mainTex = $"tex_bdy{completeCostumeId}_{bodySetting}_{charaData.Bust}_{"00"}_diff";
+                            toonMap = $"tex_bdy{completeCostumeId}_{bodySetting}_{charaData.Bust}_{"00"}_shad_c";
+                            tripleMap = $"tex_bdy{completeCostumeId}_0_{charaData.Bust}_00_base";
+                            optionMap = $"tex_bdy{completeCostumeId}_0_{charaData.Bust}_00_ctrl";
+                            break;
+                        default:
+                            /*mainTex = $"tex_bdy{costumeId}_{bodyTypeSub}_{bodySetting}_{socks}_{charaData.Bust}_diff";
+                            toonMap = $"tex_bdy{costumeId}_{bodyTypeSub}_{bodySetting}_{socks}_{charaData.Bust}_shad_c";
+                            tripleMap = $"tex_bdy{costumeId}_{bodyTypeSub}_{bodySetting}_0_{socks}_base";
+                            optionMap = $"tex_bdy{costumeId}_{bodyTypeSub}_{bodySetting}_0_{socks}_ctrl";*/
+                            mainTex = $"tex_bdy{completeCostumeId}_{charaData.Skin}_{charaData.Bust}_diff";
+                            toonMap = $"tex_bdy{completeCostumeId}_{charaData.Skin}_{charaData.Bust}_shad_c";
+                            tripleMap = $"tex_bdy{completeCostumeId}_0_{charaData.Bust}_base";
+                            optionMap = $"tex_bdy{completeCostumeId}_0_{charaData.Bust}_ctrl";
+                            break;
+                    }
+
+                    Debug.Log($"{mainTex}\n{toonMap}\n{tripleMap}\n{optionMap}\n{zekkenNumberTex}");
+
+                    m.SetTexture("_MainTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(mainTex))));
+                    m.SetTexture("_ToonMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(toonMap))));
+                    m.SetTexture("_TripleMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(tripleMap))));
+                    m.SetTexture("_OptionMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(optionMap))));
+
+                    if (!string.IsNullOrEmpty(zekkenNumberTex)) m.SetTexture("_ZekkenNumberTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(zekkenNumberTex))));
+                }
+            }
+
+            return body;
+            //this.body = body;
         }
 
         public static GameObject CreateHead(int charaId, int headId, bool loadPrerequisites = true, GameObject parent = null)
@@ -223,83 +215,89 @@ namespace Uma
                 return null;
             }
 
-            using (var stream = new UmaAssetBundleStream(headPath, UmaDatabase.MetaData[headLogicalPath].FKey))
+            if (loadPrerequisites)
             {
-                //Prevents from loading multiple assets which Unity dont like
-                AssetBundle bundle;
-                if (UmaAssetManager.loadedAssets.ContainsKey(headLogicalPath))
-                {
-                    bundle = UmaAssetManager.loadedAssets[headLogicalPath];
-                }
-                else
-                {
-                    bundle = AssetBundle.LoadFromStream(stream);
-                    UmaAssetManager.loadedAssets[headLogicalPath] = bundle;
-                }
+                UmaAssetManager.PreLoadPrerequistes(headLogicalPath);
+                UmaAssetManager.LoadPrerequistes(headLogicalPath);
+            }
 
-                var head = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+            //using var stream = new UmaAssetBundleStream(headPath, UmaDatabase.MetaData[headLogicalPath].FKey);
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
 
-                // Disable cheek temporarily, used for blush purpose
-                var _cheekTransform = head.transform.Find("M_Cheek");
-                if (_cheekTransform)
+            if (AlreadyLoaded(headLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[headLogicalPath];
+            }
+            else
+            {
+                var stream = new UmaAssetBundleStream(headPath, UmaDatabase.MetaData[headLogicalPath].FKey);
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[headLogicalPath] = bundle;
+            }
+
+            var head = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+
+            // Disable cheek temporarily, used for blush purpose
+            var _cheekTransform = head.transform.Find("M_Cheek");
+            if (_cheekTransform)
+            {
+                _cheekTransform.gameObject.SetActive(false);
+            }
+
+            foreach (Renderer r in head.GetComponentsInChildren<Renderer>())
+            {
+
+                foreach (Material m in r.sharedMaterials)
                 {
-                    _cheekTransform.gameObject.SetActive(false);
-                }
+                    if (m == null) continue;
 
-                foreach (Renderer r in head.GetComponentsInChildren<Renderer>())
-                {
-
-                    foreach (Material m in r.sharedMaterials)
+                    if (r.name.Contains("Hair") && r.name.Contains("Alpha"))
                     {
-                        if (m == null) continue;
-
-                        if (r.name.Contains("Hair") && r.name.Contains("Alpha"))
-                        {
-                            m.shader = UmaAssetManager.AlphaShader;
-                        }
-
-                        switch (m.shader.name)
-                        {
-                            case "Gallop/3D/Chara/MultiplyCheek":
-                                m.shader = UmaAssetManager.CheekShader; ;
-                                break;
-                            case "Gallop/3D/Chara/ToonFace/TSER":
-                                m.shader = UmaAssetManager.FaceShader;
-                                m.SetFloat("_CylinderBlend", 0.25f);
-                                m.SetColor("_RimColor", new Color(0, 0, 0, 0));
-                                break;
-                            case "Gallop/3D/Chara/ToonEye/T":
-                                m.shader = UmaAssetManager.EyeShader;
-                                m.SetFloat("_CylinderBlend", 0.25f);
-                                break;
-                            case "Gallop/3D/Chara/ToonHair/TSER":
-                                m.shader = UmaAssetManager.HairShader;
-                                m.SetColor("_Color", Color.white);
-                                m.SetFloat("_CylinderBlend", 0.25f);
-                                break;
-                            case "Gallop/3D/Chara/ToonMayu":
-                                m.shader = UmaAssetManager.EyebrowShader;
-                                m.renderQueue += 1;
-                                break;
-                            default:
-                                Debug.Log(m.shader.name);
-                                break;
-                        }
-
-                        m.SetFloat("_StencilMask", charaId);
+                        m.shader = UmaAssetManager.AlphaShader;
                     }
-                }
 
-                stream.Close();
+                    switch (m.shader.name)
+                    {
+                        case "Gallop/3D/Chara/MultiplyCheek":
+                            m.shader = UmaAssetManager.CheekShader; ;
+                            break;
+                        case "Gallop/3D/Chara/ToonFace/TSER":
+                            m.shader = UmaAssetManager.FaceShader;
+                            m.SetFloat("_CylinderBlend", 0.25f);
+                            m.SetColor("_RimColor", new Color(0, 0, 0, 0));
+                            break;
+                        case "Gallop/3D/Chara/ToonEye/T":
+                            m.shader = UmaAssetManager.EyeShader;
+                            m.SetFloat("_CylinderBlend", 0.25f);
+                            break;
+                        case "Gallop/3D/Chara/ToonHair/TSER":
+                            m.shader = UmaAssetManager.HairShader;
+                            m.SetColor("_Color", Color.white);
+                            m.SetFloat("_CylinderBlend", 0.25f);
+                            break;
+                        case "Gallop/3D/Chara/ToonMayu":
+                            m.shader = UmaAssetManager.EyebrowShader;
+                            m.renderQueue += 1;
+                            break;
+                        default:
+                            Debug.Log(m.shader.name);
+                            break;
+                    }
 
-                if (parent)
-                {
-                    return Instantiate(head, parent.transform);
+                    m.SetFloat("_StencilMask", charaId);
                 }
-                else
-                {
-                    return Instantiate(head);
-                }
+            }
+
+            //stream.Close();
+
+            if (parent)
+            {
+                return Instantiate(head, parent.transform);
+            }
+            else
+            {
+                return Instantiate(head);
             }
         }
 
@@ -314,34 +312,82 @@ namespace Uma
                 return null;
             }
 
-            using (var stream = new UmaAssetBundleStream(tailPath, UmaDatabase.MetaData[tailLogicalPath].FKey))
+            if (loadPrerequisites)
             {
-                //Prevents from loading multiple assets which Unity dont like
-                AssetBundle bundle;
-                if (UmaAssetManager.loadedAssets.ContainsKey(tailLogicalPath))
-                {
-                    bundle = UmaAssetManager.loadedAssets[tailLogicalPath];
-                }
-                else
-                {
-                    bundle = AssetBundle.LoadFromStream(stream);
-                    UmaAssetManager.loadedAssets[tailLogicalPath] = bundle;
-                }
-
-                var tail = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
-
-                stream.Close();
-
-                if (parent)
-                {
-                    return Instantiate(tail, parent.transform);
-                }
-                else
-                {
-                    return Instantiate(tail);
-                }
+                UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
+                UmaAssetManager.LoadPrerequistes(tailLogicalPath);
             }
 
+            //using var stream = new UmaAssetBundleStream(tailPath, UmaDatabase.MetaData[tailLogicalPath].FKey);
+            //Prevents from loading multiple assets which Unity dont like
+            AssetBundle bundle;
+
+            if (AlreadyLoaded(tailLogicalPath))
+            {
+                bundle = UmaAssetManager.loadedAssets[tailLogicalPath];
+            }
+            else
+            {
+                var stream = new UmaAssetBundleStream(tailPath, UmaDatabase.MetaData[tailLogicalPath].FKey);
+                bundle = AssetBundle.LoadFromStream(stream);
+                UmaAssetManager.loadedAssets[tailLogicalPath] = bundle;
+            }
+
+            var tail = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+
+            //stream.Close();
+
+            if (parent)
+            {
+                return Instantiate(tail, parent.transform);
+            }
+            else
+            {
+                return Instantiate(tail);
+            }
+
+        }
+
+        public static void ApplyTailTexture(GameObject tail, int characterId, int tailId = 1)
+        {
+            ApplyTailTexture(tail, characterId, tailId.ToString().PadLeft(4, '0'));
+        }
+
+        public static void ApplyTailTexture(GameObject tail, int characterId, string tailId = "0001")
+        {
+
+            foreach (Renderer r in tail.GetComponentsInChildren<Renderer>())
+            {
+
+                var mainTex = default(Texture2D);
+                var toonMap = default(Texture2D);
+                var tripleMaskMap = default(Texture2D);
+                var optionMaskMap = default(Texture2D);
+
+                var mainTexLogicalPath = $"{UmaDatabase.TailPath}tail{tailId}_00/textures/tex_tail{tailId}_00_{characterId}_diff";
+                var toonMapLogicalPath = $"{UmaDatabase.TailPath}tail{tailId}_00/textures/tex_tail{tailId}_00_{characterId}_shad_c";
+                var tripleMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_base";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_base_wet";
+                var optionMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_ctrl";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_ctrl_wet";
+
+                try
+                {
+                    mainTex = UmaAssetManager.LoadAsset<Texture2D>(mainTexLogicalPath, false);
+                    toonMap = UmaAssetManager.LoadAsset<Texture2D>(toonMapLogicalPath, false);
+                    tripleMaskMap = UmaAssetManager.LoadAsset<Texture2D>(tripleMaskMapLogicalPath, false);
+                    optionMaskMap = UmaAssetManager.LoadAsset<Texture2D>(optionMaskMapLogicalPath, false);
+                }
+                catch (KeyNotFoundException)
+                {
+                    Debug.LogWarning($"No tail texture found for char {characterId}");
+                    return;
+                }
+
+
+                r.material.SetTexture("_MainTex", mainTex);
+                r.material.SetTexture("_ToonMap", toonMap);
+                r.material.SetTexture("_TripleMaskMap", tripleMaskMap);
+                r.material.SetTexture("_OptionMaskMap", optionMaskMap);
+            }
         }
 
         static void MergeBone(SkinnedMeshRenderer from, Dictionary<string, Transform> targetBones, ref List<Transform> emptyBones)
@@ -425,9 +471,9 @@ namespace Uma
 
         }
 
-        public static GameObject AssembleToExistingRoot(GameObject body, GameObject head, GameObject tail, GameObject rootObject, string name = null)
+        public static void AssembleToExistingRoot(GameObject body, GameObject head, GameObject tail, GameObject rootObject)
         {
-            //GameObject rootObject = root;//string.IsNullOrEmpty(name) ? new GameObject("uma_character") : new GameObject(name);
+            //GameObject rootObject = string.IsNullOrEmpty(name) ? new GameObject("uma_character") : new GameObject(name);
 
             SkinnedMeshRenderer bodySkinnedMeshRenderer = body.GetComponentInChildren<SkinnedMeshRenderer>();
             var bodyBones = bodySkinnedMeshRenderer.bones.ToDictionary(bone => bone.name, bone => bone.transform);
@@ -438,8 +484,8 @@ namespace Uma
             {
                 body.transform.GetChild(0).SetParent(rootObject.transform);
             }
-            body.SetActive(false); //for debugging
-                                   //Destroy(body);
+            //body.SetActive(false); //for debugging
+            Destroy(body);
 
             var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             foreach (SkinnedMeshRenderer headskin in headskins)
@@ -455,7 +501,7 @@ namespace Uma
                 child.SetParent(child.name.Contains("info") ? eyes.transform : rootObject.transform);
             }
             //head.SetActive(false); //for debugging
-            //Destroy(head);
+            Destroy(head);
 
             if (tail)
             {
@@ -475,323 +521,8 @@ namespace Uma
             var animator = rootObject.AddComponent<Animator>();
             animator.avatar = AvatarBuilder.BuildGenericAvatar(rootObject, rootObject.name);
 
-            return rootObject;
+            //return rootObject;
 
-        }
-
-        public static GameObject CreateUma(CharaData entry, int costumeId = 0, int headId = 0, bool addComponents = true, bool prioritizeGenericBody = false)
-        {
-            GameObject root = new GameObject();
-            root.name = $"uma_{entry.Id}";
-            var umachar = root.AddComponent<UmaCharacter>();
-
-            //int costumeId = 0;
-            //int headId = 0;
-            umachar.charaEntry = entry;
-            umachar.costumeId = costumeId;
-            umachar.headId = headId;
-            umachar.FaceOverrideController = Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller");
-            umachar.UmaFaceAnimator = Resources.Load<Animator>("Animations/Face Controller");
-
-
-            var bodyLogicalPath = UmaDatabase.QueryBodyPath(entry.Id, costumeId);
-            bool bdyExists = UmaDatabase.ResolvePath(bodyLogicalPath) != null; // false = a generic body
-            if (prioritizeGenericBody)
-            {
-                umachar.bodyInstance = CreateGenericBody(costumeId, 0, 0, entry.Height, entry.Shape, entry.Bust, entry.Socks, entry.Skin);
-                if (umachar.bodyInstance == null)
-                {
-                    bdyExists = true; //generic body not exists, returning back to character specific body
-                }
-            } 
-            var headLogicalPath = UmaDatabase.QueryHeadPath(entry.Id, headId);
-            var tailLogicalPath = UmaDatabase.QueryTailPath(entry.TailModelId);
-
-            if (bdyExists) UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
-            UmaAssetManager.PreLoadPrerequistes(headLogicalPath);
-            if (entry.TailModelId != -1) UmaAssetManager.PreLoadPrerequistes(tailLogicalPath);
-
-            if (bdyExists) UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
-            UmaAssetManager.LoadPrerequistes(headLogicalPath);
-            if (entry.TailModelId != -1) UmaAssetManager.LoadPrerequistes(tailLogicalPath);
-            
-            if (!umachar.bodyInstance)
-            {
-                if (bdyExists) umachar.bodyInstance = UmaAssembler.CreateBody(entry.Id, costumeId, false, root);
-                if (!bdyExists) umachar.bodyInstance = CreateGenericBody(costumeId, 0, 0, entry.Height, entry.Shape, entry.Bust, entry.Socks, entry.Skin);
-            }
-
-            umachar.headInstance = UmaAssembler.CreateHead(entry.Id, headId, false, root);
-            
-            if (entry.TailModelId != -1)
-            {
-                umachar.tailInstance = UmaAssembler.CreateTail(entry.TailModelId, false, root);
-                UmaAssembler.ApplyTailTexture(umachar.tailInstance, entry.Id);
-            }
-
-            umachar.prioritizeGenericBody = prioritizeGenericBody;
-            umachar.Initialize();
-            umachar.LoadPhysics();
-            umachar.SetupPhysics();
-            umachar.InitializeFaceMorph();
-
-            //umachar.FaceDrivenKeyTarget.ChangeMorphWeight(umachar.FaceDrivenKeyTarget.AllMorphs.Where(a => a.name == "Mouth_5_0").FirstOrDefault(), 1);
-
-            root = UmaAssembler.AssembleToExistingRoot(umachar.bodyInstance, umachar.headInstance, umachar.tailInstance, root);
-
-            //if (!umachar.UmaAnimator) umachar.UmaAnimator = root.AddComponent<Animator>();
-
-            if (addComponents)
-            {
-                umachar.UmaAnimator = root.GetComponent<Animator>();
-                umachar.UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(root, root.name);
-                umachar.OverrideController = Resources.Load<AnimatorOverrideController>("Animations/Override Controller");
-                umachar.UmaAnimator.runtimeAnimatorController = umachar.OverrideController;
-            }
-
-            return root;
-        }
-
-        public static void ApplyBodyTexture(GameObject body, int characterId, int costumeId)
-        {
-
-            string _costumeId = costumeId.ToString();
-
-            if (_costumeId.Length == 1)
-            {
-                _costumeId = "0" + _costumeId;
-            }
-
-            foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
-            {
-
-                var mainTex = default(Texture2D);
-                var toonMap = default(Texture2D);
-                var tripleMaskMap = default(Texture2D);
-                var optionMaskMap = default(Texture2D);
-
-                //var mainTexLogicalPath = $"{UmaAssetManager.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_diff_wet";
-                var mainTexLogicalPath = "3d/chara/body/bdy0001_00/textures/offline/tex_bdy0001_00_00_1_2_00_diff";
-                var toonMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_shad_c_wet";
-                var tripleMaskMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_base_wet";
-                var optionMaskMapLogicalPath = $"{UmaDatabase.BodyPath}bdy{characterId}_{_costumeId}/textures/tex_bdy{characterId}_{_costumeId}_ctrl_wet";
-
-                mainTex = UmaAssetManager.LoadAsset<Texture2D>(mainTexLogicalPath);
-                toonMap = UmaAssetManager.LoadAsset<Texture2D>(toonMapLogicalPath);
-                tripleMaskMap = UmaAssetManager.LoadAsset<Texture2D>(tripleMaskMapLogicalPath);
-                optionMaskMap = UmaAssetManager.LoadAsset<Texture2D>(optionMaskMapLogicalPath);
-
-                r.material.SetTexture("_MainTex", mainTex);
-                r.material.SetTexture("_ToonMap", toonMap);
-                r.material.SetTexture("_TripleMaskMap", tripleMaskMap);
-                r.material.SetTexture("_OptionMaskMap", optionMaskMap);
-            }
-        }
-
-        public static void ApplyTailTexture(GameObject tail, int characterId, int tailId = 1)
-        {
-
-            string _tailId = tailId.ToString();
-
-            if (_tailId.Length < 4)
-            {
-                _tailId = new string('0', 4 - _tailId.Length) + _tailId;
-            }
-
-            foreach (Renderer r in tail.GetComponentsInChildren<Renderer>())
-            {
-
-                var mainTex = default(Texture2D);
-                var toonMap = default(Texture2D);
-                var tripleMaskMap = default(Texture2D);
-                var optionMaskMap = default(Texture2D);
-
-                var mainTexLogicalPath = $"{UmaDatabase.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_diff";
-                var toonMapLogicalPath = $"{UmaDatabase.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_shad_c";
-                var tripleMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_base";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_base_wet";
-                var optionMaskMapLogicalPath = $"{UmaDatabase.TailPath}tail0001_00/textures/tex_tail0001_00_0000_ctrl";//$"{UmaAssetManager.TailPath}tail{_tailId}_00/textures/tex_tail{_tailId}_00_{characterId}_ctrl_wet";
-
-                try
-                {
-                    mainTex = UmaAssetManager.LoadAsset<Texture2D>(mainTexLogicalPath, false);
-                    toonMap = UmaAssetManager.LoadAsset<Texture2D>(toonMapLogicalPath, false);
-                    tripleMaskMap = UmaAssetManager.LoadAsset<Texture2D>(tripleMaskMapLogicalPath, false);
-                    optionMaskMap = UmaAssetManager.LoadAsset<Texture2D>(optionMaskMapLogicalPath, false);
-                }
-                catch (KeyNotFoundException)
-                {
-                    Debug.LogWarning($"No tail texture found for char {characterId}");
-                    return;
-                }
-
-
-                r.material.SetTexture("_MainTex", mainTex);
-                r.material.SetTexture("_ToonMap", toonMap);
-                r.material.SetTexture("_TripleMaskMap", tripleMaskMap);
-                r.material.SetTexture("_OptionMaskMap", optionMaskMap);
-            }
-        }
-
-        public static void ApplyHeadTexture(GameObject head, int characterId, int costumeId, bool wet = false)
-        {
-            var table = head.GetComponent<Gallop.AssetHolder>()._assetTable;
-
-            //Texture CheekTex_0;
-            //Texture CheekTex_1;
-
-            string _costumeId = costumeId.ToString();
-
-            if (_costumeId.Length == 1)
-            {
-                _costumeId = "0" + _costumeId;
-            }
-
-            var faceMainTex = default(Texture2D);
-            var faceToonMap = default(Texture2D);
-            var hairMainTex = default(Texture2D);
-            var hairToonMap = default(Texture2D);
-            var eyeMaterial = default(Texture2D);
-
-            var faceMainTexLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_diff_wet";
-            var faceToonMapLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_face_shad_c_wet";
-            var hairMainTexLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_hair_diff_wet";
-            var hairToonMapLogicalPath = $"{UmaDatabase.HeadPath}chr{characterId}_{_costumeId}/textures/tex_chr{characterId}_{_costumeId}_hair_shad_c_wet";
-            var eyeMaterialLogicalPath = $"sourceresources/3d/chara/head/chr{characterId}_{_costumeId}/materials/mtl_chr{characterId}_{_costumeId}_eye";
-
-            faceMainTex = UmaAssetManager.LoadAsset<Texture2D>(faceMainTexLogicalPath, false);
-            faceToonMap = UmaAssetManager.LoadAsset<Texture2D>(faceToonMapLogicalPath, false);
-            hairMainTex = UmaAssetManager.LoadAsset<Texture2D>(hairMainTexLogicalPath, false);
-            hairToonMap = UmaAssetManager.LoadAsset<Texture2D>(hairToonMapLogicalPath, false);
-            eyeMaterial = UmaAssetManager.LoadAsset<Texture2D>(eyeMaterialLogicalPath, false);
-            foreach (Renderer r in head.GetComponentsInChildren<Renderer>())
-            {
-                //Applying textures
-                /*
-                if (r.name.Contains("Cheek"))
-                {
-                    r.gameObject.SetActive(false);
-
-
-                    CheekTex_0 = table["cheek0"] as Texture;
-                    CheekTex_1 = table["cheek1"] as Texture;
-
-                }
-                */
-                if (r.name.Contains("Face"))
-                {
-                    r.material.SetTexture("_MainTex", faceMainTex);
-                    r.material.SetTexture("_ToonMap", faceToonMap);
-                }
-                if (r.name.Contains("Hair"))
-                {
-                    r.material.SetTexture("_MainTex", hairMainTex);
-                    r.material.SetTexture("_ToonMap", hairToonMap);
-                }
-                if (r.name.Contains("Eye"))
-                {
-                    r.material.SetTexture("_MainTex", eyeMaterial);
-                    //r.material.SetTexture("_ToonMap", table["cheek1"] as Texture);
-                }
-
-                //Applying shaders
-                foreach (Material m in r.materials)
-                {
-
-                    switch (m.shader.name)
-                    {
-                        case "Gallop/3D/Chara/MultiplyCheek":
-                            m.shader = UmaAssetManager.CheekShader; ;
-                            break;
-                        case "Gallop/3D/Chara/ToonFace/TSER":
-                            m.shader = UmaAssetManager.FaceShader;
-                            m.SetFloat("_CylinderBlend", 0.25f);
-                            m.SetColor("_RimColor", new Color(0, 0, 0, 0));
-                            break;
-                        case "Gallop/3D/Chara/ToonEye/T":
-                            m.shader = UmaAssetManager.EyeShader;
-                            m.SetFloat("_CylinderBlend", 0.25f);
-                            break;
-                        case "Gallop/3D/Chara/ToonHair/TSER":
-                            m.shader = UmaAssetManager.HairShader;
-                            m.SetFloat("_CylinderBlend", 0.25f);
-                            break;
-                        case "Gallop/3D/Chara/ToonMayu":
-                            m.shader = UmaAssetManager.EyebrowShader;
-                            m.renderQueue += 1; //fix eyebrows disappearing sometimes
-                            break;
-                        default:
-                            Debug.Log(m.shader.name);
-                            // m.shader = Shader.Find("Nars/UmaMusume/Body");
-                            break;
-                    }
-                }
-            }
-            //*/
-        }
-
-        private void SetMaskColor(Material mat, DataRow colordata, string prefix, bool hastoon)
-        {
-            mat.EnableKeyword("USE_MASK_COLOR");
-            Color c1, c2, c3, c4, c5, c6, t1, t2, t3, t4, t5, t6;
-            ColorUtility.TryParseHtmlString(colordata[$"{prefix}_color_r1"].ToString(), out c1);
-            ColorUtility.TryParseHtmlString(colordata[$"{prefix}_color_r2"].ToString(), out c2);
-            ColorUtility.TryParseHtmlString(colordata[$"{prefix}_color_g1"].ToString(), out c3);
-            ColorUtility.TryParseHtmlString(colordata[$"{prefix}_color_g2"].ToString(), out c4);
-            ColorUtility.TryParseHtmlString(colordata[$"{prefix}_color_b1"].ToString(), out c5);
-            ColorUtility.TryParseHtmlString(colordata[$"{prefix}_color_b2"].ToString(), out c6);
-            mat.SetColor("_MaskColorR1", c1);
-            mat.SetColor("_MaskColorR2", c2);
-            mat.SetColor("_MaskColorG1", c3);
-            mat.SetColor("_MaskColorG2", c4);
-            mat.SetColor("_MaskColorB1", c5);
-            mat.SetColor("_MaskColorB2", c6);
-            if (hastoon)
-            {
-                ColorUtility.TryParseHtmlString(colordata[$"{prefix}_toon_color_r1"].ToString(), out t1);
-                ColorUtility.TryParseHtmlString(colordata[$"{prefix}_toon_color_r2"].ToString(), out t2);
-                ColorUtility.TryParseHtmlString(colordata[$"{prefix}_toon_color_g1"].ToString(), out t3);
-                ColorUtility.TryParseHtmlString(colordata[$"{prefix}_toon_color_g2"].ToString(), out t4);
-                ColorUtility.TryParseHtmlString(colordata[$"{prefix}_toon_color_b1"].ToString(), out t5);
-                ColorUtility.TryParseHtmlString(colordata[$"{prefix}_toon_color_b2"].ToString(), out t6);
-                mat.SetColor("_MaskToonColorR1", t1);
-                mat.SetColor("_MaskToonColorR2", t2);
-                mat.SetColor("_MaskToonColorG1", t3);
-                mat.SetColor("_MaskToonColorG2", t4);
-                mat.SetColor("_MaskToonColorB1", t5);
-                mat.SetColor("_MaskToonColorB2", t6);
-            }
-        }
-
-        public static void ApplyFallbackShader(GameObject obj)
-        {
-            Shader fallback = Shader.Find("Standard");
-
-            foreach (var r in obj.GetComponentsInChildren<Renderer>())
-            {
-                foreach (var mat in r.materials)
-                {
-                    if (mat == null) continue;
-
-                    // simpan texture lama
-                    Texture mainTex = null;
-
-                    if (mat.HasProperty("_MainTex"))
-                        mainTex = mat.GetTexture("_MainTex");
-
-                    else if (mat.HasProperty("_BaseMap"))
-                        mainTex = mat.GetTexture("_BaseMap");
-
-                    else if (mat.HasProperty("_DiffuseMap")) // kemungkinan dari Gallop
-                        mainTex = mat.GetTexture("_DiffuseMap");
-
-                    // ganti shader
-                    mat.shader = fallback;
-
-                    // apply ulang texture
-                    if (mainTex != null)
-                        mat.SetTexture("_MainTex", mainTex);
-                }
-            }
         }
 
         public static GameObject LoadProp(string logicalPath, bool loadPrerequisites = true)
@@ -809,37 +540,44 @@ namespace Uma
             return container;
         }
     }
-
     public class UmaCharacter : MonoBehaviour
     {
-        public CharaData charaEntry;
+        public CharaData charaData;
         public int costumeId = 0;
         public int headId = 0;
+        bool _isGenericBody = false;
         string _headId;
         string _costumeId;
         string _tailId;
-        public bool prioritizeGenericBody = false;
 
+        public bool isGenericBody
+        {
+            get { return _isGenericBody; }
+            set
+            {
+                _isGenericBody = value;
+                _costumeId = _isGenericBody ? costumeId.ToString().PadLeft(4, '0') : costumeId.ToString().PadLeft(2, '0');
+            }
+        }
+
+        [Header("Part Instances")]
+        public GameObject body;
+        public GameObject head;
+        public GameObject tail;
+
+        GameObject upBodyBone;
+        Vector3 upBodyPosition;
+        Quaternion upBodyRotation;
+
+        [Header("Morph Settings")]
         public float randomBlinkMinInterval = 1f;
         public float randomBlinkMaxInterval = 7.5f;
         Coroutine randomBlinkCoroutine;
-
         public float randomEarTwitchMinInterval = 1f;
         public float randomEarTwitchMaxInterval = 8f;
         public int minEarMorphIndex = 0;
         public int maxEarMorphIndex = 31;
         Coroutine randomEarTwitchCoroutine;
-
-        AssetHolder bodyAssetHolder;
-        AssetHolder headAssetHolder;
-
-        public GameObject headInstance;
-        public GameObject bodyInstance;
-        public GameObject tailInstance;
-
-        GameObject upBodyBone;
-        Vector3 upBodyPosition;
-        Quaternion upBodyRotation;
 
         [Header("Animator")]
         public Animator UmaAnimator;
@@ -877,43 +615,23 @@ namespace Uma
         public float EyeHeight;
         public bool EnableEyeTracking = true;
         public Material FaceMaterial;
-        public void Initialize()
+
+        public void Initialize(AnimatorOverrideController faceOverrideController, Animator umaFaceAnimator)
         {
-            _costumeId = costumeId.ToString();
+            _costumeId = _isGenericBody? costumeId.ToString().PadLeft(4,'0') : costumeId.ToString().PadLeft(2, '0');
+            _headId = headId.ToString().PadLeft(2, '0');
+            _tailId = charaData.TailModelId.ToString().PadLeft(4, '0');
 
-            if (_costumeId.Length == 1)
-            {
-                _costumeId = "0" + _costumeId;
-            }
+            FaceOverrideController = faceOverrideController;
+            UmaFaceAnimator = umaFaceAnimator;
 
-            _headId = headId.ToString();
-
-            if (_headId.Length == 1)
-            {
-                _headId = "0" + _headId;
-            }
-
-            _tailId = charaEntry.TailModelId.ToString();
-
-            if (_tailId.Length < 4)
-            {
-                _tailId = new string('0', 4 - _tailId.Length) + _tailId;
-            }
-
-            bodyAssetHolder = bodyInstance.GetComponent<AssetHolder>();
+            var bodyAssetHolder = body.GetComponent<AssetHolder>();
 
             upBodyBone = bodyAssetHolder._assetTable["upbody_ctrl"] as GameObject;
             upBodyPosition = upBodyBone.transform.localPosition;
             upBodyRotation = upBodyBone.transform.localRotation;
 
-            EyeHeight = headInstance.GetComponent<AssetHolder>()._assetTableValue["head_center_offset_y"];
-
-            UmaAnimator = GetComponent<Animator>();
-            if (UmaAnimator)
-            {
-                UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(gameObject, gameObject.name);
-                OverrideController = new AnimatorOverrideController(UmaAnimator.runtimeAnimatorController);
-            }
+            EyeHeight = head.GetComponent<AssetHolder>()._assetTableValue["head_center_offset_y"];
 
             PhysicsContainer = new GameObject("PhysicsContainer");
             PhysicsContainer.transform.SetParent(transform);
@@ -925,7 +643,7 @@ namespace Uma
             locator = Instantiate(UmaAssetManager.LoadAsset<GameObject>("3d/animator/drivenkeylocator", true, true), transform);
             locator.name = "DrivenKeyLocator";
 
-            HeadBone = (GameObject)headInstance.GetComponent<AssetHolder>()._assetTable["head"];
+            HeadBone = (GameObject)head.GetComponent<AssetHolder>()._assetTable["head"];
             var eyeLocator_L = HeadBone.transform.Find("Eye_target_locator_L");
             var eyeLocator_R = HeadBone.transform.Find("Eye_target_locator_R");
 
@@ -934,18 +652,18 @@ namespace Uma
             TrackTarget.position = HeadBone.transform.TransformPoint(0, 0, 10);
 
             foreach (var manga in new List<string> {
-            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_000",
-            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_001",
-            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_002",
-            "3d/effect/charaemotion/pfb_eff_chr_emo_eye_003"
-        })
+                "3d/effect/charaemotion/pfb_eff_chr_emo_eye_000",
+                "3d/effect/charaemotion/pfb_eff_chr_emo_eye_001",
+                "3d/effect/charaemotion/pfb_eff_chr_emo_eye_002",
+                "3d/effect/charaemotion/pfb_eff_chr_emo_eye_003"
+            })
             {
                 GameObject obj = UmaAssetManager.LoadAsset<GameObject>(manga, true, true);
                 obj.SetActive(false);
 
                 GameObject leftObj = Instantiate(obj, eyeLocator_L.transform);
                 new List<Renderer>(leftObj.GetComponentsInChildren<Renderer>(true)).ForEach(a => {
-                    a.material.SetFloat("_StencilMask", charaEntry.Id);
+                    a.material.SetFloat("_StencilMask", charaData.Id);
                     a.material.SetFloat("_StencilComp", (float)UnityEngine.Rendering.CompareFunction.Equal);
                     a.material.SetFloat("_StencilOp", (float)UnityEngine.Rendering.StencilOp.Keep);
                     a.material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
@@ -959,7 +677,7 @@ namespace Uma
                         rightObj.transform.localScale = new Vector3(-1, 1, 1);
                 }
                 new List<Renderer>(rightObj.GetComponentsInChildren<Renderer>(true)).ForEach(a => {
-                    a.material.SetFloat("_StencilMask", charaEntry.Id);
+                    a.material.SetFloat("_StencilMask", charaData.Id);
                     a.material.SetFloat("_StencilComp", (float)UnityEngine.Rendering.CompareFunction.Equal);
                     a.material.SetFloat("_StencilOp", (float)UnityEngine.Rendering.StencilOp.Keep);
                     a.material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
@@ -968,9 +686,9 @@ namespace Uma
             }
 
             foreach (var tear in new List<string> {
-            "3d/chara/common/tear/tear000/pfb_chr_tear000",
-            "3d/chara/common/tear/tear001/pfb_chr_tear001"
-        })
+                "3d/chara/common/tear/tear000/pfb_chr_tear000",
+                "3d/chara/common/tear/tear001/pfb_chr_tear001"
+            })
             {
                 LoadTear(tear);
             }
@@ -980,13 +698,13 @@ namespace Uma
                 var p0 = TearPrefab_0;
                 var p1 = TearPrefab_1;
                 var t = HeadBone.transform;
-                TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 1));
-                TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 1, 1));
-                TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 0));
-                TearControllers.Add(new TearController(charaEntry.Id, t, Instantiate(p0, t), Instantiate(p1, t), 1, 0));
+                TearControllers.Add(new TearController(charaData.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 1));
+                TearControllers.Add(new TearController(charaData.Id, t, Instantiate(p0, t), Instantiate(p1, t), 1, 1));
+                TearControllers.Add(new TearController(charaData.Id, t, Instantiate(p0, t), Instantiate(p1, t), 0, 0));
+                TearControllers.Add(new TearController(charaData.Id, t, Instantiate(p0, t), Instantiate(p1, t), 1, 0));
             }
 
-            var firsehead = headInstance;
+            var firsehead = head;
             var faceDriven = Instantiate(firsehead.GetComponent<AssetHolder>()._assetTable["facial_target"]) as FaceDrivenKeyTarget;
 
             //Need Instantiate or not?
@@ -1003,7 +721,7 @@ namespace Uma
             faceDriven.Initialize(Utility.ConvertArrayToDictionary(firsehead.GetComponentsInChildren<Transform>()));
 
             var emotionDriven = ScriptableObject.CreateInstance<FaceEmotionKeyTarget>();
-            emotionDriven.name = $"char{charaEntry.Id}_{_costumeId}_emotion_target";
+            emotionDriven.name = $"char{charaData.Id}_{_costumeId}_emotion_target";
             FaceEmotionKeyTarget = emotionDriven;
             emotionDriven.FaceDrivenKeyTarget = faceDriven;
             emotionDriven.FaceEmotionKey = UmaDatabase.FaceTypeData;
@@ -1022,67 +740,43 @@ namespace Uma
                 TearPrefab_1 = go;
             }
         }
-        public void UpBodyReset()
+
+        public void InitializePhysics()
         {
-            if (upBodyBone)
-            {
-                upBodyBone.transform.localPosition = upBodyPosition;
-                upBodyBone.transform.localRotation = upBodyRotation;
-                //Debug.Log("UpBody reset to default position and rotation.");
-            }
-            else
-            {
-                Debug.LogWarning("UpBody bone not found!");
-            }
-        }
-
-        public void LoadPhysics()
-        {
-            // Prevents null reference exception when loading physics before setting costumeId
-            if (_costumeId == null)
-            {
-                _costumeId = costumeId.ToString();
-
-                if (_costumeId.Length == 1)
-                {
-                    _costumeId = "0" + _costumeId;
-                }
-            }
-
             // Physics instantiating
-            string clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_cloth00";
-            string bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_bust_cloth00";
+            string clothesLogicalPath = _isGenericBody? $"3d/chara/body/bdy{_costumeId}_00/clothes/pfb_bdy{_costumeId}_00_cloth00" : UmaDatabase.BodyPath + $"bdy{charaData.Id}_{_costumeId}/clothes/pfb_bdy{charaData.Id}_{_costumeId}_cloth00";
+            string bustClothesLogicalPath = _isGenericBody? $"3d/chara/body/bdy{_costumeId}_00/clothes/pfb_bdy{_costumeId}_00_bust{charaData.Bust}_cloth00" : UmaDatabase.BodyPath + $"bdy{charaData.Id}_{_costumeId}/clothes/pfb_bdy{charaData.Id}_{_costumeId}_bust_cloth00";
 
+            /*
             if ((UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null) || prioritizeGenericBody)
             {
                 //_costumeId = "00" + _costumeId;
                 clothesLogicalPath = $"3d/chara/body/bdy{costumeId.ToString().PadLeft(4, '0')}_00/clothes/pfb_bdy{costumeId.ToString().PadLeft(4, '0')}_00_cloth00";
-                bustClothesLogicalPath = $"3d/chara/body/bdy{costumeId.ToString().PadLeft(4, '0')}_00/clothes/pfb_bdy{costumeId.ToString().PadLeft(4, '0')}_00_bust{charaEntry.Bust}_cloth00";
+                bustClothesLogicalPath = $"3d/chara/body/bdy{costumeId.ToString().PadLeft(4, '0')}_00/clothes/pfb_bdy{costumeId.ToString().PadLeft(4, '0')}_00_bust{charaData.Bust}_cloth00";
                 Debug.Log($"{clothesLogicalPath}\n{bustClothesLogicalPath}");
 
                 if (UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null && prioritizeGenericBody)
                 {
-                    clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_cloth00";
-                    bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_bust_cloth00";
-                } else if (UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null)
+                    clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaData.Id}_{_costumeId}/clothes/pfb_bdy{charaData.Id}_{_costumeId}_cloth00";
+                    bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaData.Id}_{_costumeId}/clothes/pfb_bdy{charaData.Id}_{_costumeId}_bust_cloth00";
+                }
+                else if (UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null)
                 {
                     throw new NullReferenceException();
                 } // wish someone refactored this.
-            }
+            }*/
 
             string tailClothesLogicalPath = "";
-            if (charaEntry.TailModelId != -1) tailClothesLogicalPath = UmaDatabase.TailPath + $"tail{_tailId}_00/clothes/pfb_tail{_tailId}_00_cloth00";
-            string headClothesLogicalPath = UmaDatabase.HeadPath + $"chr{charaEntry.Id}_{_headId}/clothes/pfb_chr{charaEntry.Id}_{_headId}_cloth00";
+            if (charaData.TailModelId != -1) tailClothesLogicalPath = UmaDatabase.TailPath + $"tail{_tailId}_00/clothes/pfb_tail{_tailId}_00_cloth00";
+            string headClothesLogicalPath = UmaDatabase.HeadPath + $"chr{charaData.Id}_{_headId}/clothes/pfb_chr{charaData.Id}_{_headId}_cloth00";
 
             //Debug.Log($"{clothesLogicalPath}\n{bustClothesLogicalPath}\n{tailClothesLogicalPath}\n{headClothesLogicalPath}");
 
             Instantiate(UmaAssetManager.LoadAsset<GameObject>(clothesLogicalPath, false), PhysicsContainer.transform);
             Instantiate(UmaAssetManager.LoadAsset<GameObject>(bustClothesLogicalPath, false), PhysicsContainer.transform);
-            if (charaEntry.TailModelId != -1) Instantiate(UmaAssetManager.LoadAsset<GameObject>(tailClothesLogicalPath, false), PhysicsContainer.transform);
+            if (charaData.TailModelId != -1) Instantiate(UmaAssetManager.LoadAsset<GameObject>(tailClothesLogicalPath, false), PhysicsContainer.transform);
             Instantiate(UmaAssetManager.LoadAsset<GameObject>(headClothesLogicalPath, false), PhysicsContainer.transform);
-        }
-        public void SetupPhysics()
-        {
+
             // Initial physics setup
             cySpringDataContainers = new List<CySpringDataContainer>(PhysicsContainer.GetComponentsInChildren<CySpringDataContainer>());
             var bones = new Dictionary<string, Transform>();
@@ -1108,6 +802,40 @@ namespace Uma
             foreach (CySpringDataContainer cySpring in cySpringDataContainers)
             {
                 cySpring.EnablePhysics(true);
+            }
+        }
+
+        public void InstantiateParts()
+        {
+            body = _isGenericBody? Assembler.CreateGenericBody(costumeId, charaData: charaData, parent: gameObject) : Assembler.CreateBody(charaData.Id, costumeId, parent : gameObject);
+            head = Assembler.CreateHead(charaData.Id, headId, parent : gameObject);
+            tail = Assembler.CreateTail(charaData.TailModelId, parent: gameObject);
+            Assembler.ApplyTailTexture(tail, charaData.Id, charaData.TailModelId);
+        }
+
+        public void AssembleParts()
+        {
+            Assembler.AssembleToExistingRoot(body, head, tail, this.gameObject);
+
+            UmaAnimator = this.gameObject.GetComponent<Animator>();
+
+            UmaAnimator.avatar = AvatarBuilder.BuildGenericAvatar(this.gameObject, this.gameObject.name);
+            OverrideController = Resources.Load<AnimatorOverrideController>("Animations/Override Controller");
+            UmaAnimator.runtimeAnimatorController = OverrideController;
+        }
+
+
+        public void UpBodyReset()
+        {
+            if (upBodyBone)
+            {
+                upBodyBone.transform.localPosition = upBodyPosition;
+                upBodyBone.transform.localRotation = upBodyRotation;
+                //Debug.Log("UpBody reset to default position and rotation.");
+            }
+            else
+            {
+                Debug.LogWarning("UpBody bone not found!");
             }
         }
 
@@ -1256,6 +984,16 @@ namespace Uma
                 UmaFaceAnimator.Play("motion_2", 0, 0);
             }
         }
+        public void PlaySignatureAnimation()
+        {
+            if (UmaDatabase.MetaData.TryGetValue($"3d/motion/event/body/chara/chr{charaData.Id}_00/anm_eve_chr{charaData.Id}_00_idle01_loop", out UmaDatabaseEntry anim))
+            {
+                PlayAnimation(anim);
+                return;
+            }
+
+            Debug.LogWarning($"No signature animation for char {charaData.Id}");
+        }
 
         public void PlayMorph(string morphTag, float startWeight, float targetWeight, float duration)
         {
@@ -1267,13 +1005,6 @@ namespace Uma
                 PlayMorph(morph, startWeight, targetWeight, duration);
             }
         }
-        /*
-        public void PlayMorph(string morphName, float startWeight, float targetWeight, float duration)
-        {
-            FacialMorph morph = FaceDrivenKeyTarget.AllMorphs.FirstOrDefault(x => x.name == morphName);
-
-            StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
-        }*/
         public void PlayMorph(FacialMorph morph, float startWeight, float targetWeight, float duration)
         {
             StartCoroutine(AnimateMorph(morph, startWeight, targetWeight, duration));
@@ -1419,16 +1150,6 @@ namespace Uma
                 }
             }
         }
-        public void PlaySignatureAnimation()
-        {
-            if (UmaDatabase.MetaData.TryGetValue($"3d/motion/event/body/chara/chr{charaEntry.Id}_00/anm_eve_chr{charaEntry.Id}_00_idle01_loop", out UmaDatabaseEntry anim))
-            {
-                PlayAnimation(anim);
-                return;
-            }
-
-            Debug.LogWarning($"No signature animation for char {charaEntry.Id}");
-        }
 
 
         private void FixedUpdate()
@@ -1437,7 +1158,7 @@ namespace Uma
             {
                 if (!HeadBone)
                 {
-                    HeadBone = (GameObject)bodyInstance.GetComponent<AssetHolder>()._assetTable["head"];
+                    HeadBone = (GameObject)body.GetComponent<AssetHolder>()._assetTable["head"];
                 }
                 var finalRotation = FaceDrivenKeyTarget.GetEyeTrackRotation(TrackTarget.transform.position);
                 FaceDrivenKeyTarget.SetEyeTrack(finalRotation);
@@ -1448,6 +1169,4 @@ namespace Uma
             }
         }
     }
-
-
 }
