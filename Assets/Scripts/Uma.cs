@@ -5,10 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
-using Uma;
 using UnityEngine;
-using UnityEngine.Tilemaps;
-using static UnityEditor.ObjectChangeEventStream;
 using Random = UnityEngine.Random;
 
 namespace Uma
@@ -72,137 +69,146 @@ namespace Uma
 
         public static GameObject CreateGenericBody(int costumeId, int bodyTypeSub, int bodySetting, int height, int shape, int bust, int socks, int skin, bool loadPrerequisites = true)
         {
-            string _costumeId = costumeId.ToString();
-
-            if (_costumeId.Length < 4)
+            try
             {
-                _costumeId = new string('0', 4 - _costumeId.Length) + _costumeId;
-            }
+                string _costumeId = costumeId.ToString();
 
-            string _bodyTypeSub = bodyTypeSub.ToString().PadLeft(2, '0');
-            string _bodySetting = bodySetting.ToString().PadLeft(2, '0');
-            string _socks = socks.ToString().PadLeft(2, '0');
-
-            //var bodyLogicalPath = UmaDatabase.BodyPath + $"bdy{_costumeId}_{_bodyTypeSub}/pfb_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{height}_{shape}_{bust}";
-            var bodyLogicalPath = UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains($"bdy{_costumeId}_{_bodyTypeSub}/pfb_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{height}_{shape}_{bust}"));
-            var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
-
-            if (loadPrerequisites)
-            {
-                UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
-                UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
-            }
-
-            using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey))
-            {
-                //Prevents from loading multiple assets which Unity dont like
-                AssetBundle bundle;
-                if (UmaAssetManager.loadedAssets.ContainsKey(bodyLogicalPath))
+                if (_costumeId.Length < 4)
                 {
-                    bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
-                }
-                else
-                {
-                    bundle = AssetBundle.LoadFromStream(stream);
-                    UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
+                    _costumeId = new string('0', 4 - _costumeId.Length) + _costumeId;
                 }
 
-                var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
+                string _bodyTypeSub = bodyTypeSub.ToString().PadLeft(2, '0');
+                string _bodySetting = bodySetting.ToString().PadLeft(2, '0');
+                string _socks = socks.ToString().PadLeft(2, '0');
 
-                body = Instantiate(body);
+                //var bodyLogicalPath = UmaDatabase.BodyPath + $"bdy{_costumeId}_{_bodyTypeSub}/pfb_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{height}_{shape}_{bust}";
+                var bodyLogicalPath = UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains($"bdy{_costumeId}_{_bodyTypeSub}/pfb_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{height}_{shape}_{bust}"));
+                var bodyPath = UmaDatabase.ResolvePath(bodyLogicalPath);
 
-                // Set shader
-                foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
+                if (loadPrerequisites)
                 {
-                    foreach (Material m in r.sharedMaterials)
+                    UmaAssetManager.PreLoadPrerequistes(bodyLogicalPath);
+                    UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
+                }
+
+                using (var stream = new UmaAssetBundleStream(bodyPath, UmaDatabase.MetaData[bodyLogicalPath].FKey))
+                {
+                    //Prevents from loading multiple assets which Unity dont like
+                    AssetBundle bundle;
+                    if (UmaAssetManager.loadedAssets.ContainsKey(bodyLogicalPath))
                     {
-                        if (m == null) continue;
+                        bundle = UmaAssetManager.loadedAssets[bodyLogicalPath];
+                    }
+                    else
+                    {
+                        bundle = AssetBundle.LoadFromStream(stream);
+                        UmaAssetManager.loadedAssets[bodyLogicalPath] = bundle;
+                    }
 
-                        m.name = m.name.Replace(" (Instance)", "");
+                    var body = bundle.LoadAllAssets<GameObject>().FirstOrDefault();
 
-                        if (m.shader.name.Contains("Noline") && m.shader.name.Contains("TSER"))
+                    body = Instantiate(body);
+
+                    // Set shader
+                    foreach (Renderer r in body.GetComponentsInChildren<Renderer>())
+                    {
+                        foreach (Material m in r.sharedMaterials)
                         {
-                           
-                            var s = UmaAssetManager.ShaderList.Find(a => a.name == m.shader.name.Replace("Noline", "")); //Generic costume shader need to change manually.
-                            Debug.Log($"set shader: {s}");
-                            if (s)
+                            if (m == null) continue;
+
+                            m.name = m.name.Replace(" (Instance)", "");
+
+                            if (m.shader.name.Contains("Noline") && m.shader.name.Contains("TSER"))
                             {
-                                m.shader = s;
-                            }
 
-                            //Debug.Log(m.shader.name);
-                        }
-
-                        string mainTex = "", toonMap = "", tripleMap = "", optionMap = "", zekkenNumberTex = "";
-                        string completeCostumeId = $"{_costumeId}_{_bodyTypeSub}_{_bodySetting}";//_{height}_{shape}_{bust}";
-
-                        switch (_costumeId)
-                        {
-                            case "0001":
-                                switch (r.sharedMaterials.ToList().IndexOf(m))
+                                var s = UmaAssetManager.ShaderList.Find(a => a.name == m.shader.name.Replace("Noline", "")); //Generic costume shader need to change manually.
+                                Debug.Log($"set shader: {s}");
+                                if (s)
                                 {
-                                    case 0:
-                                        mainTex = $"tex_bdy{_costumeId}_00_waku0_diff";
-                                        toonMap = $"tex_bdy{_costumeId}_00_waku0_shad_c";
-                                        tripleMap = $"tex_bdy{_costumeId}_00_waku0_base";
-                                        optionMap = $"tex_bdy{_costumeId}_00_waku0_ctrl";
-                                        break;
-                                    case 1:
-                                        mainTex = $"tex_bdy{_costumeId}_00_{bodySetting}_{bust}_{_socks}_diff";
-                                        toonMap = $"tex_bdy{_costumeId}_00_{bodySetting}_{bust}_{_socks}_shad_c";
-                                        tripleMap = $"tex_bdy{_costumeId}_00_0_{bust}_00_base";
-                                        optionMap = $"tex_bdy{_costumeId}_00_0_{bust}_00_ctrl";
-                                        break;
-                                    case 2:
-                                        int color = UnityEngine.Random.Range(0, 4);
-                                        mainTex = $"tex_bdy0001_00_zekken{color}_{bust}_diff";
-                                        toonMap = $"tex_bdy0001_00_zekken{color}_{bust}_shad_c";
-                                        tripleMap = $"tex_bdy0001_00_zekken0_{bust}_base";
-                                        optionMap = $"tex_bdy0001_00_zekken0_{bust}_ctrl";
-                                        break;
+                                    m.shader = s;
                                 }
 
-                                zekkenNumberTex = $"tex_bdy0001_00_num{UnityEngine.Random.Range(1, 18):d2}";
-                                break;
-                            case "0003":
-                                mainTex = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_{skin}_{bust}_diff";
-                                toonMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_{skin}_{bust}_shad_c";
-                                tripleMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_0_{bust}_base";
-                                optionMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_0_{bust}_ctrl";
-                                break;
-                            case "0006":
-                            case "0009":
-                            case "0015":
-                                mainTex = $"tex_bdy{completeCostumeId}_{bodySetting}_{bust}_{"00"}_diff";
-                                toonMap = $"tex_bdy{completeCostumeId}_{bodySetting}_{bust}_{"00"}_shad_c";
-                                tripleMap = $"tex_bdy{completeCostumeId}_0_{bust}_00_base";
-                                optionMap = $"tex_bdy{completeCostumeId}_0_{bust}_00_ctrl";
-                                break;
-                            default:
-                                /*mainTex = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{socks}_{bust}_diff";
-                                toonMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{socks}_{bust}_shad_c";
-                                tripleMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_0_{socks}_base";
-                                optionMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_0_{socks}_ctrl";*/
-                                mainTex = $"tex_bdy{completeCostumeId}_{skin}_{bust}_diff";
-                                toonMap = $"tex_bdy{completeCostumeId}_{skin}_{bust}_shad_c";
-                                tripleMap = $"tex_bdy{completeCostumeId}_0_{bust}_base";
-                                optionMap = $"tex_bdy{completeCostumeId}_0_{bust}_ctrl";
-                                break;
+                                //Debug.Log(m.shader.name);
+                            }
+
+                            string mainTex = "", toonMap = "", tripleMap = "", optionMap = "", zekkenNumberTex = "";
+                            string completeCostumeId = $"{_costumeId}_{_bodyTypeSub}_{_bodySetting}";//_{height}_{shape}_{bust}";
+
+                            switch (_costumeId)
+                            {
+                                case "0001":
+                                    switch (r.sharedMaterials.ToList().IndexOf(m))
+                                    {
+                                        case 0:
+                                            mainTex = $"tex_bdy{_costumeId}_00_waku0_diff";
+                                            toonMap = $"tex_bdy{_costumeId}_00_waku0_shad_c";
+                                            tripleMap = $"tex_bdy{_costumeId}_00_waku0_base";
+                                            optionMap = $"tex_bdy{_costumeId}_00_waku0_ctrl";
+                                            break;
+                                        case 1:
+                                            mainTex = $"tex_bdy{_costumeId}_00_{bodySetting}_{bust}_{_socks}_diff";
+                                            toonMap = $"tex_bdy{_costumeId}_00_{bodySetting}_{bust}_{_socks}_shad_c";
+                                            tripleMap = $"tex_bdy{_costumeId}_00_0_{bust}_00_base";
+                                            optionMap = $"tex_bdy{_costumeId}_00_0_{bust}_00_ctrl";
+                                            break;
+                                        case 2:
+                                            int color = UnityEngine.Random.Range(0, 4);
+                                            mainTex = $"tex_bdy0001_00_zekken{color}_{bust}_diff";
+                                            toonMap = $"tex_bdy0001_00_zekken{color}_{bust}_shad_c";
+                                            tripleMap = $"tex_bdy0001_00_zekken0_{bust}_base";
+                                            optionMap = $"tex_bdy0001_00_zekken0_{bust}_ctrl";
+                                            break;
+                                    }
+
+                                    zekkenNumberTex = $"tex_bdy0001_00_num{UnityEngine.Random.Range(1, 18):d2}";
+                                    break;
+                                case "0003":
+                                    mainTex = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_{skin}_{bust}_diff";
+                                    toonMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_{skin}_{bust}_shad_c";
+                                    tripleMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_0_{bust}_base";
+                                    optionMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_00_0_{bust}_ctrl";
+                                    break;
+                                case "0006":
+                                case "0009":
+                                case "0015":
+                                    mainTex = $"tex_bdy{completeCostumeId}_{bodySetting}_{bust}_{"00"}_diff";
+                                    toonMap = $"tex_bdy{completeCostumeId}_{bodySetting}_{bust}_{"00"}_shad_c";
+                                    tripleMap = $"tex_bdy{completeCostumeId}_0_{bust}_00_base";
+                                    optionMap = $"tex_bdy{completeCostumeId}_0_{bust}_00_ctrl";
+                                    break;
+                                default:
+                                    /*mainTex = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{socks}_{bust}_diff";
+                                    toonMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_{socks}_{bust}_shad_c";
+                                    tripleMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_0_{socks}_base";
+                                    optionMap = $"tex_bdy{_costumeId}_{_bodyTypeSub}_{_bodySetting}_0_{socks}_ctrl";*/
+                                    mainTex = $"tex_bdy{completeCostumeId}_{skin}_{bust}_diff";
+                                    toonMap = $"tex_bdy{completeCostumeId}_{skin}_{bust}_shad_c";
+                                    tripleMap = $"tex_bdy{completeCostumeId}_0_{bust}_base";
+                                    optionMap = $"tex_bdy{completeCostumeId}_0_{bust}_ctrl";
+                                    break;
+                            }
+
+                            Debug.Log($"{mainTex}\n{toonMap}\n{tripleMap}\n{optionMap}\n{zekkenNumberTex}");
+
+                            m.SetTexture("_MainTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(mainTex))));
+                            m.SetTexture("_ToonMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(toonMap))));
+                            m.SetTexture("_TripleMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(tripleMap))));
+                            m.SetTexture("_OptionMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(optionMap))));
+
+                            if (!string.IsNullOrEmpty(zekkenNumberTex)) m.SetTexture("_ZekkenNumberTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(zekkenNumberTex))));
                         }
-
-                        Debug.Log($"{mainTex}\n{toonMap}\n{tripleMap}\n{optionMap}\n{zekkenNumberTex}");
-
-                        m.SetTexture("_MainTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(mainTex))));
-                        m.SetTexture("_ToonMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(toonMap))));
-                        m.SetTexture("_TripleMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(tripleMap))));
-                        m.SetTexture("_OptionMaskMap", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(optionMap))));
-
-                        if (!string.IsNullOrEmpty(zekkenNumberTex)) m.SetTexture("_ZekkenNumberTex", UmaAssetManager.LoadAsset<Texture>(UmaDatabase.MetaData.Keys.FirstOrDefault(x => x.Contains(zekkenNumberTex))));
                     }
-                }
 
-                stream.Close();
-                return body;
+                    stream.Close();
+                    return body;
+                }
+                
+            } 
+            catch (Exception e)
+            {
+                Debug.LogError($"Error creating generic body: {e}");
+                return null;
             }
         }
 
@@ -473,7 +479,7 @@ namespace Uma
 
         }
 
-        public static GameObject CreateUma(CharaData entry, int costumeId = 0, int headId = 0, bool addComponents = true)
+        public static GameObject CreateUma(CharaData entry, int costumeId = 0, int headId = 0, bool addComponents = true, bool prioritizeGenericBody = false)
         {
             GameObject root = new GameObject();
             root.name = $"uma_{entry.Id}";
@@ -489,7 +495,15 @@ namespace Uma
 
 
             var bodyLogicalPath = UmaDatabase.QueryBodyPath(entry.Id, costumeId);
-            bool bdyExists = UmaDatabase.ResolvePath(bodyLogicalPath) != null;
+            bool bdyExists = UmaDatabase.ResolvePath(bodyLogicalPath) != null; // false = a generic body
+            if (prioritizeGenericBody)
+            {
+                umachar.bodyInstance = CreateGenericBody(costumeId, 0, 0, entry.Height, entry.Shape, entry.Bust, entry.Socks, entry.Skin);
+                if (umachar.bodyInstance == null)
+                {
+                    bdyExists = true; //generic body not exists, returning back to character specific body
+                }
+            } 
             var headLogicalPath = UmaDatabase.QueryHeadPath(entry.Id, headId);
             var tailLogicalPath = UmaDatabase.QueryTailPath(entry.TailModelId);
 
@@ -500,16 +514,22 @@ namespace Uma
             if (bdyExists) UmaAssetManager.LoadPrerequistes(bodyLogicalPath);
             UmaAssetManager.LoadPrerequistes(headLogicalPath);
             if (entry.TailModelId != -1) UmaAssetManager.LoadPrerequistes(tailLogicalPath);
+            
+            if (!umachar.bodyInstance)
+            {
+                if (bdyExists) umachar.bodyInstance = UmaAssembler.CreateBody(entry.Id, costumeId, false, root);
+                if (!bdyExists) umachar.bodyInstance = CreateGenericBody(costumeId, 0, 0, entry.Height, entry.Shape, entry.Bust, entry.Socks, entry.Skin);
+            }
 
-            if (bdyExists) umachar.bodyInstance = UmaAssembler.CreateBody(entry.Id, costumeId, false, root);
-            if (!bdyExists) umachar.bodyInstance = CreateGenericBody(costumeId, 0, 0, entry.Height, entry.Shape, entry.Bust, entry.Socks, entry.Skin);
             umachar.headInstance = UmaAssembler.CreateHead(entry.Id, headId, false, root);
+            
             if (entry.TailModelId != -1)
             {
                 umachar.tailInstance = UmaAssembler.CreateTail(entry.TailModelId, false, root);
                 UmaAssembler.ApplyTailTexture(umachar.tailInstance, entry.Id);
             }
 
+            umachar.prioritizeGenericBody = prioritizeGenericBody;
             umachar.Initialize();
             umachar.LoadPhysics();
             umachar.SetupPhysics();
@@ -798,6 +818,7 @@ namespace Uma
         string _headId;
         string _costumeId;
         string _tailId;
+        public bool prioritizeGenericBody = false;
 
         public float randomBlinkMinInterval = 1f;
         public float randomBlinkMaxInterval = 7.5f;
@@ -1014,6 +1035,7 @@ namespace Uma
                 Debug.LogWarning("UpBody bone not found!");
             }
         }
+
         public void LoadPhysics()
         {
             // Prevents null reference exception when loading physics before setting costumeId
@@ -1031,9 +1053,21 @@ namespace Uma
             string clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_cloth00";
             string bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_bust_cloth00";
 
-            if (UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null)
+            if ((UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null) || prioritizeGenericBody)
             {
-                //TODO
+                //_costumeId = "00" + _costumeId;
+                clothesLogicalPath = $"3d/chara/body/bdy{costumeId.ToString().PadLeft(4, '0')}_00/clothes/pfb_bdy{costumeId.ToString().PadLeft(4, '0')}_00_cloth00";
+                bustClothesLogicalPath = $"3d/chara/body/bdy{costumeId.ToString().PadLeft(4, '0')}_00/clothes/pfb_bdy{costumeId.ToString().PadLeft(4, '0')}_00_bust{charaEntry.Bust}_cloth00";
+                Debug.Log($"{clothesLogicalPath}\n{bustClothesLogicalPath}");
+
+                if (UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null && prioritizeGenericBody)
+                {
+                    clothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_cloth00";
+                    bustClothesLogicalPath = UmaDatabase.BodyPath + $"bdy{charaEntry.Id}_{_costumeId}/clothes/pfb_bdy{charaEntry.Id}_{_costumeId}_bust_cloth00";
+                } else if (UmaDatabase.ResolvePath(clothesLogicalPath) == null && UmaDatabase.ResolvePath(bustClothesLogicalPath) == null)
+                {
+                    throw new NullReferenceException();
+                } // wish someone refactored this.
             }
 
             string tailClothesLogicalPath = "";

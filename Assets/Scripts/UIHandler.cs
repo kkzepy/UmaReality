@@ -165,7 +165,7 @@ public class UIHandler : MonoBehaviour
             umachar.UmaAnimator.runtimeAnimatorController = umachar.OverrideController;
             */
 
-            uma = UmaAssembler.CreateUma(chara, costumeId, headId);
+            uma = UmaAssembler.CreateUma(chara, costumeId, headId, prioritizeGenericBody : true);
 
             controller = uma.GetComponent<UmaCharacter>();
             morphs = controller.FaceDrivenKeyTarget.AllMorphs;

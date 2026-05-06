@@ -43,7 +43,14 @@ public class Main : MonoBehaviour
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
 
-        
+        /*string log = "";
+
+        foreach (var item in UmaDatabase.MetaData.Keys.Where(x => x.StartsWith(UmaDatabase.BodyPath)))
+        {
+            log += item + "\n";
+        }
+
+        File.WriteAllText("log.txt", log);*/
     }
 
     private void Start()
