@@ -374,10 +374,10 @@ public class ExpressiveController : MonoBehaviour
 
             Dictionary<string, List<string>> results = new();
 
-            foreach (var motset in UmaDatabase.CharaMotionSet.Where(x => x.Id == charaId))
+            foreach (var motset in UmaDatabase.CharaMotionSet.Where(x => x.Id.ToString().StartsWith(charaId.ToString())))
             {
                 string match = keyValuePairs.Keys.FirstOrDefault(k => motset.BodyMotion.StartsWith(k));
-                string value = keyValuePairs[match];
+                string value = keyValuePairs[match]; if (value == null) continue;
                 string path = motset.GetAnimPath();
 
                 if (results.ContainsKey(value))
@@ -475,7 +475,7 @@ public class ExpressiveController : MonoBehaviour
 
             Dictionary<string, List<MorphSet>> results = new();
 
-            foreach (var motset in UmaDatabase.CharaMotionSet.Where(x => x.Id == charaId))
+            foreach (var motset in UmaDatabase.CharaMotionSet.Where(x => x.Id.ToString().StartsWith(charaId.ToString())))
             {
                 string match = keyValuePairs.Keys.FirstOrDefault(k => motset.FaceType.StartsWith(k));
                 string value = keyValuePairs[match];

@@ -484,8 +484,8 @@ namespace Uma
             {
                 body.transform.GetChild(0).SetParent(rootObject.transform);
             }
-            //body.SetActive(false); //for debugging
-            Destroy(body);
+            body.SetActive(false); //for debugging
+            //Destroy(body);
 
             var headskins = head.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             foreach (SkinnedMeshRenderer headskin in headskins)
@@ -622,11 +622,12 @@ namespace Uma
             _headId = headId.ToString().PadLeft(2, '0');
             _tailId = charaData.TailModelId.ToString().PadLeft(4, '0');
 
-            FaceOverrideController = faceOverrideController;
+                FaceOverrideController = faceOverrideController;
             UmaFaceAnimator = umaFaceAnimator;
 
             var bodyAssetHolder = body.GetComponent<AssetHolder>();
 
+            //HeadBone = (GameObject)bodyAssetHolder._assetTable["head"];
             upBodyBone = bodyAssetHolder._assetTable["upbody_ctrl"] as GameObject;
             upBodyPosition = upBodyBone.transform.localPosition;
             upBodyRotation = upBodyBone.transform.localRotation;
@@ -1151,6 +1152,12 @@ namespace Uma
             }
         }
 
+        public void OnDestroy()
+        {
+            Destroy(body);
+            Destroy(head);
+            Destroy(tail);
+        }
 
         private void FixedUpdate()
         {

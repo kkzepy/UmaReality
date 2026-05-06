@@ -189,16 +189,39 @@ public class UIHandler : MonoBehaviour
             uma = new GameObject();
 
             controller = uma.AddComponent<Uma.UmaCharacter>();
+            controller.gameObject.name = $"uma_{chara.Id}";
             controller.charaData = chara;
+            controller.costumeId = costumeId;
+            controller.headId = headId;
+
+            if (UmaDatabase.ResolvePath(UmaDatabase.QueryBodyPath(chara.Id, costumeId)) == null)
+            {
+                controller.isGenericBody = true;
+            }
+
             controller.InstantiateParts();
             controller.Initialize(Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller"), Resources.Load<Animator>("Animations/Face Controller"));
+            controller.EnableEyeTracking = true;//controller.InitializeFaceMorph();
             controller.InitializePhysics();
             controller.InitializeFaceMorph();
             controller.AssembleParts();
 
+            controller.SetRandomBlink(true);
+            controller.SetRandomEarTwitch(true);
             controller.PlaySignatureAnimation();
-
             controller.PlayMorph("Cheek_A", 0f, 1f, .2f);
+
+            uma.AddComponent<ExpressiveController>().Chat = chatController;
+            expCon = uma.GetComponent<ExpressiveController>();
+            expCon.UserInputField = Chat;
+            expCon.DialogueObject = Dialogue;
+
+            chatController.expressionVocab.anim_map = new Dictionary<string, List<string>>();
+            chatController.expressionVocab.face_morph_map = new Dictionary<string, List<MorphSet>>();
+            expCon.MergeAnimMapWithMotionSets(ExpressiveController.GetCharacterMotionSets(chara.Id));
+            expCon.MergeFaceMorphMapWithEmoteSets(ExpressiveController.GetCharacterEmoteSets(chara.Id));
+            Debug.Log($"{chatController.expressionVocab.anim_map}\n{chatController.expressionVocab.face_morph_map}");
+
 
             return;
         }
