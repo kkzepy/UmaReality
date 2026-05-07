@@ -204,6 +204,16 @@ public class ChatController
 
         File.WriteAllText(path, JsonConvert.SerializeObject(chatHistory));
     }
+
+    public void ImportMessages(string path)
+    {
+        if (chatHistory != null || chatHistory.messages.Count != 0)
+        {
+            Debug.LogWarning($"WARNING: Current chatHistory will be overwritten with {path}");
+        }
+
+        chatHistory = JsonConvert.DeserializeObject<ChatHistory>(File.ReadAllText(path));
+    }
 }
 
 public static class ExpressiveResponseParser
@@ -689,13 +699,8 @@ public class ExpressiveController : MonoBehaviour
 
             StartCoroutine(HandleMultiAnimatons(animations));
         }
-        else //if (Chat.expressionVocab.anim_map.TryGetValue(resp.Anim, out List<string> animations))
+        else
         {
-            /*
-            int randomIndex = Random.Range(0, animations.Count);
-            string animation = animations[randomIndex];
-
-            UmaController.PlayAnimation(animation);*/
 
             PlayRandomAnimations(resp.Anim);
         }
@@ -712,6 +717,15 @@ public class ExpressiveController : MonoBehaviour
         }
     }
 
+    public void ReplayLastResponse()
+    {
+        string lastResp = Chat.chatHistory.messages.LastOrDefault(x => x.role == "assistant").content;
+
+        if (lastResp != null)
+        {
+            HandleResponse(lastResp);
+        }
+    }
     public void GenerateResponse(string prompt, int historyLimit = 10, bool addToHistory = true, bool regenerate = false, string model = "mistral-small-creative")
     {
         List<ChatMessage> finalPrompt = Chat.BuildPrompt(prompt, historyLimit, regenerate);

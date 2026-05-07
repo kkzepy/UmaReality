@@ -64,32 +64,43 @@
     <Compile Include="Assets\Scripts\umamusume\Gallop\FaceEmotionKeyTarget.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBoneCollider.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringParamDataAsset.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\StandaloneFileBrowserEditor.cs" />
     <Compile Include="Assets\Scripts\UmaViewerGlobalShader.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\ClothParameter.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DrivenKeyComponent.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringParamDataElement.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\LiveTimelineCamera.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\Sample\CanvasSampleSaveFileText.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\CySpringDataContainer.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\Character3DBase.cs" />
     <Compile Include="Assets\Scripts\Uma.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DrivenKeyTarget.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\FaceOverrideData.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\Sample\BasicSample.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\Live\Cutt\LiveTimelineDataList\LiveTimelineFacialData.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Demo\DynamicBoneDemo1.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\FaceDrivenKeyTarget.cs" />
     <Compile Include="Assets\Scripts\ChatDataTypes.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\TearController.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringBoneBase.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\Sample\CanvasSampleSaveFileImage.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\StandaloneFileBrowserWindows.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\EarType.cs" />
     <Compile Include="Assets\Scripts\DynamicBone\Scripts\DynamicBone.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\FacialMorph.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\Sample\CanvasSampleOpenFileImage.cs" />
     <Compile Include="Assets\Scripts\CriWareLibrary\Common\BinaryReaderEndian.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\CySpringPartsParamDataElement.cs" />
     <Compile Include="Assets\Scripts\umamusume\GallopExtras.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringParamDataChildElement.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\Sample\CanvasSampleOpenFileTextMultiple.cs" />
     <Compile Include="Assets\Scripts\Easing.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\StandaloneFileBrowserMac.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\StandaloneFileBrowserLinux.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\StandaloneFileBrowser.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothWorking.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\AssetHolder.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\IStandaloneFileBrowser.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\StageUtil.cs" />
     <Compile Include="Assets\Scripts\UmaDataTypes.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\DereScript\StageScript\CySpring\NativeClothCollision.cs" />
@@ -118,10 +129,13 @@
     <Compile Include="Assets\Scripts\CriWareLibrary\AcbParser.cs" />
     <Compile Include="Assets\Scripts\CriWareLibrary\UtfTable.cs" />
     <Compile Include="Assets\Scripts\ChatController.cs" />
+    <Compile Include="Assets\Scripts\StandaloneFileBrowser\Sample\CanvasSampleOpenFileText.cs" />
     <Compile Include="Assets\Scripts\umamusume\Gallop\StageScript\CySpring\CySpringCollisionData.cs" />
     <Compile Include="Assets\Scripts\CriWareLibrary\AcbReader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Scripts\StandaloneFileBrowser\Plugins\System.Windows.Forms.dll" />
+    <None Include="Assets\Scripts\StandaloneFileBrowser\Plugins\Ookii.Dialogs.dll" />
     <None Include="Assets\Scripts\umamusume.asmdef" />
     <None Include="Assets\Scripts\DynamicBone\ReadMe.txt" />
   </ItemGroup>
@@ -532,6 +546,14 @@
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>Library\PackageCache\com.unity.nuget.mono-cecil@1.11.5\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Ookii.Dialogs">
+      <HintPath>Assets\StandaloneFileBrowser\Plugins\Ookii.Dialogs.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>Assets\StandaloneFileBrowser\Plugins\System.Windows.Forms.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib">

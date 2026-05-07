@@ -6,7 +6,9 @@ using System.IO;
 using TMPro;
 using Uma;
 using UnityEngine;
+using SFB;
 using Random = UnityEngine.Random;
+using System.Linq;
 
 public class UIHandler : MonoBehaviour
 {
@@ -279,6 +281,28 @@ public class UIHandler : MonoBehaviour
         if (chatController == null) return;
 
         chatController.ExportMessages();
+    }
+
+    public void OnImportBtnClick()
+    {
+        if (chatController == null) return;
+
+        var extensions = new[] { 
+            new ExtensionFilter("JSON File", "json", "jsonc"),
+            new ExtensionFilter("All Files", "*")
+        };
+        string[] path = StandaloneFileBrowser.OpenFilePanel("Select chat history", "", extensions, false);
+
+        if (path.Length > 0)
+        {
+            chatController.ImportMessages(path[0]);
+            /*Debug.Log(chatController.chatHistory.messages.LastOrDefault(x => x.role == "assistant").content);
+
+            var content = ExpressiveResponseParser.Parse(chatController.chatHistory.messages.LastOrDefault(x => x.role == "assistant").content);
+
+            Dialogue.GetComponent<DialogueController>().UpdateContent(content.Dialogue, false, duration: 0f);*/
+            expCon.ReplayLastResponse();
+        }
     }
 
     private void Update()
