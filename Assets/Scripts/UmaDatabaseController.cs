@@ -17,6 +17,17 @@ namespace Uma
         public static string DBBaseKey = "F170CEA4DFCEA3E1A5D8C70BD1000000";
         public static string ABKey = "532B4631E4A7B9473E7CFB";
 
+        public static string PersistentPath
+        {
+            get { return persistentPath; }
+            set
+            {
+                persistentPath = value;
+                masterDbPath = value + "master\\master.mdb";
+                metaDbPath = value + "meta";
+            }
+        }
+
         public static SqliteConnection mdbConn;
 
         public static List<CharaData> CharaData = new List<CharaData>();
