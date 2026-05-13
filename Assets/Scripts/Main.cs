@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Management.Instrumentation;
 using System.Media;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using TMPro;
 using Uma;
 using Uma;
@@ -23,11 +26,11 @@ public class Main : MonoBehaviour
     {
         // Initialization
 
-        //UmaDatabase.persistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
+        UmaDatabase.PersistentPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\";
         //UmaDatabase.masterDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb";
         //UmaDatabase.metaDbPath = "G:\\DMM\\Umamusume\\umamusume_Data\\Persistent\\meta";
 
-        UmaDatabase.PersistentPath = "E:\\Uma\\Persistent\\";
+        //UmaDatabase.PersistentPath = "E:\\Uma\\Persistent\\";
 
         /*
         string user = "Rhxxza";
@@ -45,16 +48,13 @@ public class Main : MonoBehaviour
         progressBar.text = "Loading shaders...";
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
+        
 
-        /*string log = "";
-
-        foreach (var item in UmaDatabase.MetaData.Keys.Where(x => x.StartsWith(UmaDatabase.BodyPath)))
-        {
-            log += item + "\n";
-        }
-
-        File.WriteAllText("log.txt", log);*/
+        //File.WriteAllText("log.txt", log);
     }
+
+    public Texture2D texture;
+    public UnityEngine.UI.RawImage displayUI;
 
     private void Start()
     {
@@ -88,6 +88,44 @@ public class Main : MonoBehaviour
         controller.InitializePhysics();
         controller.InitializeFaceMorph();
         controller.AssembleParts();*/
+
+        var goLogPath = "bg/bg_0069_00111";
+        var goPath = UmaDatabase.ResolvePath(goLogPath);
+        var fKey = UmaDatabase.MetaData[goLogPath].FKey;
+
+        using var stream = new UmaAssetBundleStream(goPath, fKey);
+
+        AssetBundle bundle;
+        bundle = AssetBundle.LoadFromStream(stream);
+        var assets = bundle.LoadAllAssets<Texture2D>();
+        texture = assets.FirstOrDefault<Texture2D>();
+
+        foreach(var item in assets)
+        {
+            Debug.Log(item.GetType().ToString());
+        }
+
+        /*displayUI = new UnityEngine.UI.RawImage();
+        displayUI.texture = assets.FirstOrDefault<Texture2D>();*/
+
+        /*var go = new GameObject();
+        Renderer renderer = go.GetComponent<Renderer>();
+        renderer.material.mainTexture = assets.FirstOrDefault<Texture2D>();
+
+        Instantiate(go);*/
+
+        //Debug.Log(goPath);
+        //Instantiate(go);
+    }
+
+    private void OnGUI()
+    {
+        /*if (texture != null)
+        {
+            // Menggambar tekstur di pojok kiri atas layar
+            GUI.DrawTexture(new Rect(10, 10, 200, 200), texture, ScaleMode.ScaleToFit);
+            GUI.Label(new Rect(10, 215, 200, 20), "Debug: " + texture.name);
+        }*/
     }
 
     void Update()
