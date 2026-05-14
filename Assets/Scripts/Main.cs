@@ -48,9 +48,15 @@ public class Main : MonoBehaviour
         progressBar.text = "Loading shaders...";
         UmaAssetManager.LoadShaders();
         progressBar.text = "";
-        
 
-        //File.WriteAllText("log.txt", log);
+        string log = "";
+
+        foreach(var item in UmaDatabase.MetaData.Where(x => x.Key.Contains("camera")))
+        {
+            log += item.Key + "\n";
+        }
+
+        File.WriteAllText("log.txt", log);
     }
 
     public Texture2D texture;
@@ -58,64 +64,8 @@ public class Main : MonoBehaviour
 
     private void Start()
     {
-        //3d/chara/body/bdy{costumeIdShort}/pfb_bdy{costumeId}_{height}_{shape}_{bust}  
-        //(costume id)_(body_type_sub)_(body_setting)_(height)_(shape)_(bust)  
-
-        /*
-        var chara = UmaDatabase.CharaData.FirstOrDefault(x => x.Id == 1007);
-        
-        int costumeId;
-        int bodyTypeSub;
-        int bodySetting;
-
-        var dressEntry = UmaDatabase.DressData.FirstOrDefault(x => x.Id == 100302);
-
-        costumeId = Convert.ToInt32(dressEntry.Id.ToString()[^2..]);
-        bodyTypeSub = dressEntry.BodyTypeSub;
-        bodySetting = dressEntry.BodySetting;
-
-        UmaAssembler.CreateGenericBody(skin : chara.Skin, costumeId : costumeId, bodyTypeSub : bodyTypeSub, bodySetting : bodySetting, height : chara.Height, shape : dressEntry.BodyShape, bust : chara.Bust, socks : chara.Socks);
-        
-
-        var chara = UmaDatabase.CharaData.FirstOrDefault(x => x.Id == 1007);
-
-        GameObject root = new();
-
-        var controller = root.AddComponent<Uma.UmaCharacter>();
-        controller.charaData = chara;
-        controller.InstantiateParts();
-        controller.Initialize(Resources.Load<AnimatorOverrideController>("Animations/Face Override Controller"), Resources.Load<Animator>("Animations/Face Controller"));
-        controller.InitializePhysics();
-        controller.InitializeFaceMorph();
-        controller.AssembleParts();*/
-
-        var goLogPath = "bg/bg_0069_00111";
-        var goPath = UmaDatabase.ResolvePath(goLogPath);
-        var fKey = UmaDatabase.MetaData[goLogPath].FKey;
-
-        using var stream = new UmaAssetBundleStream(goPath, fKey);
-
-        AssetBundle bundle;
-        bundle = AssetBundle.LoadFromStream(stream);
-        var assets = bundle.LoadAllAssets<Texture2D>();
-        texture = assets.FirstOrDefault<Texture2D>();
-
-        foreach(var item in assets)
-        {
-            Debug.Log(item.GetType().ToString());
-        }
-
-        /*displayUI = new UnityEngine.UI.RawImage();
-        displayUI.texture = assets.FirstOrDefault<Texture2D>();*/
-
-        /*var go = new GameObject();
-        Renderer renderer = go.GetComponent<Renderer>();
-        renderer.material.mainTexture = assets.FirstOrDefault<Texture2D>();
-
-        Instantiate(go);*/
-
-        //Debug.Log(goPath);
-        //Instantiate(go);
+        var bg = Assembler.LoadBackground("bg/bg_0029_06111");
+        bg.transform.position = new Vector3(0, 0, -5.7f);
     }
 
     private void OnGUI()

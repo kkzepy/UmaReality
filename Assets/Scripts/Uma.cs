@@ -539,6 +539,17 @@ namespace Uma
 
             return container;
         }
+    
+        public static GameObject LoadBackground(string logicalPath, bool loadPrerequisites = true)
+        {
+            var tex = UmaAssetManager.LoadAsset<Texture2D>(logicalPath, loadPrerequisites);
+
+            GameObject go = new GameObject(logicalPath);
+            SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+
+            return go;
+        }
     }
     public class UmaCharacter : MonoBehaviour
     {
@@ -1154,9 +1165,9 @@ namespace Uma
 
         public void OnDestroy()
         {
-            Destroy(body);
-            Destroy(head);
-            Destroy(tail);
+            if (body) Destroy(body);
+            if (head) Destroy(head);
+            if (tail) Destroy(tail);
         }
 
         private void FixedUpdate()
